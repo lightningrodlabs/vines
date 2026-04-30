@@ -16,6 +16,7 @@ export const authorshipFunctionNames: FunctionName[] = [
 	"get_ah_from_local",
 	"get_ah_from_network",
 	"get_data_type",
+	"get_my_receipts",
 	"ascribe_target",
 	"ascribe_app_entry",
 	"get_all_ascribed_types",

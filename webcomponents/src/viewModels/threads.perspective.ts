@@ -5,12 +5,13 @@ import {
   AgentId,
   AgentIdMap,
   AnyId,
-  MyDictionary,
   DnaId,
   EntryId,
   EntryIdMap,
   intoAnyId,
   LinkableId,
+  MyDictionary,
+  ValidatedBy,
 } from "@ddd-qc/lit-happ";
 import {Thread} from "./thread";
 import {
@@ -23,14 +24,17 @@ import {
 } from "../bindings/threads.types";
 import {AnyIdMap} from "../utils";
 import {
-    BeadInfo,
-    BeadLinkMaterialized,
-    BeadType, dematerializePp, materializePp,
-    NotifiableEvent, PpMat,
-    TextBeadMat,
-    ThreadsNotification,
-    TypedBaseBeadMat,
-    TypedBeadMat
+  BeadInfo,
+  BeadLinkMaterialized,
+  BeadType,
+  dematerializePp,
+  materializePp,
+  NotifiableEvent,
+  PpMat,
+  TextBeadMat,
+  ThreadsNotification,
+  TypedBaseBeadMat,
+  TypedBeadMat
 } from "./threads.materialize";
 import {AuthorshipZvm} from "./authorship.zvm";
 import {SearchParameters} from "../search";
@@ -110,11 +114,11 @@ export type ThreadsPerspectiveComparable = {
 /** */
 export class ThreadsPerspective {
 
-  /** All Entries that have been found with New = true */
+  /** Entries that have been found with New = true */
   isNewStorageMap: Set<AnyDhtHashB64> = new Set();
 
-  /** All Entries that have effectively been found in source-chain or DHT */
-  persistentStorageMap: Set<AnyDhtHashB64> = new Set();
+  /** Entries that have been found in the source-chain or DHT */
+  validationMap: Map<AnyDhtHashB64, ValidatedBy> = new Map();
 
   /** */
   appletIds: EntryId[] = [];
@@ -250,7 +254,7 @@ export class ThreadsPerspective {
     return typesForDna.get(pathHash);
   }
 
-    /** */
+  /** */
   isNew(hash: AnyDhtHashB64): boolean {
     //console.debug("New: is?", hash, this.isNewStorageMap.has(hash));
     return this.isNewStorageMap.has(hash);
@@ -259,7 +263,17 @@ export class ThreadsPerspective {
   /** */
   isPersistent(hash: AnyDhtHashB64): boolean {
     //console.debug("Persistent: is?", hash, this.persistentStorageMap.has(hash));
-    return this.persistentStorageMap.has(hash);
+    const validation = this.validationMap.get(hash);
+    return !!validation && validation !== ValidatedBy.None;
+  }
+
+  /** */
+  getValidation(hash: AnyDhtHashB64): ValidatedBy {
+    const validation = this.validationMap.get(hash);
+    if (!validation) {
+      return ValidatedBy.None;
+    }
+    return validation;
   }
 
   getBeadInfo(beadAh: ActionId): BeadInfo | undefined {
@@ -815,7 +829,7 @@ export class ThreadsPerspective {
 }
 
 
-/** Perspective fields that are built from the Core perspective. There is no exclusif data. */
+/** Perspective fields that are built from the Core perspective. There is no exclusive data to this class. */
 export class ThreadsPerspectiveMutable extends ThreadsPerspective {
 
   get readonly(): ThreadsPerspective {
@@ -826,14 +840,29 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
   /** -- Store -- */
 
   /** */
-  setPersistent(hash: AnyDhtHashB64) {
-    console.log("Persistent: set", hash);
-    this.persistentStorageMap.add(hash);
-  }
-
-  unsetPersistent(hash: AnyDhtHashB64) {
-    console.log("Persistent: unset", hash);
-    this.persistentStorageMap.delete(hash);
+  setValidation(hash: AnyDhtHashB64, validation: ValidatedBy) {
+    console.log("setValidation", hash, validation);
+    const maybe = this.validationMap.get(hash);
+    if (!maybe) {
+      this.validationMap.set(hash, validation);
+      return;
+    }
+    /** Update validation if it's better */
+    switch (validation) {
+      case ValidatedBy.None: break;
+      case ValidatedBy.Network: this.validationMap.set(hash, validation); break;
+      case ValidatedBy.Me:
+        if (maybe == ValidatedBy.None) {
+          this.validationMap.set(hash, validation);
+        }
+        break;
+        // FIXME: implement case ValidatedBy.Peer
+        // case ValidatedBy.Peer:
+        //   if (maybe != ValidatedBy.Network) {
+        //     this.validationMap.set(hash, validation);
+        //   }
+        //   break;
+    }
   }
 
 
@@ -879,8 +908,12 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
 
 
   /** */
-  storeTypedBeadWithMeta(beadAh: ActionId, beadInfo: BeadInfo, typedBead: TypedBeadMat, isNew: Boolean, isPersistent: boolean, isUnread: boolean, innerPair?: [BeadInfo, TypedBaseBeadMat]) {
-    //console.debug("storeTypedBead()", beadInfo.beadType, beadAh.short, isNew, isPersistent);
+  storeTypedBeadWithMeta(beadAh: ActionId, beadInfo: BeadInfo, typedBead: TypedBeadMat, isNew: Boolean, validation: ValidatedBy, isUnread: boolean, innerPair?: [BeadInfo, TypedBaseBeadMat]) {
+    //console.debug("storeTypedBead()", beadInfo.beadType, beadAh.short, isNew, validation);
+    if (this.beads.get(beadAh)) {
+      console.warn("Bead already stored", beadAh.b64);
+      return;
+    }
     /** Store EncryptedBead */
     if (beadInfo.beadType == ThreadsEntryType.EncryptedBead) {
       if (!innerPair) {
@@ -891,9 +924,7 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
     /** Store normal base Bead */
     this.beads.set(beadAh, [beadInfo, typedBead]);
     this.storeBeadInThread(beadAh, beadInfo, isUnread, beadInfo.beadType);
-    if (isPersistent) {
-      this.persistentStorageMap.add(beadAh.b64);
-    }
+    this.validationMap.set(beadAh.b64, validation);
     if (isNew) {
       this.isNewStorageMap.add(beadAh.b64);
     }
@@ -1018,15 +1049,13 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
 
 
   /** */
-  storeThread(cell: Cell, ppAh: ActionId, pp: ParticipationProtocol, maybeTitle: string | undefined, creationTime: Timestamp, author: AgentId, isPersistent: boolean, isNew: boolean): ParticipationProtocol {
+  storeThread(cell: Cell, ppAh: ActionId, pp: ParticipationProtocol, maybeTitle: string | undefined, creationTime: Timestamp, author: AgentId, validation: ValidatedBy, isNew: boolean): ParticipationProtocol {
     //console.debug(`storeThread() thread "${ppAh.short}"`, author.short, isNew, pp, pp.subject.name, pp.subject.address);
     console.debug(`storeThread() thread`, pp.purpose, ppAh.b64, prettyTimestamp(creationTime));
     if (!pp || !cell) {
       throw Error("Arguments undefined when calling storeThread()");
     }
-    if (isPersistent) {
-      this.persistentStorageMap.add(ppAh.b64);
-    }
+    this.validationMap.set(ppAh.b64, validation);
     if (isNew) {
       this.isNewStorageMap.add(ppAh.b64);
     }
@@ -1278,7 +1307,7 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
       const authorshipLog: [Timestamp, AgentId] = authorshipZvm.perspective.getAuthor(ppAh) != undefined
         ? authorshipZvm.perspective.getAuthor(ppAh)!
         : [creationTime, cell.address.agentId];
-      this.storeThread(cell, ppAh, dematerializePp(ppMat), title, authorshipLog[0], authorshipLog[1], false, false);
+      this.storeThread(cell, ppAh, dematerializePp(ppMat), title, authorshipLog[0], authorshipLog[1], ValidatedBy.None, false);
     }
     /** this.beads */
     this.beads.clear();
@@ -1294,7 +1323,7 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
       }
       //this.storeTypedBead(beadAh, typedBead, beadInfo.beadType, authorshipLog[0], authorshipLog[1], true);
       if (beadInfo.beadType != ThreadsEntryType.EncryptedBead) {
-        this.storeTypedBeadWithMeta(beadAh, beadInfo, typedBead, false, false, true);
+        this.storeTypedBeadWithMeta(beadAh, beadInfo, typedBead, false, ValidatedBy.None, true);
       }
       // TODO handle decBeads
     }

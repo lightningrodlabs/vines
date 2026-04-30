@@ -46,8 +46,13 @@ pub fn fetch_typed_bead<T: TryFrom<Entry>>(bead_ah: ActionHash, strategy: GetStr
     res.0 = pair.0;
     res.1 = pair.1;
   }
+  let validation = if record.action().author() != &agent_info()?.agent_initial_pubkey {
+      ValidatedBy::Network
+  } else {
+     determine_validation(record.action_address())
+  };
   /// Emit signal
-  attest_entry_created(record, false)?;
+  attest_entry_created(record, validation, false)?;
   ///
   Ok(res)
 }

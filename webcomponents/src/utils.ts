@@ -4,7 +4,13 @@ import {AppletId, GroupProfile, Hrl, WAL, weaveUrlFromWal, weaveUrlToLocation} f
 import {ThreadsZvm} from "./viewModels/threads.zvm";
 import {intoHrl, WeServicesEx} from "@ddd-qc/we-utils";
 import {THIS_APPLET_ID} from "./contexts";
-import {ParticipationProtocol, Subject, ThreadsEntryType, ThreadsProperties} from "./bindings/threads.types";
+import {
+  MyValidationReceiptSet,
+  ParticipationProtocol,
+  Subject,
+  ThreadsEntryType,
+  ThreadsProperties
+} from "./bindings/threads.types";
 import {ProfilesAltZvm, Profile as ProfileMat} from "@ddd-qc/profiles-dvm";
 import {ActionId, AgentId, DhtId, DnaId, EntryId, intoAnyId, intoDhtId, isHashTypeB64} from "@ddd-qc/lit-happ";
 import {HoloHashB64, HoloHashType} from "@holochain/client";
@@ -538,4 +544,17 @@ export function isFileValid(file: File, dnaProperties: DeliveryProperties): bool
     return false;
   }
   return true;
+}
+
+
+/** */
+export function countValidReceipts(receipts: MyValidationReceiptSet[]): number {
+  console.log("countValidReceipts", receipts.length);
+  const recordReceipts = receipts.filter((set) => set.opType == "storeRecord").map((set) => set.receipts);
+  if (recordReceipts.length == 0) {
+    return 0;
+  }
+  let count = 0;
+  recordReceipts[0]!.map((receipt) => {if (receipt.validationStatus == 0) count += 1});
+  return count;
 }

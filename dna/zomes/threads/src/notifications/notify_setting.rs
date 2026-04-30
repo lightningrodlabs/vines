@@ -104,7 +104,7 @@ pub fn pull_notify_settings(
         }
     }
     /// Emit Signal
-    attest_links(links)?;
+    attest_links(links, ValidatedBy::Network)?;
     /// Default
     Ok((NotifySetting::MentionsOnly, None))
 }
@@ -129,7 +129,7 @@ pub fn pull_pp_notify_settings(input: GetAhInput)
         res.push((agent, setting, link.create_link_hash.to_owned()))
     }
     /// Emit Signal
-    attest_links(links)?;
+    attest_links(links, ValidatedBy::Network)?;
     /// Default
     Ok(res)
 }

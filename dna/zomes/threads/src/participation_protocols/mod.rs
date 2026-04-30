@@ -30,8 +30,13 @@ pub fn fetch_pp(input: GetAhInput) -> ExternResult<Option<(ParticipationProtocol
     return Ok(Some((typed, opPair.0, opPair.1)));
   }
   //debug!("fetch_pp() no origin author found");
+   let validation = if record.action().author() != &agent_info()?.agent_initial_pubkey {
+      ValidatedBy::Network
+   } else {
+      determine_validation(record.action_address())
+   };
   /// Emit Signal
-  attest_entry_created(record.clone(), false)?;
+  attest_entry_created(record.clone(), validation, false)?;
   let action = record.action().clone();
   ///
   Ok(Some((typed, action.timestamp(), action.author().to_owned())))

@@ -147,6 +147,30 @@ export interface GetDataTypeInput {
   get_strategy: GetStrategy
 }
 
+/** Copy of `ValidationReceiptSet` so we can have TypeScript bindings with zits. */
+export interface MyValidationReceiptSet {
+  /** The op hash that this receipt is for. */
+  opHash: DhtOpHash
+  /**
+   * The type of the op that was validated.
+   * 
+   * Note that the original type is discarded here because DhtOpType is part of `holochain_types`
+   * and moving it would be a breaking change. For now this is just informational.
+   */
+  opType: string
+  /** Whether this op has received the required number of receipts. */
+  receiptsComplete: boolean
+  /** The validation receipts for this op. */
+  receipts: MyValidationReceiptInfo[]
+}
+
+export interface MyValidationReceiptInfo {
+  /** the result of the validation. */
+  validationStatus: number
+  /** the remote validators who signed the receipt. */
+  validators: AgentArray[]
+}
+
 /**  */
 export interface AscribeTargetInput {
   target: AnyLinkableArray

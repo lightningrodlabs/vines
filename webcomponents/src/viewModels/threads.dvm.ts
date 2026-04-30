@@ -1,37 +1,37 @@
 import {
-    ActionId,
-    ActionIdMap,
-    AgentId,
-    AgentIdMap,
-    delay,
-    DnaViewModel,
-    EntryPulse,
-    materializeEntryPulse,
-    TipProtocol,
-    TipProtocolVariantAppCustom,
-    ZomeSignal,
-    ZomeSignalProtocol,
-    ZomeSignalProtocolType,
-    ZomeViewModel
+  ActionId,
+  ActionIdMap,
+  AgentId,
+  AgentIdMap,
+  delay,
+  DnaViewModel,
+  EntryPulse,
+  materializeEntryPulse,
+  TipProtocol,
+  TipProtocolVariantAppCustom,
+  ZomeSignal,
+  ZomeSignalProtocol,
+  ZomeSignalProtocolType,
+  ZomeViewModel
 } from "@ddd-qc/lit-happ";
 import {catchThrottled, ThreadsZvm} from "./threads.zvm";
 import {ActionHashB64, AppSignal, Signal, SignalCb, SignalType, Timestamp} from "@holochain/client";
 import {
-    ParticipationProtocol,
-    Subject,
-    ThreadsEntryType,
-    ThreadsProperties,
-    VINES_DEFAULT_ROLE_NAME,
+  ParticipationProtocol,
+  Subject,
+  ThreadsEntryType,
+  ThreadsProperties,
+  VINES_DEFAULT_ROLE_NAME,
 } from "../bindings/threads.types";
 import {
-    BaseBeadType,
-    bead2base,
-    defaultLimitations,
-    defaultModeration,
-    ThreadsAppTip,
-    ThreadsNotification,
-    ThreadsNotificationTip,
-    TypedContent,
+  BaseBeadType,
+  bead2base,
+  defaultLimitations,
+  defaultModeration,
+  ThreadsAppTip,
+  ThreadsNotification,
+  ThreadsNotificationTip,
+  TypedContent,
 } from "./threads.materialize";
 import {ProfilesAltZvm, ProfilesZvm} from "@ddd-qc/profiles-dvm";
 import {Decoder, Encoder} from "@msgpack/msgpack";
@@ -41,7 +41,7 @@ import {WeServicesEx} from "@ddd-qc/we-utils";
 import {PathExplorerZvm} from "@ddd-qc/path-explorer";
 import {GetStrategy} from "@holochain-open-dev/core-types";
 import {THIS_APPLET_ID} from "../contexts";
-import {MAIN_SEMANTIC_TOPIC, MAIN_TOPIC_ID} from "../utils";
+import {countValidReceipts, MAIN_SEMANTIC_TOPIC, MAIN_TOPIC_ID} from "../utils";
 import {prettyTimestamp} from "@ddd-qc/files";
 import {ImportConfirmed} from "../features/migration/import-summary";
 import {DiscordImportData} from "../features/migration/import-utils";
@@ -62,9 +62,9 @@ export type ThreadsDnaPerspective = {
   /** track who is currently typing per thread */
   /** ppAh -> (AgentId -> last seen timestamp) */
   typings: ActionIdMap<AgentIdMap<Timestamp>>,
-  /** track my un-acked beads */
-  myUnsharedBeads: Set<ActionHashB64>,
-  ackRequests: ActionIdMap<AgentId>,
+  /** Track unvalidated beads */
+  myUnvalidatedBeads: Set<ActionHashB64>,
+  validationRequests: AgentIdMap<Set<ActionHashB64>>,
   /** my newly created topic */
   myNewestTopic: null | ActionId,
   /** */
@@ -133,9 +133,9 @@ export class ThreadsDvm extends DnaViewModel {
     initialGlobalProbeLogTs: 0,
     signaledNotifications: [],
     typings: new ActionIdMap(),
-    myUnsharedBeads: new Set(),
+    myUnvalidatedBeads: new Set(),
     myNewestTopic: null,
-    ackRequests: new ActionIdMap(),
+    validationRequests: new AgentIdMap(),
     importing: false,
     importingPct: 1.0,
   }
@@ -234,26 +234,47 @@ export class ThreadsDvm extends DnaViewModel {
     this.notifySubscribers();
   }
 
-  /** Check every 5 secs for peers online and request acks for unshared beads if any */
-  private _processUnsharedInterval: any = undefined;
-  processUnshared() {
-      if (this._processUnsharedInterval) {
+  /** Check every 5 secs for peers online and request validations for unvalidated beads, if any. */
+  private _processUnvalidatedInterval: any = undefined;
+  processUnvalidated() {
+      if (this._processUnvalidatedInterval) {
           return;
       }
-      this._processUnsharedInterval = setInterval(async () => {
-          if (this.perspective.myUnsharedBeads.size > 0) {
+      this._processUnvalidatedInterval = setInterval(async () => {
+          if (this.perspective.myUnvalidatedBeads.size > 0) {
               const others = this.allCurrentOthers();
-              console.info("ThreadsDvm.processUnshared() myUnsharedBeads", this.perspective.myUnsharedBeads.size, others.length);
+              console.info("ThreadsDvm.processUnvalidated() myUnvalidatedBeads", this.perspective.myUnvalidatedBeads.size, others.length);
               if (others.length > 0) {
-                  for (const unshared of Object.values(this.perspective.myUnsharedBeads).slice(0, 10)) { // for the first 10 beads
-                      /*await*/ this.requestAck(new ActionId(unshared), others.slice(0, 5)); // ask 5 other peers
+                  for (const unvalidatedBead of Object.values(this.perspective.myUnvalidatedBeads).slice(0, 10)) { // for the first 10 beads
+                      /*await*/ this.requestValidation(new ActionId(unvalidatedBead), others.slice(0, 5)); // ask 5 other peers
                   }
               }
           } else {
-              clearInterval(this._processUnsharedInterval);
-              this._processUnsharedInterval = undefined;
+              clearInterval(this._processUnvalidatedInterval);
+              this._processUnvalidatedInterval = undefined;
           }
       }, 5000)
+  }
+
+  /** Check every 2 secs for validation requests and process them */
+  private _processAckRequestInterval: any = undefined;
+  processValidationRequests() {
+    if (this._processAckRequestInterval) {
+      return;
+    }
+    this._processAckRequestInterval = setInterval(async () => {
+      if (this.perspective.validationRequests.size > 0) {
+        console.info("ThreadsDvm.processAckRequests() validationRequests", this.perspective.validationRequests.size);
+        for (const ahs of Object.values(this.perspective.validationRequests).slice(0, 10)) { // limit to the first 10 requests
+          for (const ah of ahs) {
+            /*await*/ this.threadsZvm.fetchUnknownBead(ah, GetStrategy.Local);
+          }
+        }
+      } else {
+        clearInterval(this._processAckRequestInterval);
+        this._processAckRequestInterval = undefined;
+      }
+    }, 2000)
   }
 
   /** -- Signaling -- */
@@ -300,18 +321,29 @@ export class ThreadsDvm extends DnaViewModel {
         case ThreadsEntryType.EntryBead:
         case ThreadsEntryType.TextBead:
           //console.debug("ThreadsDvm.handleThreadsSignal() Bead", entryPulseMat, this._perspective.ackRequests);
-          /** Mark by bead as unshared */
-          if (entryPulseMat.isNew && entryPulseMat.state == "Create" && entryPulseMat.author.equals(this.cell.address.agentId)) {
-            //console.debug("ThreadsDvm.handleThreadsSignal() Adding to myUnsharedBeads", entryPulseMat, threadsSignal.Entry);
-            this._perspective.myUnsharedBeads.add(entryPulseMat.ah.b64);
+          /** If it's a new Bead from this agent, mark it as Unvalidated */
+          if (entryPulseMat.isNew && entryPulseMat.state == "Create") {
+            if (entryPulseMat.author.equals(this.cell.address.agentId)) {
+              //console.debug("ThreadsDvm.handleThreadsSignal() Adding to myUnsharedBeads", entryPulseMat, threadsSignal.Entry);
+              this._perspective.myUnvalidatedBeads.add(entryPulseMat.ah.b64);
+            }
           }
-          /** ack author that we have it */
-          if (entryPulseMat.state == "Create"
+          // /** Remove requests from offline peers */
+          // const others = this.allCurrentOthers().map((a) => a.b64);
+          // for (const key of this.perspective.validationRequests.keys()) {
+          //   if (!others.includes(key.b64)) this.perspective.validationRequests.delete(key);
+          // }
+          /** Tell the author that we have validated it */
+          const requests = this._perspective.validationRequests.get(entryPulseMat.author);
+          if (requests
+            && entryPulseMat.state == "Create"
             && !entryPulseMat.author.equals(this.cell.address.agentId)
-            && this._perspective.ackRequests.has(entryPulseMat.ah)) {
-            //console.debug("ThreadsDvm.handleThreadsSignal() Ack Author", entryPulseMat.ah.b64, entryPulseMat.author.b64);
-            this.ackAuthor(entryPulseMat.ah.b64);
-            this._perspective.ackRequests.delete(entryPulseMat.ah);
+            && requests.has(entryPulseMat.ah.b64)) {
+            this.respondValidationRequest(entryPulseMat.ah.b64);
+            this._perspective.validationRequests.get(entryPulseMat.author)!.delete(entryPulseMat.ah.b64);
+            if (this._perspective.validationRequests.get(entryPulseMat.author)!.size == 0) {
+              this._perspective.validationRequests.delete(entryPulseMat.author);
+            }
           }
           break;
         case ThreadsEntryType.ParticipationProtocol:
@@ -376,28 +408,42 @@ export class ThreadsDvm extends DnaViewModel {
 
 
   /** */
-  requestAck(beadAh: ActionId, others: AgentId[]) {
-    console.log("ThreadsDvm.requestAck()", beadAh);
-    const tip: ThreadsAppTip = {type: "ackRequest", data: beadAh};
+  requestValidation(beadAh: ActionId, others: AgentId[]) {
+    console.log("ThreadsDvm.requestValidation()", beadAh);
+    const tip: ThreadsAppTip = {type: "validationRequest", data: beadAh};
     const serTip = this._encoder.encode(tip);
     this.threadsZvm.broadcastTip({AppCustom: serTip}, others);
   }
 
 
   /** */
-  ackAuthor(beadAh: ActionHashB64) {
-    console.log("ThreadsDvm.ackAuthor()", beadAh);
+  respondValidationRequest(beadAh: ActionHashB64) {
+    console.log("ThreadsDvm.respondValidationRequest()", beadAh);
     const beadId = new ActionId(beadAh);
     const maybe = this.threadsZvm.perspective.beads.get(beadId);
     if (!maybe) {
       //throw Promise.reject("Missing bead we wanted to AckAuthor about");
-      console.warn("AckAuthor aborted. Missing bead we wanted to AckAuthor about.")
+      console.warn("respondValidationRequest() aborted. Bead not validated.")
       return;
     }
     const author = maybe[0].author;
+    const others = this.allCurrentOthers();
+    if (!others.includes(author)) {
+      return;
+    }
     const tip: ThreadsAppTip = {type: "ack", data: beadId};
     const serTip = this._encoder.encode(tip);
     this.threadsZvm.synchronizeCustomTip(serTip, author, "zThreads");
+  }
+
+
+  /** */
+  addValidationRequest(ah: ActionId, author: AgentId) {
+    if (!this._perspective.validationRequests.get(author)) {
+      this._perspective.validationRequests.set(author, new Set());
+    }
+    this._perspective.validationRequests.get(author)!.add(ah.b64);
+    this.processValidationRequests();
   }
 
 
@@ -407,7 +453,8 @@ export class ThreadsDvm extends DnaViewModel {
     const tip: ThreadsAppTip = {type: "typing", data: {thread, is}};
     const serTip = this._encoder.encode(tip);
     this.threadsZvm.broadcastTip({AppCustom: serTip}, this.allCurrentOthers());
-}
+  }
+
 
   /** */
   addSignaledNotif(notifTip: ThreadsNotificationTip) {
@@ -453,14 +500,10 @@ export class ThreadsDvm extends DnaViewModel {
             case ThreadsEntryType.EntryBead:
             case ThreadsEntryType.TextBead:
               console.log("ThreadsDvm.handleTip() Bead", entryPulseMat);
-              /** Store new bead as ack request */
-              if (entryPulseMat.isNew && entryPulseMat.state == "Create") {
-                if (!entryPulseMat.author.equals(this.cell.address.agentId)) {
-                  console.log("ThreadsDvm.handleTip() Adding to ackRequest", entryPulseMat);
-                  this._perspective.ackRequests.set(entryPulseMat.ah, entryPulseMat.author);
-                  await delay(1000);
-                  await this.threadsZvm.fetchUnknownBead(entryPulseMat.ah, GetStrategy.Local);
-                }
+              /** If it's a new Bead, add a validation request */
+              if (entryPulseMat.isNew && entryPulseMat.state == "Create" && !entryPulseMat.author.equals(this.cell.address.agentId)) {
+                  console.log("ThreadsDvm.handleTip() Adding to validationRequests", entryPulseMat);
+                  this.addValidationRequest(entryPulseMat.ah, entryPulseMat.author);
               }
               break;
             default:
@@ -497,12 +540,19 @@ export class ThreadsDvm extends DnaViewModel {
             break
           case "ack":
             console.debug("ThreadsDvm.handleTip() Removing from myUnsharedBeads", appTip.data);
-            this._perspective.myUnsharedBeads.delete(appTip.data!.b64);
+            this.threadsZvm.zomeProxy.getMyReceipts(appTip.data!.hash).then((receipts) =>  {
+              const validationCount = countValidReceipts(receipts);
+              if (validationCount > 0) {
+                this._perspective.myUnvalidatedBeads.delete(appTip.data!.b64);
+              }
+            });
             break;
-          case "ackRequest":
-            console.debug("ThreadsDvm.handleTip() ackRequest", appTip.data);
+          case "validationRequest":
+            console.debug("ThreadsDvm.handleTip() validationRequest", appTip.data);
             if (this.threadsZvm.perspective.beads.get(appTip.data!)) {
-              this.ackAuthor(appTip.data!.b64);
+              this.respondValidationRequest(appTip.data!.b64);
+            } else {
+              this.addValidationRequest(appTip.data!, this.cell.address.agentId);
             }
             break;
           case "string":

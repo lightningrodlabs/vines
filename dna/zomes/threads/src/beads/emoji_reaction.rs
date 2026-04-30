@@ -70,7 +70,7 @@ pub fn pull_reactions(input: GetAhInput) -> ExternResult<()> {
         input.ah.clone()
     );
     /// Emit Signal
-    attest_links(links)?;
+    attest_links(links, ValidatedBy::Network)?;
     ///
     Ok(())
 }

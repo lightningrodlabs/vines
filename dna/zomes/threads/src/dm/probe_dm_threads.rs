@@ -15,7 +15,7 @@ pub fn probe_dm_threads(strategy: GetStrategy) -> ExternResult<()> {
         strategy,
     )?;
     /// Emit signal
-    attest_links(links)?;
+    attest_links(links, ValidatedBy::Network)?;
     ///
     Ok(())
 }

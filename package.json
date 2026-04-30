@@ -151,7 +151,7 @@
     "@holochain-open-dev/profiles"  : "=0.601.2",
     "@theweave/api"                 : "=0.6.6",
     "@theweave/elements"            : "=0.6.3",
-    "@ddd-qc/cell-proxy"            : "=0.34.9",
+    "@ddd-qc/cell-proxy"            : "=0.34.10",
     "@ddd-qc/lit-happ"              : "=0.34.12",
     "@ddd-qc/we-utils"              : "=0.34.8",
     "@ddd-qc/profiles-dvm"          : "=0.34.8",

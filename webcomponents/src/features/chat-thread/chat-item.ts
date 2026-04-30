@@ -2,12 +2,12 @@ import {css, html, PropertyValues, TemplateResult} from "lit";
 import {customElement, property} from "lit/decorators.js";
 import {msg} from "@lit/localize";
 import {consume} from "@lit/context";
-import {ActionId, AgentId, delay, DnaElement} from "@ddd-qc/lit-happ";
+import {ActionId, AgentId, delay, DnaElement, HAPP_BUILD_MODE, HappBuildModeType, ValidatedBy} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../../viewModels/threads.dvm";
 import 'emoji-picker-element';
 
 import {renderAvatar, renderAvatarGroup, renderProfileAvatar} from "../../render";
-import {ThreadsEntryType} from "../../bindings/threads.types";
+import {MyValidationReceiptSet, ThreadsEntryType} from "../../bindings/threads.types";
 import {beadJumpEvent, CommentRequest, favoritesEvent, ShowProfileEvent, threadJumpEvent,} from "../../events";
 import {filesContext, weClientContext} from "../../contexts";
 import {intoHrl, WeServicesEx} from "@ddd-qc/we-utils";
@@ -20,7 +20,7 @@ import Popover from "@ui5/webcomponents/dist/Popover";
 
 import {toasty} from "../../toast";
 //import {popoverStyleTemplate} from "../../styles";
-import {determineBeadName} from "../../utils";
+import {countValidReceipts, determineBeadName} from "../../utils";
 import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm/dist/bindings/profiles.types";
 import {ThreadsPerspective} from "../../viewModels/threads.perspective";
 import {AnyBeadMat, BeadInfo, EntryBeadMat} from "../../viewModels/threads.materialize";
@@ -35,12 +35,6 @@ import {GetStrategy} from "@holochain-open-dev/core-types";
 @customElement("chat-item")
 export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
 
-  constructor() {
-    super(ThreadsDvm.DEFAULT_BASE_ROLE_NAME);
-  }
-
-  /** -- Properties -- */
-
   /** Hash of bead to display */
   @property() hash!: ActionId;
 
@@ -54,7 +48,6 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
 
   @property({type: Boolean}) canEdit: boolean = false;
 
-
   /** Observed perspective from zvm */
   @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
   threadsPerspective!: ThreadsPerspective;
@@ -65,18 +58,15 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
   @consume({context: filesContext, subscribe: true})
   _filesDvm!: FilesDvm;
 
-  // @consume({context: onlineLoadedContext, subscribe: true})
-  // onlineLoaded!: boolean;
-
-
   private _renderCount = 0;
 
+  private _receipts: MyValidationReceiptSet[] = [];
 
   /** -- Methods -- */
 
   /**
-   * In dvmUpdated() this._dvm is not already set!
    * Subscribe to ThreadsZvm
+   * Note: In dvmUpdated() this._dvm is not set yet.
    */
   protected override async dvmUpdated(newDvm: ThreadsDvm, oldDvm?: ThreadsDvm): Promise<void> {
     //console.log("<chat-item>.dvmUpdated()", this.hash, newDvm.cell.address.dnaId.b64)
@@ -91,7 +81,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
   protected override async firstUpdated(_changedProperties: PropertyValues) {
     super.firstUpdated(_changedProperties);
     /** Probe bead and its reactions */
-    await this.loadBead(GetStrategy.Local); // TODO: Figure out best strategy
+    await this.loadBead(GetStrategy.Local);
     /** Update if original author found */
     const maybe = await this._dvm.threadsZvm.getOriginalAuthor(this.hash);
     if (maybe) {
@@ -107,7 +97,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     super.willUpdate(changedProperties);
     //console.log("<chat-item>.willUpdate()", changedProperties, !!this._dvm, this.hash);
     if (this._dvm && (changedProperties.has("hash"))) {
-      /*await*/ this.loadBead(GetStrategy.Local);  // TODO: Figure out best strategy
+      /*await*/ this.loadBead(GetStrategy.Local);
       this.canEdit = false;
     }
   }
@@ -116,8 +106,8 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
   /** */
   override updated() {
     /** Request ack if peers are online */
-    if (this._dvm.perspective.myUnsharedBeads.has(this.hash.b64)) {
-        this._dvm.processUnshared();
+    if (this._dvm.perspective.myUnvalidatedBeads.has(this.hash.b64)) {
+        this._dvm.processUnvalidated();
     }
   }
 
@@ -126,6 +116,9 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
   private async loadBead(strategy: GetStrategy) {
     await this._dvm.threadsZvm.fetchUnknownBead(this.hash, strategy);
     await this._dvm.threadsZvm.pullEmojiReactions(this.hash, strategy);
+    // TODO: dont call getMyReceipts() if this agent is not the bead's author
+    this._receipts = await this._dvm.threadsZvm.zomeProxy.getMyReceipts(this.hash.hash);
+    console.log("loadBead() receipts", this._receipts);
   }
 
 
@@ -210,6 +203,11 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
           this.requestUpdate()
         });
         toasty(msg("Message has been flagged"));
+        break;
+      case "receipts":
+        this._dvm.threadsZvm.zomeProxy.getMyReceipts(this.hash.hash).then(async (resp) => {
+          console.log("Receipts for", this.hash.b64, resp);
+        });
         break;
     }
   }
@@ -303,15 +301,16 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
         baseBeadInfo.creationTime = maybeCachedOriginal[0];
     }
     //console.debug("<chat-item>.render()", prettyTimestamp(baseBeadInfo.creationTime), this.hash.b64);
-    const isNew = this._dvm.threadsZvm.perspective.isNew(this.hash.b64);
-    const isPersistent = this._dvm.threadsZvm.perspective.isPersistent(this.hash.b64);
-    //const isPersistent = false;
+    const isMine = baseBeadInfo.author.equals(this.cell.address.agentId);
+    //const isNew = this._dvm.threadsZvm.perspective.isNew(this.hash.b64);
+    //const isPersistent = this._dvm.threadsZvm.perspective.isPersistent(this.hash.b64);
+    const validatedBy = this._dvm.threadsZvm.perspective.getValidation(this.hash.b64);
     const canParticipate = this._dvm.threadsZvm.canParticipate(beadInfo.bead.ppAh, this.cell.address.agentId);
     const isEncrypted = beadInfo.beadType == ThreadsEntryType.EncryptedBead;
     const typed = this._dvm.threadsZvm.perspective.getBaseBead(this.hash)!;
     const isFlagged = this._dvm.threadsZvm.perspective.hasFlag(beadInfo.bead.ppAh, this.hash);
     //console.log("isFlagged", isFlagged, this.hash);
-    /** hide if prevBead is closer than a minute and same author */
+    /** hide if prevBead is less than a minute older than the current bead and is from the same author */
     let hidemeta = false;
     if (this.prevBeadAh) {
       const prevInfo = this._dvm.threadsZvm.perspective.getBaseBeadInfo(this.prevBeadAh);
@@ -458,7 +457,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     //console.log("<chat-item> shortmenu", this.shortmenu)
     if (!this.shortmenu) {
       sideButtons = [starButton, reactionButton, replyButton, commentButton, menuButton];
-      if (!isEncrypted && baseBeadInfo.beadType == ThreadsEntryType.TextBead && baseBeadInfo.author.equals(this.cell.address.agentId)) {
+      if (!isEncrypted && baseBeadInfo.beadType == ThreadsEntryType.TextBead && isMine) {
         sideButtons.unshift(html`
             <ui5-button id="star-btn" icon="edit" tooltip=${msg("Edit")} design="Transparent" style="border:none;"
                         @click=${(_e: any) => this.canEdit = true}></ui5-button>
@@ -481,38 +480,49 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     const maybeProfile = this._dvm.profilesZvm.perspective.getProfile(baseBeadInfo.author);
     const agentName = maybeProfile? maybeProfile.nickname : "unknown";
 
-    const isUnshared = this._dvm.perspective.myUnsharedBeads.has(this.hash.b64);
+    const isUnvalidated = this._dvm.perspective.myUnvalidatedBeads.has(this.hash.b64);
 
-    const alwaysVisible = isNew? "always-visible" : "";
+    const alwaysVisible = "always-visible";
+    //const alwaysVisible = isNew? "always-visible" : "";
     //               <ui5-icon class="pb-icon ${alwaysVisible}" name="validate"></ui5-icon>
-      //               <ui5-icon class="pb-icon ${alwaysVisible}" name="sys-enter"></ui5-icon>
-      //               <ui5-icon class="pb-icon" ${alwaysVisible} name="sys-enter" style="color:#ff0000b8;"></ui5-icon>
+    //               <ui5-icon class="pb-icon ${alwaysVisible}" name="sys-enter"></ui5-icon>
+    //               <ui5-icon class="pb-icon" ${alwaysVisible} name="sys-enter" style="color:#ff0000b8;"></ui5-icon>
+
+
+    /** start unvalidated */
     let msgStateIcon = html`
-          <sl-tooltip hoist content=${msg("Message validated by another peer")}>
-              <sl-icon class="pb-icon ${alwaysVisible}" name="patch-check"></sl-icon>
-          </sl-tooltip>`;
-    if (isUnshared) {
-      msgStateIcon = html`
-          <sl-tooltip hoist content=${msg("Message self-validated, but not received yet")}>
-              <sl-icon class="pb-icon ${alwaysVisible}" name="check-lg"></sl-icon>
-          </sl-tooltip>
-      `;
-    }
-    if (!isPersistent) {
-      msgStateIcon = html`
           <sl-tooltip hoist content=${msg("Message received, but not validated yet")}>
               <sl-icon class="pb-icon ${alwaysVisible}" name="check-lg"></sl-icon>
           </sl-tooltip>
       `;
+
+    if (isMine) {
+        msgStateIcon = html`
+          <sl-tooltip hoist content=${msg("Message self-validated, but not shared yet")}>
+              <sl-icon class="pb-icon ${alwaysVisible}" name="check-lg"></sl-icon>
+          </sl-tooltip>
+      `;
+    }
+    if (validatedBy == ValidatedBy.Peer) {
+      msgStateIcon = html`
+          <sl-tooltip hoist content=${msg("Message validated by another peer")}>
+              <sl-icon class="pb-icon ${alwaysVisible}" name="check2-all"></sl-icon>
+          </sl-tooltip>`
+    }
+    if (validatedBy == ValidatedBy.Network) {
+      msgStateIcon = html`
+          <sl-tooltip hoist content=${msg("Message validated by the network")}>
+              <sl-icon class="pb-icon ${alwaysVisible}" name="patch-check" style="color:green;"></sl-icon>
+          </sl-tooltip>`
     }
 
     /** render all */
     return html`
         <div id="innerChatItem" style="position: relative;">
             <!-- <div>${this._renderCount} ; ${this.hash.b64}</div> -->
-            ${isPersistent? html`` : html`
+            ${validatedBy !== ValidatedBy.None? html`` : html`
                 <div class="grey-veil"></div>`}
-            ${isUnshared? html`
+            ${isUnvalidated? html`
                 <div class="green-veil"></div>` : html``}
             <!-- Vine row -->
             ${hidemeta? html`` : this.renderTopVine(baseBeadInfo)}
@@ -520,7 +530,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
             <div id=${"chat-item__" + this.hash.b64} class="chatItem"
                  @mouseenter=${(_e: any) => {
                      const popover = this.shadowRoot!.getElementById("buttonsPop") as HTMLElement;
-                     if (popover && !isUnshared && isPersistent) {
+                     if (popover && !isUnvalidated && validatedBy !== ValidatedBy.None) {
                          popover.style.display = "block";
                      }
                  }}
@@ -534,8 +544,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
                 <div id="avatarColumn" style="display: flex; flex-direction: column; min-width:48px;">
                     ${hidemeta? html`` : renderAvatar(this, this._dvm.profilesZvm, baseBeadInfo.author, "S")}
                     <div style="display:flex; flex-direction:row; flex-grow:1; margin-top:1px; position:relative;">
-                        <div id="colMeta" class="${hidemeta? "meta" : "no-meta"}"
-                             style="position: absolute; left:5px;">
+                        <div id="colMeta" class="${hidemeta? "meta" : "no-meta"}" style="position: absolute; left:5px;">
                           ${hidemeta? msgStateIcon : html``}
                         </div>
                         <div style="flex-grow:1;"></div>
@@ -549,6 +558,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
                             <span id="agentName">${agentName}</span>
                             <span class="chatDate">${date_str}</span>
                             ${msgStateIcon}
+                            ${isMine? html`${countValidReceipts(this._receipts)}` : html``}
                         `}
                         <span style="flex-grow: 1"></span>
                         <span id="nameEnd" style="width:10px"></span>
@@ -569,7 +579,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
                     <emoji-bar .hash=${this.hash}></emoji-bar>
                 </div>
                 <!-- Popovers -->
-                ${this.nomenu || !isPersistent || !canParticipate || isFlagged? html`` : html`
+                ${this.nomenu || validatedBy == ValidatedBy.None || !canParticipate || isFlagged? html`` : html`
                     <div id="buttonsPop">${sideButtons}</div>`}
                 <ui5-popover id="emojiPopover" header-text=${msg("Add Reaction")}>
                     <emoji-picker class="light" style="display: block"
@@ -611,6 +621,9 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
                     <ui5-menu-item id="flagMessage"
                                    ?disabled=${!this._dvm.threadsZvm.isSelfModerator(beadInfo.bead.ppAh) || isFlagged}
                                    icon="flag" text=${msg("Report Message")}></ui5-menu-item>
+                    ${HAPP_BUILD_MODE !== HappBuildModeType.Retail? html``: html`
+                    <ui5-menu-item id="receipts"
+                                   icon="receipt" text=${msg("Receipts")}></ui5-menu-item>`}
                 </ui5-menu>
             </div>
 

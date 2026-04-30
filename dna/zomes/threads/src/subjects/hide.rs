@@ -59,7 +59,7 @@ fn probe_all_hiddens(strategy: GetStrategy) -> ExternResult<()> {
         strategy,
     )?;
     /// Emit Signal
-    attest_links(links)?;
+    attest_links(links, ValidatedBy::Me)?;
     ///
     Ok(())
 }

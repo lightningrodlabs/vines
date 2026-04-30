@@ -45,7 +45,7 @@ pub fn probe_pps_from_subject_hash(
         })
         .collect();
     /// Emit signal
-    attest_links(links)?;
+    attest_links(links, ValidatedBy::Network)?;
     /// Done
     Ok(ahs)
 }

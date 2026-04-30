@@ -1165,13 +1165,11 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
 
     /** */
-    async storeTypedBead(beadAh: ActionId, typedBead: TypedBeadMat, beadType: BeadType, creationTime: Timestamp, author: AgentId, isPersistent: boolean, isNew: boolean) {
+    async storeTypedBead(beadAh: ActionId, typedBead: TypedBeadMat, beadType: BeadType, creationTime: Timestamp, author: AgentId, validation: ValidatedBy, isNew: boolean) {
         //console.debug("ThreadsZvm.storeTypedBead()", beadAh.short);
-        /** pre */
+        /** IF bead already known, just update validation status */
         if (this._perspective.getBeadInfo(beadAh)) {
-            if (!this._perspective.isPersistent(beadAh.b64) && isPersistent) {
-                this._perspective.setPersistent(beadAh.b64);
-            }
+            this._perspective.setValidation(beadAh.b64, validation);
             return;
         }
         if (!typedBead) {
@@ -1218,7 +1216,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
             // }
         }
         /** Store in perspective */
-        this._perspective.storeTypedBeadWithMeta(beadAh, beadInfo, typedBead, isNew, isPersistent, isNew && !author.equals(this.cell.address.agentId), innerPair);
+        this._perspective.storeTypedBeadWithMeta(beadAh, beadInfo, typedBead, isNew, validation, isNew && !author.equals(this.cell.address.agentId), innerPair);
     }
 
 
@@ -1414,7 +1412,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
                     await this.editThreadTitle(newPpAh, title);
                 }
                 /* Store pp */
-                this._perspective.storeThread(this.cell, newPpAh, pp, title, authorshipLog[0], authorshipLog[1], true, false);
+                this._perspective.storeThread(this.cell, newPpAh, pp, title, authorshipLog[0], authorshipLog[1], ValidatedBy.Me, false);
                 console.log(`PubImp() PP ${ppAh.short} -> ${newPpAh.short}`, authorshipLog[0]);
             }
             // FIXME: use Promise.AllSettled();
@@ -1695,7 +1693,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         switch (pulse.link_type) {
             case ThreadsLinkType.Inbox:
                 //delay(1000).then(() => {this.handleInboxLink(pulse, from); this.notifySubscribers();});
-                this.handleInboxLink(pulse, from);
+                /*await*/ this.handleInboxLink(pulse, from);
                 break;
             case ThreadsLinkType.Hide:
                 if (!isAuthorSelf) {
@@ -1730,9 +1728,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
                     const emoji = decoder.decode(pulse.tag);
                     //console.warn("EmojiReaction CreateLink:", link.tag, emoji);
                     this._perspective.storeEmojiReaction(baseAh, pulse.author, emoji);
-                    if (pulse.validatedBy != ValidatedBy.None) {
-                        this._perspective.setPersistent(pulse.create_link_hash.b64);
-                    }
+                    this._perspective.setValidation(pulse.create_link_hash.b64, pulse.validatedBy);
                 }
                 if (StateChangeType.Delete == pulse.state) {
                     const decoder = new TextDecoder('utf-8');
@@ -1747,9 +1743,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
                 const agent = AgentId.from(pulse.target.b64);
                 if (StateChangeType.Create == pulse.state) {
                     this._perspective.storeBan(ppAh, agent);
-                    if (pulse.validatedBy != ValidatedBy.None) {
-                        this._perspective.setPersistent(pulse.create_link_hash.b64);
-                    }
+                    this._perspective.setValidation(pulse.create_link_hash.b64, pulse.validatedBy);
                     if (pulse.isNew && isAuthorSelf) {
                         /** Notify bead author that they have been banned */
                         if (this._canNotify && !this.cell.address.agentId.equals(agent)) {
@@ -1774,9 +1768,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
                 /** Create */
                 if (StateChangeType.Create == pulse.state) {
                     this._perspective.storeFlag(ppAh, beadAh, pulse.create_link_hash);
-                    if (pulse.validatedBy != ValidatedBy.None) {
-                        this._perspective.setPersistent(pulse.create_link_hash.b64);
-                    }
+                    this._perspective.setValidation(pulse.create_link_hash.b64, pulse.validatedBy);
                     if (pulse.isNew && isAuthorSelf) {
                         let author = await this.getRecordAuthor(intoDhtId(beadAh.b64), GetStrategy.Local); // TODO: Figure out best strategy
                         /** Notify bead author that it has been flagged */
@@ -1924,7 +1916,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
                     //console.log("EntryPulse | storeThread", prettyTimestamp(pulse.ts), prettyTimestamp(origTs));
                     const already = this._perspective.threads.get(pulse.ah);
                     // @ts-ignore
-                    this._perspective.storeThread(this.cell, pulse.ah, pp, maybeTitle, origTs, author, pulse.validatedBy != ValidatedBy.None, pulse.isNew);
+                    this._perspective.storeThread(this.cell, pulse.ah, pp, maybeTitle, origTs, author, pulse.validatedBy, pulse.isNew);
                     /** grab latest title edit */
                     if (!already) {
                       console.debug("calling getPpTitle()", pulse.ah.b64);
@@ -2155,7 +2147,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         /** Store Bead */
         let author = pulse.author;
         let creationTime = pulse.ts;
-        await this.storeTypedBead(beadAh, typedMat, beadType, creationTime, author, pulse.validatedBy != ValidatedBy.None, pulse.isNew);
+        await this.storeTypedBead(beadAh, typedMat, beadType, creationTime, author, pulse.validatedBy, pulse.isNew);
         // /** Dev test: Signal a 2nd entry */
         // if (pulse.isNew && this.cell.address.agentId.equals(from) && pulse.visibility == "Public") {
         //   pulse.ah = await ActionId.random();

@@ -60,7 +60,7 @@ fn probe_all_flagged(input: GetAhInput) -> ExternResult<()> {
         input.strategy,
     )?;
     /// Emit Signal
-    attest_links(links)?;
+    attest_links(links, ValidatedBy::Network)?;
     ///
     Ok(())
 }
@@ -74,7 +74,7 @@ fn probe_all_banned(input: GetAhInput) -> ExternResult<()> {
         input.strategy,
     )?;
     /// Emit Signal
-    attest_links(links)?;
+    attest_links(links, ValidatedBy::Network)?;
     ///
     Ok(())
 }

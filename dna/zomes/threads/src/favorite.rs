@@ -67,7 +67,7 @@ pub fn probe_my_favorites(strategy: GetStrategy) -> ExternResult<Vec<ActionHash>
         res.push(bead_ah)
     }
     /// Emit signal
-    attest_links(links)?;
+    attest_links(links, ValidatedBy::Me)?;
     /// Default
     Ok(res)
 }

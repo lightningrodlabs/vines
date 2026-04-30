@@ -15,7 +15,7 @@ pub fn get_pp_title(input: GetAhInput) -> ExternResult<String> {
        LinkQuery::new(input.ah, ThreadsLinkType::TitleFix.try_into_filter().unwrap()),
        input.strategy,
     )?;
-    attest_links(title_links.clone())?;
+    attest_links(title_links.clone(), ValidatedBy::Network)?; // TODO: handle this agent  is author edge case
     /// Done
     return match title_links.last() {
         None => Ok(pp.purpose),

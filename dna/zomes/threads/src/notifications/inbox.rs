@@ -42,7 +42,7 @@ pub fn probe_inbox(strategy: GetStrategy) -> ExternResult<()> {
         strategy,
     )?;
     /// Emit Signal
-    attest_links(links)?;
+    attest_links(links, ValidatedBy::Network)?;
     /// Done
     Ok(())
 }
