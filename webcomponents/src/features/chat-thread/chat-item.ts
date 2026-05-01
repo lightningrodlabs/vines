@@ -482,7 +482,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
 
     const isUnvalidated = this._dvm.perspective.myUnvalidatedBeads.has(this.hash.b64);
 
-    const alwaysVisible = "always-visible";
+    const visible = "always-visible";
     //const alwaysVisible = isNew? "always-visible" : "";
     //               <ui5-icon class="pb-icon ${alwaysVisible}" name="validate"></ui5-icon>
     //               <ui5-icon class="pb-icon ${alwaysVisible}" name="sys-enter"></ui5-icon>
@@ -490,29 +490,32 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
 
 
     /** start unvalidated */
-    let msgStateIcon = html`
-          <sl-tooltip hoist content=${msg("Message received, but not validated yet")}>
-              <sl-icon class="pb-icon ${alwaysVisible}" name="check-lg"></sl-icon>
-          </sl-tooltip>
-      `;
+    let msgStateIcon = html``;
+      //     <sl-tooltip hoist content=${msg("Message received, but not validated yet")}>
+      //         <sl-icon class="pb-icon ${visible}" name="exclamation-triangle"></sl-icon>
+      //     </sl-tooltip>
+      // `;
 
     if (isMine) {
         msgStateIcon = html`
           <sl-tooltip hoist content=${msg("Message self-validated, but not shared yet")}>
-              <sl-icon class="pb-icon ${alwaysVisible}" name="check-lg"></sl-icon>
+              <sl-icon class="pb-icon ${visible}" name="check-lg"></sl-icon>
           </sl-tooltip>
       `;
     }
     if (validatedBy == ValidatedBy.Peer) {
       msgStateIcon = html`
           <sl-tooltip hoist content=${msg("Message validated by another peer")}>
-              <sl-icon class="pb-icon ${alwaysVisible}" name="check2-all"></sl-icon>
+              <sl-icon class="pb-icon ${visible}" name="check2-all"></sl-icon>
           </sl-tooltip>`
     }
     if (validatedBy == ValidatedBy.Network) {
+      // TODO: Holochain doesnt check if enough validation receipts have been received, so for now
+      // we dont display any difference with ValidatedBy.Peer
+      // style="color:green;
       msgStateIcon = html`
           <sl-tooltip hoist content=${msg("Message validated by the network")}>
-              <sl-icon class="pb-icon ${alwaysVisible}" name="patch-check" style="color:green;"></sl-icon>
+              <sl-icon class="pb-icon ${visible}" name="patch-check"></sl-icon>
           </sl-tooltip>`
     }
 

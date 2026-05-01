@@ -2839,11 +2839,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                 ></import-panel>
             </ui5-dialog>            
             <!-- Confirm Dialog -->
-            <confirm-dialog id="confirm-hide-topic" 
-                            @confirmed=${(e: any) => {
-                              e.stopPropagation(); e.preventDefault();
-                            }}>
-            </confirm-dialog>
+            <confirm-dialog id="confirm-hide-topic"></confirm-dialog>
             <!-- View Embed Dialog -->
             <view-embed-dialog id="view-embed"></view-embed-dialog>
             <!-- View File Dialog -->
