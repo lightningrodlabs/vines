@@ -20,9 +20,15 @@ pub fn fetch_beads(input: GetManyAhInput) -> ExternResult<()> {
    let lhs = records.iter().map(|r| r.signed_action.hashed.hash.clone().into()).collect::<Vec<AnyLinkableHash>>();
    let original_authors = get_original_authors(GetManyLhInput {lhs, strategy: input.strategy})?;
 
+   let me = agent_info()?.agent_initial_pubkey;
    for record in records {
+      /// Get receipts for my beads
+      let mut validation = ValidatedBy::Network; // FIXME: Holochain should provide a way to check validation status for records by other agents
+      if record.signed_action.hashed.author() == &me {
+         validation = determine_validation(record.action_address());
+      }
       /// Create Pulse
-      let mut pulse = EntryPulse::try_from_new_record(record.clone(), ValidatedBy::Me, false)?;
+      let mut pulse = EntryPulse::try_from_new_record(record.clone(), validation, false)?;
       /// Get Original author
       let maybe = original_authors.get(&record.signed_action.hashed.hash);
       if let Some(pair) = maybe {

@@ -108,6 +108,7 @@ export type ThreadsPerspectiveComparable = {
   inbox: number,
   unreads: number,
   globalProbeLogTs: number,
+  validationMap: string,
 };
 
 
@@ -208,7 +209,9 @@ export class ThreadsPerspective {
       inbox: this.inbox.size,
       unreads: this.unreads.size,
       globalProbeLogTs: this.globalProbeLogTs,
+      validationMap: JSON.stringify(Array.from(this.validationMap.entries())),
     };
+    console.debug("comparable() validationMap()", res.validationMap, this);
     return res;
   }
 
@@ -273,6 +276,7 @@ export class ThreadsPerspective {
     if (!validation) {
       return ValidatedBy.None;
     }
+    console.log("getValidation()", hash, validation);
     return validation;
   }
 
@@ -840,29 +844,30 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
   /** -- Store -- */
 
   /** */
-  setValidation(hash: AnyDhtHashB64, validation: ValidatedBy) {
-    console.log("setValidation", hash, validation);
-    const maybe = this.validationMap.get(hash);
-    if (!maybe) {
-      this.validationMap.set(hash, validation);
+  setValidation(hash: AnyDhtHashB64, newValidation: ValidatedBy) {
+    console.log("setValidation call", hash, newValidation);
+    const current = this.validationMap.get(hash);
+    if (!current) {
+      this.validationMap.set(hash, newValidation);
+      console.log("setValidation done 1", hash, newValidation);
       return;
     }
     /** Update validation if it's better */
-    switch (validation) {
+    switch (newValidation) {
       case ValidatedBy.None: break;
-      case ValidatedBy.Network: this.validationMap.set(hash, validation); break;
-      case ValidatedBy.Me:
-        if (maybe == ValidatedBy.None) {
-          this.validationMap.set(hash, validation);
+      case ValidatedBy.Network: this.validationMap.set(hash, newValidation); break;
+      case ValidatedBy.Peer:
+        if (current !== ValidatedBy.Network) {
+          this.validationMap.set(hash, newValidation);
         }
         break;
-        // FIXME: implement case ValidatedBy.Peer
-        // case ValidatedBy.Peer:
-        //   if (maybe != ValidatedBy.Network) {
-        //     this.validationMap.set(hash, validation);
-        //   }
-        //   break;
+      case ValidatedBy.Me:
+        if (current === ValidatedBy.None) {
+          this.validationMap.set(hash, newValidation);
+        }
+        break;
     }
+    console.log("setValidation done 2", hash, this.validationMap.get(hash));
   }
 
 
@@ -924,7 +929,7 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
     /** Store normal base Bead */
     this.beads.set(beadAh, [beadInfo, typedBead]);
     this.storeBeadInThread(beadAh, beadInfo, isUnread, beadInfo.beadType);
-    this.validationMap.set(beadAh.b64, validation);
+    this.setValidation(beadAh.b64, validation);
     if (isNew) {
       this.isNewStorageMap.add(beadAh.b64);
     }
@@ -1055,7 +1060,7 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
     if (!pp || !cell) {
       throw Error("Arguments undefined when calling storeThread()");
     }
-    this.validationMap.set(ppAh.b64, validation);
+    this.setValidation(ppAh.b64, validation);
     if (isNew) {
       this.isNewStorageMap.add(ppAh.b64);
     }

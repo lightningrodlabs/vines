@@ -8,7 +8,7 @@ import {
   EntryPulse,
   materializeEntryPulse,
   TipProtocol,
-  TipProtocolVariantAppCustom,
+  TipProtocolVariantAppCustom, ValidatedBy,
   ZomeSignal,
   ZomeSignalProtocol,
   ZomeSignalProtocolType,
@@ -78,12 +78,12 @@ export type ThreadsDnaPerspectiveComparable = {
   signaledNotifications: number,
   initialThreadProbeLogTss: number,
   agentPresences: string,
-
+  myUnvalidatedBeads: number,
 }
 
 
 /**
- * ViewModel fo the Threads DNA
+ * ViewModel for the Threads DNA
  * Holds two zomes:
  *  - Threads
  *  - Profiles
@@ -117,9 +117,9 @@ export class ThreadsDvm extends DnaViewModel {
 
   /** -- Setters -- */
 
-  async setLocation(loc: ActionId | null) {
+  setLocation(loc: ActionId | null) {
     this._currentLocation = loc;
-    await this.broadcastLocation(this.profilesZvm.perspective.agents);
+    this.broadcastLocation(this.profilesZvm.perspective.agents);
   };
 
 
@@ -152,6 +152,7 @@ export class ThreadsDvm extends DnaViewModel {
       signaledNotifications: this.perspective.signaledNotifications.length,
       initialThreadProbeLogTss: this.perspective.initialThreadProbeLogTss.size,
       agentPresences: JSON.stringify(Array.from(this.perspective.agentPresences.entries())),
+      myUnvalidatedBeads: this.perspective.myUnvalidatedBeads.size,
     }
     return res;
   }
@@ -178,7 +179,7 @@ export class ThreadsDvm extends DnaViewModel {
     for (const [ppAh, thread] of this.threadsZvm.perspective.threads) {
       this._perspective.initialThreadProbeLogTss.set(ppAh, thread.latestProbeLogTime);
     }
-    console.log("ThreadsDvm.initializePerspectiveFromLocal() override persp =", this.perspective)
+    console.log("ThreadsDvm.initializePerspectiveFromLocal() override persp =", this._perspective)
   }
 
   /** */
@@ -235,45 +236,74 @@ export class ThreadsDvm extends DnaViewModel {
   }
 
   /** Check every 5 secs for peers online and request validations for unvalidated beads, if any. */
-  private _processUnvalidatedInterval: any = undefined;
-  processUnvalidated() {
-      if (this._processUnvalidatedInterval) {
+  private _processMyUnvalidatedInterval: any = undefined;
+  private _unvalidatedRunning = false;
+  processMyUnvalidated() {
+      if (this._processMyUnvalidatedInterval) {
           return;
       }
-      this._processUnvalidatedInterval = setInterval(async () => {
-          if (this.perspective.myUnvalidatedBeads.size > 0) {
-              const others = this.allCurrentOthers();
-              console.info("ThreadsDvm.processUnvalidated() myUnvalidatedBeads", this.perspective.myUnvalidatedBeads.size, others.length);
-              if (others.length > 0) {
-                  for (const unvalidatedBead of Object.values(this.perspective.myUnvalidatedBeads).slice(0, 10)) { // for the first 10 beads
-                      /*await*/ this.requestValidation(new ActionId(unvalidatedBead), others.slice(0, 5)); // ask 5 other peers
-                  }
-              }
-          } else {
-              clearInterval(this._processUnvalidatedInterval);
-              this._processUnvalidatedInterval = undefined;
+      this._processMyUnvalidatedInterval = setInterval(async () => {
+          if (this._unvalidatedRunning) {
+            return;
           }
+          if (this._perspective.myUnvalidatedBeads.size == 0) {
+            clearInterval(this._processMyUnvalidatedInterval);
+            this._processMyUnvalidatedInterval = undefined;
+            return;
+          }
+          this._unvalidatedRunning = true;
+          try {
+            const others = this.allCurrentOthers();
+            console.info("ThreadsDvm.processUnvalidated() myUnvalidatedBeads", this._perspective.myUnvalidatedBeads, others.length);
+            if (others.length > 0) {
+              const snapshot = [...this._perspective.myUnvalidatedBeads];
+              // for the first 10 beads
+              for (const unvalidatedBeadAhB64 of  snapshot.slice(0, 10)) {
+                console.log("myUnvalidatedBeads getMyReceipts()", unvalidatedBeadAhB64);
+                const [_e, receipts] = await catchThrottled(this.threadsZvm.zomeProxy.getMyReceipts(new ActionId(unvalidatedBeadAhB64).hash));
+                const validationCount = receipts ? countValidReceipts(receipts) : 0;
+                if (validationCount > 0) {
+                  this._perspective.myUnvalidatedBeads.delete(unvalidatedBeadAhB64);
+                  console.debug("processMyUnvalidated Removed from myUnvalidatedBeads", unvalidatedBeadAhB64, this._perspective.myUnvalidatedBeads);
+                } else {
+                  /*await*/ this.requestValidation(new ActionId(unvalidatedBeadAhB64), others.slice(0, 5)); // ask 5 other peers
+                }
+              }
+              console.log("myUnvalidatedBeads processMyUnvalidated() done", this._perspective.myUnvalidatedBeads);
+            }
+          } finally { this._unvalidatedRunning = false; }
       }, 5000)
   }
 
   /** Check every 2 secs for validation requests and process them */
   private _processAckRequestInterval: any = undefined;
+  private _ackRunning = false;
   processValidationRequests() {
     if (this._processAckRequestInterval) {
       return;
     }
     this._processAckRequestInterval = setInterval(async () => {
-      if (this.perspective.validationRequests.size > 0) {
-        console.info("ThreadsDvm.processAckRequests() validationRequests", this.perspective.validationRequests.size);
-        for (const ahs of Object.values(this.perspective.validationRequests).slice(0, 10)) { // limit to the first 10 requests
-          for (const ah of ahs) {
-            /*await*/ this.threadsZvm.fetchUnknownBead(ah, GetStrategy.Local);
-          }
-        }
-      } else {
+      if (this._ackRunning) {
+        return;
+      }
+      if (this._perspective.validationRequests.size == 0) {
         clearInterval(this._processAckRequestInterval);
         this._processAckRequestInterval = undefined;
       }
+      this._ackRunning = true;
+      try {
+        console.info("ThreadsDvm.processValidationRequests() validationRequests", this._perspective.validationRequests.size);
+        let i = 0;
+        for (const ahs of [...this._perspective.validationRequests.values()]) {
+          const copyAhs: Set<ActionHashB64> = new Set(ahs); // copy to avoid concurrent modification
+          for (const ahB64 of copyAhs) {
+            /*await*/ this.threadsZvm.fetchUnknownBead(new ActionId(ahB64), GetStrategy.Local);
+            // Limit to 10
+            i += 1;
+            if (i > 10) return;
+          }
+        }
+      } finally { this._ackRunning = false; }
     }, 2000)
   }
 
@@ -296,19 +326,19 @@ export class ThreadsDvm extends DnaViewModel {
     this.storePresence(from, Date.now());
 
     // /** Handle signal according to target zome */
-    // if (appSignal.zome_name == ProfilesAltZvm.DEFAULT_ZOME_NAME) {
-    //     /*await*/ this.handleProfilesSignal(signal, from);
-    // } else {
+    if (appSignal.zome_name == ProfilesAltZvm.DEFAULT_ZOME_NAME) {
+        ///*await*/ this.handleProfilesSignal(signal, from);
+    } else {
         for (const pulse of signal.pulses) {
             /*await*/ this.handleThreadsSignal(pulse, from);
         }
         this.notifySubscribers();
-   // }
+    }
   }
 
   /** */
   async handleThreadsSignal(threadsSignal: ZomeSignalProtocol, from: AgentId): Promise<void> {
-    //console.log("ThreadsDvm.handleThreadsSignal()", threadsSignal, from.b64);
+    //console.log("ThreadsDvm.handleThreadsSignal() valid", threadsSignal, from.b64);
     /** */
     if (ZomeSignalProtocolType.Tip in threadsSignal) {
       return this.handleTip(threadsSignal.Tip as TipProtocol, from);
@@ -324,8 +354,9 @@ export class ThreadsDvm extends DnaViewModel {
           /** If it's a new Bead from this agent, mark it as Unvalidated */
           if (entryPulseMat.isNew && entryPulseMat.state == "Create") {
             if (entryPulseMat.author.equals(this.cell.address.agentId)) {
-              //console.debug("ThreadsDvm.handleThreadsSignal() Adding to myUnsharedBeads", entryPulseMat, threadsSignal.Entry);
+              console.debug("ThreadsDvm.handleThreadsSignal() Adding to myUnvalidatedBeads", entryPulseMat.ah.b64, entryPulseMat.entryType, entryPulseMat);
               this._perspective.myUnvalidatedBeads.add(entryPulseMat.ah.b64);
+              console.debug("ThreadsDvm.handleThreadsSignal() Adding to myUnvalidatedBeads result", this._perspective.myUnvalidatedBeads);
             }
           }
           // /** Remove requests from offline peers */
@@ -410,7 +441,7 @@ export class ThreadsDvm extends DnaViewModel {
   /** */
   requestValidation(beadAh: ActionId, others: AgentId[]) {
     console.log("ThreadsDvm.requestValidation()", beadAh);
-    const tip: ThreadsAppTip = {type: "validationRequest", data: beadAh};
+    const tip: ThreadsAppTip = {type: "validationRequest", data: beadAh.b64};
     const serTip = this._encoder.encode(tip);
     this.threadsZvm.broadcastTip({AppCustom: serTip}, others);
   }
@@ -419,7 +450,7 @@ export class ThreadsDvm extends DnaViewModel {
   /** */
   respondValidationRequest(beadAh: ActionHashB64) {
     console.log("ThreadsDvm.respondValidationRequest()", beadAh);
-    const beadId = new ActionId(beadAh);
+    const beadId: ActionId = new ActionId(beadAh);
     const maybe = this.threadsZvm.perspective.beads.get(beadId);
     if (!maybe) {
       //throw Promise.reject("Missing bead we wanted to AckAuthor about");
@@ -427,12 +458,14 @@ export class ThreadsDvm extends DnaViewModel {
       return;
     }
     const author = maybe[0].author;
-    const others = this.allCurrentOthers();
-    if (!others.includes(author)) {
+    const others = this.allCurrentOthers().map((a) => a.b64);
+    if (!others.includes(author.b64)) {
+      //console.debug("respondValidationRequest() aborted. Author not connected", others, author.b64)
       return;
     }
-    const tip: ThreadsAppTip = {type: "ack", data: beadId};
+    const tip: ThreadsAppTip = {type: "ack", data: beadId.b64};
     const serTip = this._encoder.encode(tip);
+    //console.log("ThreadsDvm.respondValidationRequest() sync tip", this.isMainView, beadId.b64);
     this.threadsZvm.synchronizeCustomTip(serTip, author, "zThreads");
   }
 
@@ -539,20 +572,24 @@ export class ThreadsDvm extends DnaViewModel {
           }
             break
           case "ack":
-            console.debug("ThreadsDvm.handleTip() Removing from myUnsharedBeads", appTip.data);
-            this.threadsZvm.zomeProxy.getMyReceipts(appTip.data!.hash).then((receipts) =>  {
-              const validationCount = countValidReceipts(receipts);
+            console.debug("ThreadsDvm.handleTip() received ack valid", appTip.data);
+            catchThrottled(this.threadsZvm.zomeProxy.getMyReceipts(new ActionId(appTip.data).hash)).then(([_err, receipts]) =>  {
+              const validationCount = receipts? countValidReceipts(receipts) : 0;
+              console.debug("ThreadsDvm.handleTip() attempt Removing from myUnvalidatedBeads ; validationCount", validationCount, appTip.data);
               if (validationCount > 0) {
-                this._perspective.myUnvalidatedBeads.delete(appTip.data!.b64);
+                this._perspective.myUnvalidatedBeads.delete(appTip.data);
+                console.debug("ThreadsDvm.handleTip() Removed from myUnvalidatedBeads", appTip.data, this._perspective.myUnvalidatedBeads);
+                this.threadsZvm.setValidation(appTip.data, ValidatedBy.Peer); // TODO: should trigger a get_validation_receipts() instead
               }
             });
             break;
           case "validationRequest":
             console.debug("ThreadsDvm.handleTip() validationRequest", appTip.data);
-            if (this.threadsZvm.perspective.beads.get(appTip.data!)) {
-              this.respondValidationRequest(appTip.data!.b64);
+            const ah = new ActionId(appTip.data);
+            if (this.threadsZvm.perspective.beads.get(ah)) {
+              this.respondValidationRequest(ah.b64);
             } else {
-              this.addValidationRequest(appTip.data!, this.cell.address.agentId);
+              this.addValidationRequest(ah, this.cell.address.agentId);
             }
             break;
           case "string":
@@ -695,7 +732,7 @@ export class ThreadsDvm extends DnaViewModel {
 
 
   /** */
-  async publishEmoji(beadAh: ActionId, emoji: string) {
+  async publishEmoji(beadAh: ActionId, emoji: string): Promise<void> {
     const has = this.threadsZvm.perspective.hasEmojiReaction(beadAh, this.cell.address.agentId, emoji);
     if (has) {
       return;
@@ -705,7 +742,7 @@ export class ThreadsDvm extends DnaViewModel {
 
 
   /** */
-  async unpublishEmoji(beadAh: ActionId, emoji: string) {
+  async unpublishEmoji(beadAh: ActionId, emoji: string): Promise<void> {
     const has = this.threadsZvm.perspective.hasEmojiReaction(beadAh, this.cell.address.agentId, emoji);
     if (!has) {
       return;

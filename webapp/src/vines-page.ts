@@ -681,7 +681,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       oldDvm.threadsZvm.unsubscribe(this);
     }
     newDvm.threadsZvm.subscribe(this, 'threadsPerspective');
-      md.use(markdownItMentions, {
+    md.use(markdownItMentions, {
           getValidNames: () => {
               const profiles: [ActionId, ProfileMat][] = unimportedProfiles(newDvm.profilesZvm);
               const names: string[] = profiles.map(([_actionId, profile]) => profile.nickname);

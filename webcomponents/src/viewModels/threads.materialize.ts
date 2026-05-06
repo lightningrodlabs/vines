@@ -8,7 +8,7 @@ import {
 } from "../bindings/threads.types";
 import {WAL} from "@theweave/api";
 import {ActionId, AgentId, EntryId} from "@ddd-qc/lit-happ";
-import {AgentPubKeyB64, Timestamp} from "@holochain/client";
+import {ActionHashB64, AgentPubKeyB64, Timestamp} from "@holochain/client";
 
 
 /** -- Should be defined in @holochain/client */
@@ -43,7 +43,7 @@ export enum NotifiableEvent {
 }
 
 
-/** */
+/** TODO: change data to not be ActionId since objects lose their functions when being converted and passed around */
 export type ThreadsAppTip = {
   type: "notification" // tell peers I've sent them a notification (they should check inbox)
   data: ThreadsNotificationTip,
@@ -58,10 +58,10 @@ export type ThreadsAppTip = {
   data: Subject | null
 } | {
   type: "validationRequest", // ask for an Ack
-  data: ActionId | null
+  data: ActionHashB64
 } | {
   type: "ack", // tell author we received its data from gossip
-  data: ActionId | null
+  data: ActionHashB64
 } | {
   type: "typing", // tell others if we are typing in thread input bar
   data: { thread: ActionId, is: boolean } | null

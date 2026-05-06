@@ -549,13 +549,13 @@ export function isFileValid(file: File, dnaProperties: DeliveryProperties): bool
 
 /** */
 export function countValidReceipts(receipts: MyValidationReceiptSet[]): number {
-  console.log("countValidReceipts", receipts.length);
+  //console.log("countValidReceipts set", receipts.length);
   const recordReceipts = receipts.filter((set) => set.opType == "StoreRecord").map((set) => set.receipts);
   if (recordReceipts.length == 0) {
     return 0;
   }
   let count = 0;
   recordReceipts[0]!.map((receipt) => {if (receipt.validationStatus == 0) count += receipt.validators.length});
-  console.log("countValidReceipts count", count);
+  //console.log("countValidReceipts", count);
   return count;
 }

@@ -85,7 +85,7 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       return false;
     }
     const name = latestThreadName(thread.title, thread.pp, threadsZvm);
-    //console.log("<wurl-link> loadWal() thread", thread.name);
+    //console.log("<wurl-link> loadBeadInfo() thread", thread.title);
     this._vinesTypes = ThreadsEntryType.AnyBead;
     this._assetName = `${name} > 💬`;
     return true;

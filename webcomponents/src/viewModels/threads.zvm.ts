@@ -1,82 +1,84 @@
-import {AgentPubKeyB64, Timestamp, HoloHashType} from "@holochain/client";
+import {AgentPubKeyB64, AnyDhtHashB64, HoloHashType, Timestamp} from "@holochain/client";
 import {
-    AddEntryAsBeadInput,
-    AnyBead,
-    BaseBeadKind,
-    Bead,
-    BeadLink,
-    CommitGlobalLogInput,
-    DM_SUBJECT_TYPE_NAME,
-    EncryptedBead,
-    EntryBead,
-    GetAhInput,
-    GetLatestBeadsInput,
-    GlobalLastProbeLog,
-    Limitations,
-    Moderation,
-    NotifyPeerInput,
-    NotifySetting,
-    ParticipationProtocol,
-    PublishTopicInput,
-    SemanticTopic,
-    SetNotifySettingInput,
-    Subject,
-    TextBead,
-    ThreadLastProbeLog,
-    ThreadsEntryType,
+  AddEntryAsBeadInput,
+  AnyBead,
+  BaseBeadKind,
+  Bead,
+  BeadLink,
+  CommitGlobalLogInput,
+  DM_SUBJECT_TYPE_NAME,
+  EncryptedBead,
+  EntryBead,
+  GetAhInput,
+  GetLatestBeadsInput,
+  GlobalLastProbeLog,
+  Limitations,
+  Moderation,
+  NotifyPeerInput,
+  NotifySetting,
+  ParticipationProtocol,
+  PublishTopicInput,
+  SemanticTopic,
+  SetNotifySettingInput,
+  Subject,
+  TextBead,
+  ThreadLastProbeLog,
+  ThreadsEntryType,
 } from "../bindings/threads.types";
 import {ThreadsProxy} from "../bindings/threads.proxy";
 import {
-    ActionId,
-    ActionIdMap,
-    AgentId,
-    AnyId,
-    AnyIdMap,
-    delay,
-    DhtId,
-    DnaId,
-    enc64,
-    EntryId,
-    EntryPulseMat,
-    getIndexByVariant,
-    getVariantByIndex,
-    holoIdReviver,
-    intoAnyId,
-    intoDhtId,
-    intoLinkableId,
-    LinkableId,
-    LinkPulseMat,
-    StateChangeType,
-    ValidatedBy,
-    ZomeSignalProtocol,
-    ZomeViewModelWithSignals,
+  ActionId,
+  ActionIdMap,
+  AgentId,
+  AnyId,
+  AnyIdMap,
+  delay,
+  DhtId,
+  DnaId,
+  enc64,
+  EntryId,
+  EntryPulseMat,
+  getIndexByVariant,
+  getVariantByIndex,
+  holoIdReviver,
+  intoAnyId,
+  intoDhtId,
+  intoLinkableId,
+  LinkableId,
+  LinkPulseMat,
+  StateChangeType,
+  ValidatedBy,
+  ZomeSignalProtocol,
+  ZomeViewModelWithSignals,
 } from "@ddd-qc/lit-happ";
 import {
-    AnyBeadMat,
-    base2typed,
-    BaseBeadType,
-    BeadInfo,
-    BeadType,
-    defaultModeration,
-    dematerializeEntryBead, dematerializePp,
-    dematerializeTypedBead,
-    EncryptedBeadContent,
-    EntryBeadMat,
-    FileContent,
-    materializeBead,
-    materializeTypedBead,
-    NotifiableEvent,
-    NotificationTipBeadData,
-    NotificationTipPpData, PpMat,
-    TextBeadMat,
-    ThreadsAppTip,
-    ThreadsNotification,
-    ThreadsNotificationTip,
-    TypedBaseBead,
-    TypedBaseBeadMat,
-    TypedBead,
-    TypedBeadMat,
-    TypedContent,
+  AnyBeadMat,
+  base2typed,
+  BaseBeadType,
+  BeadInfo,
+  BeadType,
+  defaultModeration,
+  dematerializeEntryBead,
+  dematerializePp,
+  dematerializeTypedBead,
+  EncryptedBeadContent,
+  EntryBeadMat,
+  FileContent,
+  materializeBead,
+  materializeTypedBead,
+  NotifiableEvent,
+  NotificationTipBeadData,
+  NotificationTipPpData,
+  PpMat,
+  TextBeadMat,
+  ThreadsAppTip,
+  ThreadsNotification,
+  ThreadsNotificationTip,
+  TypedBaseBead,
+  TypedBaseBeadMat,
+  TypedBead,
+  TypedBeadMat,
+  TypedContent,
 } from "./threads.materialize";
 import {TimeInterval} from "./timeInterval";
 import {WAL, weaveUrlFromWal} from "@theweave/api";
@@ -93,6 +95,7 @@ import {ThreadsDvm} from "./threads.dvm";
 import {THIS_APPLET_ID} from "../contexts";
 import {GetStrategy} from "@holochain-open-dev/core-types";
 import {prettyTimestamp} from "@ddd-qc/files";
+import {LitElement} from "lit";
 
 
 //generateSearchTest();
@@ -135,7 +138,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     }
 
     override comparable(): Object {
-        return this.perspective.comparable();
+        return this._perspective.comparable();
     }
 
 
@@ -264,7 +267,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
 
     async probeAllInnerAsync(strategy: GetStrategy): Promise<void> {
-        console.debug("threadsZvm.probeAllInner() subjects counts:", this._perspective.getAllSubjects().length)
+        console.debug("threadsZvm.probeAllInner() subjects counts:", strategy, this._perspective.getAllSubjects().length)
         await this.zomeProxy.probeAllHiddens(strategy);
         await this.zomeProxy.pullAllSemanticTopics(strategy);
         await this.pullAppletIds(strategy);
@@ -1166,10 +1169,11 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
     /** */
     async storeTypedBead(beadAh: ActionId, typedBead: TypedBeadMat, beadType: BeadType, creationTime: Timestamp, author: AgentId, validation: ValidatedBy, isNew: boolean) {
-        //console.debug("ThreadsZvm.storeTypedBead()", beadAh.short);
-        /** IF bead already known, just update validation status */
+        console.debug("ThreadsZvm.storeTypedBead() valid", beadAh.short, validation);
+        /** If bead already known, just update validation status */
         if (this._perspective.getBeadInfo(beadAh)) {
-            this._perspective.setValidation(beadAh.b64, validation);
+          console.debug("ThreadsZvm.storeTypedBead() only setValidation", beadAh.short, validation);
+          this.setValidation(beadAh.b64, validation);
             return;
         }
         if (!typedBead) {
@@ -1265,7 +1269,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
     /** Commit Global Log */
     async commitUpdateGlobalLog(maybe_ts?: Timestamp): Promise<void> {
-        const maybeLatest = this.perspective.getLatestThread();
+        const maybeLatest = this._perspective.getLatestThread();
         console.log("commitUpdateGlobalLog() maybeLatest", maybeLatest);
         const input: any = {};
         if (maybe_ts) input.maybe_ts = maybe_ts;
@@ -1496,7 +1500,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
             loopCount += 1
         }
         console.debug(`PubImp() looped ${loopCount} times. pps: ${ppAhMapping.size}/${sortedPps.length} ; beads: ${beadAhMapping.size}`);
-        //console.log("PubImp() beads", this.perspective.beads);
+        //console.log("PubImp() beads", this._perspective.beads);
 
         /** -- EmojiReactions -- */
         /** Publish each reaction link with bead mapping */
@@ -1728,7 +1732,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
                     const emoji = decoder.decode(pulse.tag);
                     //console.warn("EmojiReaction CreateLink:", link.tag, emoji);
                     this._perspective.storeEmojiReaction(baseAh, pulse.author, emoji);
-                    this._perspective.setValidation(pulse.create_link_hash.b64, pulse.validatedBy);
+                    this.setValidation(pulse.create_link_hash.b64, pulse.validatedBy);
                 }
                 if (StateChangeType.Delete == pulse.state) {
                     const decoder = new TextDecoder('utf-8');
@@ -1743,7 +1747,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
                 const agent = AgentId.from(pulse.target.b64);
                 if (StateChangeType.Create == pulse.state) {
                     this._perspective.storeBan(ppAh, agent);
-                    this._perspective.setValidation(pulse.create_link_hash.b64, pulse.validatedBy);
+                    this.setValidation(pulse.create_link_hash.b64, pulse.validatedBy);
                     if (pulse.isNew && isAuthorSelf) {
                         /** Notify bead author that they have been banned */
                         if (this._canNotify && !this.cell.address.agentId.equals(agent)) {
@@ -1768,7 +1772,7 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
                 /** Create */
                 if (StateChangeType.Create == pulse.state) {
                     this._perspective.storeFlag(ppAh, beadAh, pulse.create_link_hash);
-                    this._perspective.setValidation(pulse.create_link_hash.b64, pulse.validatedBy);
+                    this.setValidation(pulse.create_link_hash.b64, pulse.validatedBy);
                     if (pulse.isNew && isAuthorSelf) {
                         let author = await this.getRecordAuthor(intoDhtId(beadAh.b64), GetStrategy.Local); // TODO: Figure out best strategy
                         /** Notify bead author that it has been flagged */
@@ -1860,6 +1864,22 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
 
     /** */
+    private _validationObservers: ActionIdMap<Set<LitElement>> = new ActionIdMap();
+    subscribeBeadValidation(ah: ActionId, el: LitElement) {
+      if (!this._validationObservers.get(ah)) {
+        this._validationObservers.set(ah, new Set());
+      }
+      this._validationObservers.get(ah)!.add(el);
+    }
+
+
+    /** */
+    setValidation(hash: AnyDhtHashB64, validation: ValidatedBy) {
+      this._perspective.setValidation(hash, validation);
+      this.notifySubscribers();
+    }
+
+    /** */
     protected override async handleEntryPulse(pulse: EntryPulseMat, from: AgentId) {
         //console.debug("ThreadsZvm.handleEntryPulse()", pulse, pulse.ah.b64, from.b64);
         //const isSignalFromSelf = this.cell.address.agentId.equals(from);
@@ -1873,6 +1893,13 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
                 const encBead = this._decoder.decode(pulse.bytes) as TypedBead;
                 if (StateChangeType.Create == pulse.state) {
                     try {
+                        const elems = this._validationObservers.get(pulse.ah);
+                        if (elems) {
+                          elems.forEach((el: LitElement) => el.requestUpdate());
+                          if (pulse.validatedBy == ValidatedBy.Network) {
+                            this._validationObservers.delete(pulse.ah);
+                          }
+                        }
                         await this.handleBeadEntryPulse(pulse, encBead, from);
                     } catch (_e) {
                         /** skip encryptedBead not for me */
@@ -1895,8 +1922,8 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
               /** Skip signal only pp */
               if (pulse.validatedBy == ValidatedBy.None) {
                     console.debug("ThreadsZvm PP received via signal. Don't show and look for gossip");
-                    delay(2000)
-                        .then(async () => await this.probeAllInner());
+                    delay(5000)
+                        .then(() => this.probeAllInner());
                     return;
               }
               /** Skip DM PP's for other agents */
@@ -2091,12 +2118,12 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
      * by another peer as the ascribe link would be received after the initial inclusion of the bead.
      */
     moveBead(ah: ActionId, newTs: number) {
-        const baseBeadInfo = this.perspective.getBaseBeadInfo(ah);
+        const baseBeadInfo = this._perspective.getBaseBeadInfo(ah);
         if (!baseBeadInfo) {
             //console.debug("ThreadsZvm.moveBead() canceled. no base base info found", prettyTimestamp(newTs));
             return;
         }
-        const thread = this.perspective.threads.get(baseBeadInfo.bead.ppAh);
+        const thread = this._perspective.threads.get(baseBeadInfo.bead.ppAh);
         if (!thread) {
             //console.debug("ThreadsZvm.moveBead() canceled. no thread found", prettyTimestamp(newTs));
             return;

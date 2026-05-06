@@ -114,13 +114,13 @@ export class ChatWal extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       return html`
         <ui5-list id="fileList" class="listfail">
             <ui5-li id="fileLi" class="fail" icon="synchronize" description=${this.hash.b64}
-                    @click=${async (_e: any) => {
-        await this._zvm.probeAllInner();
-        const anyBead = this._zvm.perspective.getBaseBead(this.hash);
-        if (anyBead) {
-          this.requestUpdate();
-        }
-      }}>
+                    @click=${(_e: any) => {
+                      this._zvm.probeAllInner();
+                      const anyBead = this._zvm.perspective.getBaseBead(this.hash);
+                      if (anyBead) {
+                        this.requestUpdate();
+                      }
+                    }}>
               ${msg("Asset not found")}
             </ui5-li>
         </ui5-list>

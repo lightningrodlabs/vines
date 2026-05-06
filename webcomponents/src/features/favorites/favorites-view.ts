@@ -59,7 +59,7 @@ export class FavoritesView extends DnaElement<unknown, ThreadsDvm> {
   /** -- Methods -- */
 
   /**
-   * In dvmUpdated() this._dvm is not already set!
+   * In dvmUpdated() this._dvm is not set yet.
    * Subscribe to ThreadsZvm
    */
   protected override async dvmUpdated(newDvm: ThreadsDvm, oldDvm?: ThreadsDvm): Promise<void> {

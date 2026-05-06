@@ -107,7 +107,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
   override updated() {
     /** Request ack if peers are online */
     if (this._dvm.perspective.myUnvalidatedBeads.has(this.hash.b64)) {
-        this._dvm.processUnvalidated();
+        this._dvm.processMyUnvalidated();
     }
   }
 
@@ -117,8 +117,9 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     await this._dvm.threadsZvm.fetchUnknownBead(this.hash, strategy);
     await this._dvm.threadsZvm.pullEmojiReactions(this.hash, strategy);
     // TODO: dont call getMyReceipts() if this agent is not the bead's author
+    //console.log("loadBead() valid", this.hash);
     this._receipts = await this._dvm.threadsZvm.zomeProxy.getMyReceipts(this.hash.hash);
-    console.log("loadBead() receipts", this._receipts);
+    console.log("loadBead() valid receipts", this.hash.b64, this._receipts);
   }
 
 
@@ -280,9 +281,11 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
   }
 
 
+  private _checkValidationInterval: any = undefined;
+
   /** */
   override render(): TemplateResult<1> {
-    //console.debug("<chat-item>.render()", this.hash.b64, !!this._filesDvm, !!this.threadsPerspective, !!this.weServices, this._renderCount);
+    console.debug("<chat-item>.render() valid", this.hash.b64, this._dvm.allCurrentOthers(), countValidReceipts(this._receipts));
     this._renderCount += 1;
 
     if (!this.hash) {
@@ -309,7 +312,8 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     const isEncrypted = beadInfo.beadType == ThreadsEntryType.EncryptedBead;
     const typed = this._dvm.threadsZvm.perspective.getBaseBead(this.hash)!;
     const isFlagged = this._dvm.threadsZvm.perspective.hasFlag(beadInfo.bead.ppAh, this.hash);
-    //console.log("isFlagged", isFlagged, this.hash);
+    console.debug("<chat-item>.render() validatedBy", validatedBy, canParticipate, isFlagged, this.nomenu);
+    const noPopover = this.nomenu || validatedBy === ValidatedBy.None || !canParticipate || isFlagged;
     /** hide if prevBead is less than a minute older than the current bead and is from the same author */
     let hidemeta = false;
     if (this.prevBeadAh) {
@@ -517,23 +521,25 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
           <sl-tooltip hoist content=${msg("Message validated by the network")}>
               <sl-icon class="pb-icon ${visible}" name="patch-check"></sl-icon>
           </sl-tooltip>`
+    } else {
+      if (!this._checkValidationInterval) {
+        this._dvm.threadsZvm.subscribeBeadValidation(this.hash, this);
+      }
     }
 
     /** render all */
     return html`
         <div id="innerChatItem" style="position: relative;">
             <!-- <div>${this._renderCount} ; ${this.hash.b64}</div> -->
-            ${validatedBy !== ValidatedBy.None? html`` : html`
-                <div class="grey-veil"></div>`}
-            ${isUnvalidated? html`
-                <div class="green-veil"></div>` : html``}
+            ${validatedBy !== ValidatedBy.None? html`` : html`<div class="grey-veil"></div>`}
+            ${isUnvalidated? html`<div class="green-veil"></div>` : html``}
             <!-- Vine row -->
             ${hidemeta? html`` : this.renderTopVine(baseBeadInfo)}
             <!-- main horizontal div (row) -->
             <div id=${"chat-item__" + this.hash.b64} class="chatItem"
                  @mouseenter=${(_e: any) => {
                      const popover = this.shadowRoot!.getElementById("buttonsPop") as HTMLElement;
-                     if (popover && !isUnvalidated && validatedBy !== ValidatedBy.None) {
+                     if (popover) {
                          popover.style.display = "block";
                      }
                  }}
@@ -562,6 +568,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
                             <span class="chatDate">${date_str}</span>
                             ${msgStateIcon}
                             ${isMine? html`${countValidReceipts(this._receipts)}` : html``}
+                            <button @click=${() => this.requestUpdate()}>refresh</button>
                         `}
                         <span style="flex-grow: 1"></span>
                         <span id="nameEnd" style="width:10px"></span>
@@ -582,15 +589,14 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
                     <emoji-bar .hash=${this.hash}></emoji-bar>
                 </div>
                 <!-- Popovers -->
-                ${this.nomenu || validatedBy == ValidatedBy.None || !canParticipate || isFlagged? html`` : html`
-                    <div id="buttonsPop">${sideButtons}</div>`}
+                ${noPopover ? html`` : html`<div id="buttonsPop">${sideButtons}</div>`}
                 <ui5-popover id="emojiPopover" header-text=${msg("Add Reaction")}>
                     <emoji-picker class="light" style="display: block"
                                   @emoji-click=${(event: any) => {
                                       const unicode = event?.detail?.unicode
                                       console.log("emoji-click: " + unicode)
                                       if (unicode) {
-                                          this._dvm.publishEmoji(this.hash, unicode);
+                                          /*await*/ this._dvm.publishEmoji(this.hash, unicode);
                                       }
                                       const popover = this.shadowRoot!.getElementById("emojiPopover") as Popover;
                                       if (popover.isOpen()) {
