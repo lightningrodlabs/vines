@@ -254,22 +254,21 @@ export class ThreadsDvm extends DnaViewModel {
           this._unvalidatedRunning = true;
           try {
             const others = this.allCurrentOthers();
-            console.info("ThreadsDvm.processUnvalidated() myUnvalidatedBeads", this._perspective.myUnvalidatedBeads, others.length);
+            //console.info("ThreadsDvm.processUnvalidated() myUnvalidatedBeads", this._perspective.myUnvalidatedBeads, others.length);
             if (others.length > 0) {
               const snapshot = [...this._perspective.myUnvalidatedBeads];
               // for the first 10 beads
               for (const unvalidatedBeadAhB64 of  snapshot.slice(0, 10)) {
-                console.log("myUnvalidatedBeads getMyReceipts()", unvalidatedBeadAhB64);
                 const [_e, receipts] = await catchThrottled(this.threadsZvm.zomeProxy.getMyReceipts(new ActionId(unvalidatedBeadAhB64).hash));
                 const validationCount = receipts ? countValidReceipts(receipts) : 0;
                 if (validationCount > 0) {
                   this._perspective.myUnvalidatedBeads.delete(unvalidatedBeadAhB64);
-                  console.debug("processMyUnvalidated Removed from myUnvalidatedBeads", unvalidatedBeadAhB64, this._perspective.myUnvalidatedBeads);
+                  //console.debug("processMyUnvalidated Removed from myUnvalidatedBeads", unvalidatedBeadAhB64, this._perspective.myUnvalidatedBeads);
+                  this.threadsZvm.setValidation(unvalidatedBeadAhB64, ValidatedBy.Peer); // TODO: should trigger a Pulse instead
                 } else {
                   /*await*/ this.requestValidation(new ActionId(unvalidatedBeadAhB64), others.slice(0, 5)); // ask 5 other peers
                 }
               }
-              console.log("myUnvalidatedBeads processMyUnvalidated() done", this._perspective.myUnvalidatedBeads);
             }
           } finally { this._unvalidatedRunning = false; }
       }, 5000)
@@ -292,7 +291,7 @@ export class ThreadsDvm extends DnaViewModel {
       }
       this._ackRunning = true;
       try {
-        console.info("ThreadsDvm.processValidationRequests() validationRequests", this._perspective.validationRequests.size);
+        //console.info("ThreadsDvm.processValidationRequests() validationRequests", this._perspective.validationRequests.size);
         let i = 0;
         for (const ahs of [...this._perspective.validationRequests.values()]) {
           const copyAhs: Set<ActionHashB64> = new Set(ahs); // copy to avoid concurrent modification
@@ -354,9 +353,8 @@ export class ThreadsDvm extends DnaViewModel {
           /** If it's a new Bead from this agent, mark it as Unvalidated */
           if (entryPulseMat.isNew && entryPulseMat.state == "Create") {
             if (entryPulseMat.author.equals(this.cell.address.agentId)) {
-              console.debug("ThreadsDvm.handleThreadsSignal() Adding to myUnvalidatedBeads", entryPulseMat.ah.b64, entryPulseMat.entryType, entryPulseMat);
+              // console.debug("ThreadsDvm.handleThreadsSignal() Adding to myUnvalidatedBeads", entryPulseMat.ah.b64, entryPulseMat.entryType, entryPulseMat);
               this._perspective.myUnvalidatedBeads.add(entryPulseMat.ah.b64);
-              console.debug("ThreadsDvm.handleThreadsSignal() Adding to myUnvalidatedBeads result", this._perspective.myUnvalidatedBeads);
             }
           }
           // /** Remove requests from offline peers */
@@ -572,13 +570,12 @@ export class ThreadsDvm extends DnaViewModel {
           }
             break
           case "ack":
-            console.debug("ThreadsDvm.handleTip() received ack valid", appTip.data);
+            console.debug("ThreadsDvm.handleTip() received ack", appTip.data);
             catchThrottled(this.threadsZvm.zomeProxy.getMyReceipts(new ActionId(appTip.data).hash)).then(([_err, receipts]) =>  {
               const validationCount = receipts? countValidReceipts(receipts) : 0;
-              console.debug("ThreadsDvm.handleTip() attempt Removing from myUnvalidatedBeads ; validationCount", validationCount, appTip.data);
               if (validationCount > 0) {
                 this._perspective.myUnvalidatedBeads.delete(appTip.data);
-                console.debug("ThreadsDvm.handleTip() Removed from myUnvalidatedBeads", appTip.data, this._perspective.myUnvalidatedBeads);
+                // console.debug("ThreadsDvm.handleTip() Removed from myUnvalidatedBeads", appTip.data, this._perspective.myUnvalidatedBeads);
                 this.threadsZvm.setValidation(appTip.data, ValidatedBy.Peer); // TODO: should trigger a get_validation_receipts() instead
               }
             });

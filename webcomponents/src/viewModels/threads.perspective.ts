@@ -211,7 +211,6 @@ export class ThreadsPerspective {
       globalProbeLogTs: this.globalProbeLogTs,
       validationMap: JSON.stringify(Array.from(this.validationMap.entries())),
     };
-    console.debug("comparable() validationMap()", res.validationMap, this);
     return res;
   }
 
@@ -276,7 +275,6 @@ export class ThreadsPerspective {
     if (!validation) {
       return ValidatedBy.None;
     }
-    console.log("getValidation()", hash, validation);
     return validation;
   }
 
@@ -845,11 +843,10 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
 
   /** */
   setValidation(hash: AnyDhtHashB64, newValidation: ValidatedBy) {
-    console.log("setValidation call", hash, newValidation);
+    // console.log("setValidation call", hash, newValidation);
     const current = this.validationMap.get(hash);
     if (!current) {
       this.validationMap.set(hash, newValidation);
-      console.log("setValidation done 1", hash, newValidation);
       return;
     }
     /** Update validation if it's better */
@@ -867,7 +864,6 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
         }
         break;
     }
-    console.log("setValidation done 2", hash, this.validationMap.get(hash));
   }
 
 

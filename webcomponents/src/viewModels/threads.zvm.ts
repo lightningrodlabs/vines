@@ -1169,10 +1169,10 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
     /** */
     async storeTypedBead(beadAh: ActionId, typedBead: TypedBeadMat, beadType: BeadType, creationTime: Timestamp, author: AgentId, validation: ValidatedBy, isNew: boolean) {
-        console.debug("ThreadsZvm.storeTypedBead() valid", beadAh.short, validation);
+        //console.debug("ThreadsZvm.storeTypedBead()", beadAh.short, validation);
         /** If bead already known, just update validation status */
         if (this._perspective.getBeadInfo(beadAh)) {
-          console.debug("ThreadsZvm.storeTypedBead() only setValidation", beadAh.short, validation);
+          //console.debug("ThreadsZvm.storeTypedBead() only setValidation", beadAh.short, validation);
           this.setValidation(beadAh.b64, validation);
             return;
         }

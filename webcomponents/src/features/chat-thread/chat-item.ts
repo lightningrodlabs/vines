@@ -119,7 +119,6 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     // TODO: dont call getMyReceipts() if this agent is not the bead's author
     //console.log("loadBead() valid", this.hash);
     this._receipts = await this._dvm.threadsZvm.zomeProxy.getMyReceipts(this.hash.hash);
-    console.log("loadBead() valid receipts", this.hash.b64, this._receipts);
   }
 
 
@@ -166,9 +165,9 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
         break;
       case "viewComments":
       case "createCommentThread":
-        const maybeCommentThread = this._dvm.threadsZvm.perspective.getCommentThreadForSubject(this.hash);
-        const beadInfo = this._dvm.threadsZvm.perspective.getBaseBeadInfo(this.hash)!;
-        const typed = this._dvm.threadsZvm.perspective.getBaseBead(this.hash)!;
+        const maybeCommentThread = this.threadsPerspective.getCommentThreadForSubject(this.hash);
+        const beadInfo = this.threadsPerspective.getBaseBeadInfo(this.hash)!;
+        const typed = this.threadsPerspective.getBaseBead(this.hash)!;
         const beadName = determineBeadName(beadInfo.beadType, typed, this._filesDvm, this.weServices);
         this.onClickComment(maybeCommentThread, beadName, beadInfo.beadType, "side");
         break;
@@ -177,18 +176,18 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
         this.dispatchEvent(new CustomEvent<Hrl>("copy", {detail: hrl, bubbles: true, composed: true}));
         break;
       case "downloadItem": {
-        const beadInfo = this._dvm.threadsZvm.perspective.getBaseBeadInfo(this.hash)!;
+        const beadInfo = this.threadsPerspective.getBaseBeadInfo(this.hash)!;
         if (beadInfo.beadType == ThreadsEntryType.TextBead) {
-          let value = this._dvm.threadsZvm.perspective.getLatestEdit(this.hash)!;
+          let value = this.threadsPerspective.getLatestEdit(this.hash)!;
           navigator.clipboard.writeText(value);
           toasty(msg("Copied Text to clipboard"));
         }
         if (beadInfo.beadType == ThreadsEntryType.EntryBead) {
-          const entryBead = this._dvm.threadsZvm.perspective.getBaseBead(this.hash) as EntryBeadMat;
+          const entryBead = this.threadsPerspective.getBaseBead(this.hash) as EntryBeadMat;
           this._filesDvm.downloadFile(entryBead.sourceEh);
         }
         if (beadInfo.beadType == ThreadsEntryType.AnyBead) {
-          const anyBead = this._dvm.threadsZvm.perspective.getBaseBead(this.hash) as AnyBeadMat;
+          const anyBead = this.threadsPerspective.getBaseBead(this.hash) as AnyBeadMat;
           const wal = weaveUrlToWAL(anyBead.value);
           navigator.clipboard.writeText(anyBead.value);
           if (this.weServices) {
@@ -218,12 +217,12 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
   renderTopVine(beadInfo: BeadInfo) {
     //console.debug("<chat-item>.renderTopVine()", this.prevBeadAh, beadInfo);
     const hasFarPrev = !beadInfo.bead.prevBeadAh.equals(beadInfo.bead.ppAh) && this.prevBeadAh && !beadInfo.bead.prevBeadAh.equals(this.prevBeadAh)
-    const prevBeadInfo = this._dvm.threadsZvm.perspective.getBaseBeadInfo(beadInfo.bead.prevBeadAh);
+    const prevBeadInfo = this.threadsPerspective.getBaseBeadInfo(beadInfo.bead.prevBeadAh);
     if (!prevBeadInfo) {
       return html`
           <div style="height: 5px;"></div>`;
     }
-    const prevBead = this._dvm.threadsZvm.perspective.getBaseBead(beadInfo.bead.prevBeadAh)!;
+    const prevBead = this.threadsPerspective.getBaseBead(beadInfo.bead.prevBeadAh)!;
     let prevProfile: ProfileMat = {nickname: "unknown", fields: {lang: "en"}} as ProfileMat;
     let prevAgent: AgentId | null = null;
     if (prevBeadInfo) {
@@ -285,14 +284,14 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   override render(): TemplateResult<1> {
-    console.debug("<chat-item>.render() valid", this.hash.b64, this._dvm.allCurrentOthers(), countValidReceipts(this._receipts));
+    console.debug("<chat-item>.render()", this.hash.b64, this._dvm.allCurrentOthers(), countValidReceipts(this._receipts));
     this._renderCount += 1;
 
     if (!this.hash) {
       return html`<div>No bead selected</div>`;
     }
-    const beadInfo = this._dvm.threadsZvm.perspective.getBeadInfo(this.hash);
-    const baseBeadInfo = this._dvm.threadsZvm.perspective.getBaseBeadInfo(this.hash);
+    const beadInfo = this.threadsPerspective.getBeadInfo(this.hash);
+    const baseBeadInfo = this.threadsPerspective.getBaseBeadInfo(this.hash);
     if (!beadInfo || !baseBeadInfo) {
       return html`
           <ui5-busy-indicator delay="0" size="Medium" active
@@ -305,19 +304,19 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     }
     //console.debug("<chat-item>.render()", prettyTimestamp(baseBeadInfo.creationTime), this.hash.b64);
     const isMine = baseBeadInfo.author.equals(this.cell.address.agentId);
-    //const isNew = this._dvm.threadsZvm.perspective.isNew(this.hash.b64);
-    //const isPersistent = this._dvm.threadsZvm.perspective.isPersistent(this.hash.b64);
-    const validatedBy = this._dvm.threadsZvm.perspective.getValidation(this.hash.b64);
+    //const isNew = this.threadsPerspective.isNew(this.hash.b64);
+    //const isPersistent = this.threadsPerspective.isPersistent(this.hash.b64);
+    const validatedBy = this.threadsPerspective.getValidation(this.hash.b64);
     const canParticipate = this._dvm.threadsZvm.canParticipate(beadInfo.bead.ppAh, this.cell.address.agentId);
     const isEncrypted = beadInfo.beadType == ThreadsEntryType.EncryptedBead;
-    const typed = this._dvm.threadsZvm.perspective.getBaseBead(this.hash)!;
-    const isFlagged = this._dvm.threadsZvm.perspective.hasFlag(beadInfo.bead.ppAh, this.hash);
-    console.debug("<chat-item>.render() validatedBy", validatedBy, canParticipate, isFlagged, this.nomenu);
+    const typed = this.threadsPerspective.getBaseBead(this.hash)!;
+    const isFlagged = this.threadsPerspective.hasFlag(beadInfo.bead.ppAh, this.hash);
+    //console.debug("<chat-item>.render() validatedBy", validatedBy, canParticipate, isFlagged, this.nomenu);
     const noPopover = this.nomenu || validatedBy === ValidatedBy.None || !canParticipate || isFlagged;
     /** hide if prevBead is less than a minute older than the current bead and is from the same author */
     let hidemeta = false;
     if (this.prevBeadAh) {
-      const prevInfo = this._dvm.threadsZvm.perspective.getBaseBeadInfo(this.prevBeadAh);
+      const prevInfo = this.threadsPerspective.getBaseBeadInfo(this.prevBeadAh);
       if (prevInfo) {
         const diff = baseBeadInfo.creationTime - prevInfo.creationTime;
         hidemeta = baseBeadInfo.author.equals(prevInfo.author) && diff < 60 * 1000 * 1000; // 60 secs
@@ -361,7 +360,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
       item = html`<span class="flagged">${msg("<Content has been flagged by a moderator>")}</span>`;
     }
     /** Determine the comment button to display depending on current comments for this message */
-    const maybeCommentThread = this._dvm.threadsZvm.perspective.getCommentThreadForSubject(this.hash);
+    const maybeCommentThread = this.threadsPerspective.getCommentThreadForSubject(this.hash);
     let commentThread = html``;
     let commentButton = html`
         <ui5-button icon="sys-add" tooltip=${msg("Create comment thread for this message")} design="Transparent"
@@ -383,7 +382,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
         /** Grab all authors */
         let authors: Record<string, number> = {};
         for (const bead of thread.beadLinksTree.values) {
-          const beadInfo = this._dvm.threadsZvm.perspective.getBeadInfo(bead.beadAh);
+          const beadInfo = this.threadsPerspective.getBeadInfo(bead.beadAh);
           if (!beadInfo) {
             console.warn("Bead not found in <chat-item>.render()", bead.beadAh);
             continue;
@@ -443,7 +442,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
                     style="border:none;"
                     @click=${(_e: any) => this.onClickAddEmoji()}></ui5-button>`;
 
-    const isFavorite = this._dvm.threadsZvm.perspective.favorites.map((id) => id.b64).includes(this.hash.b64);
+    const isFavorite = this.threadsPerspective.favorites.map((id) => id.b64).includes(this.hash.b64);
     const starButton = isFavorite? html`
         <ui5-button id="star-btn" icon="favorite" tooltip=${msg("Remove from favorites")} design="Transparent"
                     style="border:none;"
@@ -453,7 +452,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
                     style="border:none;"
                     @click="${(_e: any) => {
                         this.dispatchEvent(favoritesEvent(this.hash, true));
-                        console.log("Favorites", this._dvm.threadsZvm.perspective.favorites.length);
+                        console.log("Favorites", this.threadsPerspective.favorites.length);
                     }}"></ui5-button>
     `;
 
@@ -527,6 +526,8 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
       }
     }
 
+    // ${isMine? html`${countValidReceipts(this._receipts)}` : html``}
+
     /** render all */
     return html`
         <div id="innerChatItem" style="position: relative;">
@@ -567,8 +568,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
                             <span id="agentName">${agentName}</span>
                             <span class="chatDate">${date_str}</span>
                             ${msgStateIcon}
-                            ${isMine? html`${countValidReceipts(this._receipts)}` : html``}
-                            <button @click=${() => this.requestUpdate()}>refresh</button>
+                            <!-- <button @click=${() => this.requestUpdate()}>refresh</button> -->
                         `}
                         <span style="flex-grow: 1"></span>
                         <span id="nameEnd" style="width:10px"></span>
