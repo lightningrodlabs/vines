@@ -2,6 +2,28 @@ use crate::*;
 use hdi::prelude::*;
 use crate::debug::format_timestamp_micros;
 
+
+///
+pub fn validate_create_entry(creation_action: EntryCreationAction, entry: Entry, maybe_entry_type: Option<&EntryType>) -> ExternResult<ValidateCallbackResult> {
+   /// Dispatch according to base type
+   let result = match entry.clone() {
+      Entry::CounterSign(_data, _bytes) => Ok(ValidateCallbackResult::Invalid("CounterSign not allowed".into())),
+      Entry::Agent(_agent_key) => Ok(ValidateCallbackResult::Valid),
+      Entry::CapClaim(_claim) => Ok(ValidateCallbackResult::Valid),
+      Entry::CapGrant(_grant) => Ok(ValidateCallbackResult::Valid),
+      Entry::App(_entry_bytes) => {
+         let EntryType::App(app_entry_def) = maybe_entry_type.unwrap()
+         else { unreachable!() };
+         let entry_def_index = validate_app_entry(creation_action, app_entry_def.entry_index(), entry);
+         entry_def_index
+      },
+   };
+   /// Done
+   //debug!("*** validate_entry() result = {:?}", result);
+   result
+}
+
+
 /// Call trait ZomeEntry::validate()
 pub(crate) fn validate_app_entry(
     creation_action: EntryCreationAction,

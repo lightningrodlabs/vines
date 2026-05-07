@@ -158,6 +158,7 @@ import "@ui5/webcomponents-icons/dist/stop.js"
 import "@ui5/webcomponents-icons/dist/synchronize.js"
 import "@ui5/webcomponents-icons/dist/time-account.js"
 import "@ui5/webcomponents-icons/dist/thing-type.js"
+import "@ui5/webcomponents-icons/dist/delete.js"
 import "@ui5/webcomponents-icons/dist/user-edit.js"
 import "@ui5/webcomponents-icons/dist/upload-to-cloud.js"
 import "@ui5/webcomponents-icons/dist/unfavorite.js"
@@ -716,10 +717,14 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   }
 
 
+  private _abortConfirmController = new AbortController();
+
   /** */
   async onArchive(e: CustomEvent<HideEvent>) {
     const verb = e.detail.hide? msg("Hide") : msg("Unhide");
     const dialog = this.shadowRoot!.getElementById("confirm-hide-topic") as ConfirmDialog;
+    this._abortConfirmController.abort();
+    this._abortConfirmController = new AbortController();
     /** DM */
     if (e.detail.address.hashType == HoloHashType.Agent) {
       const agentId = new AgentId(e.detail.address.b64)
@@ -732,7 +737,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           await this._dvm.threadsZvm.unhideDmThread(agentId);
           toasty(msg("DM channel unhidden"));
         }
-      });
+      }, { signal: this._abortConfirmController.signal });
       dialog.open();
       return;
     }
@@ -748,7 +753,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         await this._dvm.threadsZvm.unhideSubject(dhtId);
         toasty(`${type} ${msg("unhidden")}`);
       }
-    });
+    }, { signal: this._abortConfirmController.signal });
     dialog.open();
   }
 
@@ -888,7 +893,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     /** Check purpose */
     const input = this.shadowRoot!.getElementById("threadPurposeInput") as Input;
     const purpose = input.value.trim();
-
     if (purpose.length < 1) {
       input.valueState = ValueState.Error;
       return;
@@ -902,6 +906,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       errorMsg.textContent = msg("Invalid characters");
       return;
     }
+    input.valueState = ValueState.None;
     /** Check Rules */
     const rules = this.shadowRoot!.getElementById("rulesEdit") as RulesEdit;
     if (!rules.isValid()) {
@@ -919,12 +924,12 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     confirmRulesView.moderation = rulesEdit.moderation;
     /** Create directly if default rules */
     if (rulesEdit.isDefault) {
-      this.onConfirmedCreateThread();
+      /*await*/ this.onConfirmedCreateThread();
       return;
     }
     /** Display Confirm Dialog */
     this.confirmThreadDialogElem.headerText = msg("Confirm new channel") + ": " + purpose;
-    this.confirmThreadDialogElem.show();
+    /*await*/ this.confirmThreadDialogElem.show();
 
   }
 
@@ -1448,6 +1453,23 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       this._currentCommentRequest = request;
       return;
     }
+  }
+
+  /** */
+  async onDeleteChannel(ppAh: ActionId, thread: Thread) {
+    console.log("<vines-page>.onDeleteChannel()", ppAh.b64, thread);
+    const dialog = this.shadowRoot!.getElementById("confirm-delete-channel") as ConfirmDialog;
+    const primaryTitle = latestThreadName(thread.title, thread.pp, this._dvm.threadsZvm);
+    dialog.title = msg(str`Delete Channel "${primaryTitle}" ?`);
+    this._abortConfirmController.abort();
+    this._abortConfirmController = new AbortController();
+    this.addEventListener('confirmed', async (_f) => {
+        await this._dvm.threadsZvm.zomeProxy.deleteParticipationProtocol(ppAh.hash);
+        // TODO: Toast when delete pulse received instead
+        toasty(msg(`Channel deleted`));
+        this.requestUpdate();
+    },{ signal: this._abortConfirmController.signal });
+    dialog.open();
   }
 
 
@@ -2016,6 +2038,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
     let maybeBackBtn = html``;
     let commentButton = html``;
+    let deleteChannelButton = html``;
     let thread: Thread | undefined = undefined;
     if (this._selectedThreadHash) {
       thread = this._dvm.threadsZvm.perspective.threads.get(this._selectedThreadHash);
@@ -2068,6 +2091,14 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                       e.stopPropagation();
                                       this.onCommentingClicked(commentClickedEvent)
                                   }}></ui5-button>`;
+        }
+        if (thread.pp.moderation.canDeleteThread && thread.pp.moderation.moderators.length == 1
+          && new AgentId(thread.pp.moderation.moderators[0]!).equals(this.cell.address.agentId)) {
+          deleteChannelButton = html`
+              <ui5-button id="delete-channel-btn" icon="delete" tooltip=${msg("Delete Channel (cannot be undone)")} design="Transparent"
+                          style="border:none; padding:0px;"
+                          @click="${(_e: any) => this.onDeleteChannel(this._selectedThreadHash!, thread!)}"></ui5-button>            
+          `;
         }
       }
     }
@@ -2531,6 +2562,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                                      name=${msg("Channel")}
                                                      style="color: #464646; display: block;"></copy-wal-button>
                                     ${commentButton}
+                                    ${deleteChannelButton}
                                 </div>
                             `
                     }
@@ -2840,6 +2872,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
             </ui5-dialog>            
             <!-- Confirm Dialog -->
             <confirm-dialog id="confirm-hide-topic"></confirm-dialog>
+            <confirm-dialog id="confirm-delete-channel"></confirm-dialog>
             <!-- View Embed Dialog -->
             <view-embed-dialog id="view-embed"></view-embed-dialog>
             <!-- View File Dialog -->
@@ -2993,7 +3026,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     </div>
                     <div style="font-weight: bold; margin-top:20px;">
                         <div style="width: fit-content; margin: auto;">
-                            ${msg('Rules will not be modifiable once the channel is created')}
+                            ${msg('Rules cannot be changed once the channel has been created')}
                         </div>
                     </div>
                 </section>

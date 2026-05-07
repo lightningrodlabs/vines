@@ -64,6 +64,8 @@ export const threadsFunctionNames: FunctionName[] = [
 	"pull_my_notify_settings",
 	"pull_notify_settings",
 	"pull_pp_notify_settings",
+	"delete_participation_protocol",
+	"is_participation_protocol_deleted",
 	"fetch_pp",
 	"get_pp_title",
 	"update_pp_title",

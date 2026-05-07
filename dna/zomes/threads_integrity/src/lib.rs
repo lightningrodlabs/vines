@@ -6,7 +6,7 @@
 
 mod entries;
 mod properties;
-mod validation_app_entry;
+mod validation_create_entry;
 mod validate;
 mod validate_link;
 pub(crate) mod debug;

@@ -132,7 +132,7 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
       /** Render threads for Topic */
       let threadElems: TemplateResult<1>[] = [];
       let topicThreads = this.threadsPerspective.getSubjectThreads(topicAh);
-      if (topicThreads == undefined) {
+      if (!topicThreads) {
         topicThreads = [];
       } else {
         switch (this.order) {
@@ -298,7 +298,7 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
                               @click="${(_e: any) => this.onClickCommentTopic(maybeCommentThread, topicAh, title)}"></ui5-button>`
             : html`
                   <ui5-button id=${"cmt-" + topicAh.b64} icon="sys-add" tooltip=${msg("Create comment thread for this Category")} design="Transparent"
-                              style="border:none; padding:0px;display: none" 
+                              style="border:none; padding:0px; display:none" 
                               @click="${(_e: any) => this.onClickCommentTopic(maybeCommentThread, topicAh, title)}"></ui5-button>`;
         }
 

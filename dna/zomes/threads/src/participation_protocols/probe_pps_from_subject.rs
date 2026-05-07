@@ -3,6 +3,7 @@ use hdk::prelude::*;
 use threads_integrity::*;
 use zome_signals::*;
 use zome_utils::*;
+use crate::participation_protocols::delete_participation_protocol::is_participation_protocol_deleted;
 
 ///
 #[derive(Serialize, Deserialize, SerializedBytes, Debug)]
@@ -36,7 +37,7 @@ pub fn probe_pps_from_subject_hash(
         LinkQuery::new(subject_hash, ThreadsLinkType::Threads.try_into_filter().unwrap()),
         input.strategy,
     )?;
-    let ahs = links
+    let ahs: Vec<(ActionHash, Timestamp)> = links
         .iter()
         .map(|l| {
             let ts = zome_path::tag2Ts(l.tag.clone());
@@ -44,6 +45,11 @@ pub fn probe_pps_from_subject_hash(
             (ActionHash::try_from(l.target.clone()).unwrap(), ts)
         })
         .collect();
+    /// Check for deleted pps
+    ahs.iter().for_each(|(pp_ah, _ts)| {
+        /// Emit signal if deleted
+        let _ = is_participation_protocol_deleted(pp_ah.to_owned());
+    });
     /// Emit signal
     attest_links(links, ValidatedBy::Network)?;
     /// Done

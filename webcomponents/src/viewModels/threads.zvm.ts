@@ -1918,6 +1918,12 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
                 break;
             case ThreadsEntryType.ParticipationProtocol:
               console.debug("received ParticipationProtocol()", pulse.ah.b64, pulse.validatedBy);
+              if (StateChangeType.Delete == pulse.state) {
+                //console.log("RECEIVED DELETE PP SIGNAL", pulse.origAh);
+                this._perspective.storeDeletedThread(pulse.origAh!);
+                /** Return now because the pulse doesn't have the bytes */
+                return;
+              }
               const pp = this._decoder.decode(pulse.bytes) as ParticipationProtocol;
               /** Skip signal only pp */
               if (pulse.validatedBy == ValidatedBy.None) {

@@ -126,6 +126,7 @@ export interface ModerationMat {
     instructions: string
     allowedFlags: number
     moderators: AgentPubKeyB64[]
+    canDeleteThread: boolean
 }
 
 
@@ -151,6 +152,7 @@ export function materializeModeration(mod: Moderation): ModerationMat {
         instructions: mod.instructions,
         allowedFlags: mod.allowedFlags,
         moderators: mod.moderators.map((k) => new AgentId(k).b64),
+        canDeleteThread: mod.canDeleteThread
     }
 }
 
@@ -179,6 +181,7 @@ export function dematerializeModeration(mod: ModerationMat): Moderation {
         instructions: mod.instructions,
         allowedFlags: mod.allowedFlags,
         moderators: mod.moderators.map((k) => new AgentId(k).hash),
+        canDeleteThread: mod.canDeleteThread
     }
 }
 
@@ -395,6 +398,7 @@ export function defaultModeration(): Moderation {
     instructions: "",
     moderators: [],
     allowedFlags: 0,
+    canDeleteThread: false,
   } as Moderation;
 }
 

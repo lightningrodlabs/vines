@@ -147,6 +147,7 @@ pub struct Moderation {
     pub instructions: String,
     pub allowed_flags: u16,
     pub moderators: Vec<AgentPubKey>,
+    pub can_delete_thread: bool,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]

@@ -324,6 +324,14 @@ export class ThreadsProxy extends ZomeProxy {
     return this.call('pull_pp_notify_settings', input);
   }
 
+  async deleteParticipationProtocol(ppAh: ActionArray): Promise<void> {
+    return this.callBlocking('delete_participation_protocol', ppAh);
+  }
+
+  async isParticipationProtocolDeleted(ppAh: ActionArray): Promise<boolean> {
+    return this.call('is_participation_protocol_deleted', ppAh);
+  }
+
   async fetchPp(input: GetAhInput): Promise<[ParticipationProtocol, Timestamp, AgentArray] | null> {
     return this.call('fetch_pp', input);
   }

@@ -20,10 +20,10 @@ export class RulesView extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
   }
 
 
-  @property()
+  @property({type: Object, attribute: false, hasChanged: (_a, _b) => true})
   moderation: Moderation = defaultModeration();
 
-  @property()
+  @property({type: Object, attribute: false, hasChanged: (_a, _b) => true})
   limitations: Limitations = defaultLimitations();
 
 
@@ -195,7 +195,12 @@ export class RulesView extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
             </div>
 
             <div class="field-row">
-                <div class="field-label">${msg('Infringements allowed:')}</div>
+                <div class="field-label">${msg('Deletable Channel:')}</div>
+                <div class="field-value">${this.moderation.canDeleteThread}</div>
+            </div>
+            
+            <div class="field-row">
+                <div class="field-label">${msg('Infringements allowed per person:')}</div>
                 <div class="field-value">${this.moderation.allowedFlags}</div>
             </div>
 

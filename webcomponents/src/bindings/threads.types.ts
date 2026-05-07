@@ -424,6 +424,7 @@ export interface Moderation {
   instructions: string
   allowedFlags: number
   moderators: AgentArray[]
+  canDeleteThread: boolean
 }
 
 export interface Limitations {

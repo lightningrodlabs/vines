@@ -136,6 +136,8 @@ export class ThreadsPerspective {
   favorites: ActionId[] = [];
   /** ppAh -> Thread */
   threads: ActionIdMap<Thread> = new ActionIdMap();
+  /** ppAh */
+  deletedThreads: Set<ActionHashB64> = new Set();
   /** beadAh -> [BeadInfo, TypedBead] */
   beads: ActionIdMap<[BeadInfo, TypedBeadMat]> = new ActionIdMap();
   /** ppAh -> agents */
@@ -196,7 +198,7 @@ export class ThreadsPerspective {
       bannedSemanticTopics: this.bannedSemanticTopics.length,
       hiddens: Object.keys(this.hiddens).length,
       favorites: this.favorites.length,
-      threads: this.threads.size,
+      threads: this.threads.size - this.deletedThreads.size,
       bans: this.bans.size,
       flags: this.flags.size,
       threadTitles: Array.from(this.threads.values()).map((thread) => thread.title),
@@ -572,7 +574,7 @@ export class ThreadsPerspective {
     let all: ActionId[] = []
     for (const subjectId of subjectIds) {
       const pps = this.getSubjectVersionThreads(subjectId);
-      //console.log("getSubjectThreads() pps", pps.length);
+      console.log("getSubjectVersionThreads() delete", pps.length);
       all = all.concat(pps);
     }
     //console.log("getSubjectThreads() END", all.length);
@@ -581,9 +583,11 @@ export class ThreadsPerspective {
 
   /** */
   getSubjectVersionThreads(subjectId: AnyId): ActionId[] {
+    //console.log("getSubjectVersionThreads() delete known:", this.deletedThreads.size, this.deletedThreads);
     const maybe = this.threadsPerSubject.get(subjectId.b64);
     if (!maybe) return [];
-    return maybe;
+    const filtered = maybe.filter((ppAh) => !this.deletedThreads.has(ppAh.b64));
+    return filtered;
   }
 
 
@@ -736,9 +740,10 @@ export class ThreadsPerspective {
     }
 
     /** PPs */
-    /** Collapse subject address to latest version */
+    /** Collapse subject address to the latest version */
     let pps: [ActionHashB64, PpMat, string, Timestamp, AgentPubKeyB64][] = Array.from(this.threads.entries())
       .filter(([_ppAh, thread]) => thread.pp.subject.typeName !== SpecialSubjectType.TextBead || thread.pp.purpose !== "EDIT") // Dont include TextBead edit threads
+      .filter(([ppAh, _thread]) => !this.deletedThreads.has(ppAh.b64)) // Dont include Deleted threads
       .map(([ppAh, thread]) => {
       const latest = this.getLatestSubject(intoAnyId(thread.pp.subject.address));
       thread.pp.subject.address = latest.b64;
@@ -763,13 +768,18 @@ export class ThreadsPerspective {
     return result;
   }
 
+
+  /** */
   makePartialSnapshot(selectedPps: Set<string>): ThreadsSnapshot {
-    /** Filter out edit threads */
-    selectedPps = new Set(Array.from(selectedPps).filter((ppAhB64) => {
-      const thread = this.threads.get(new ActionId(ppAhB64));
-      if (!thread) return true;
-      return thread.pp.subject.typeName != SpecialSubjectType.TextBead || thread.pp.purpose !== "EDIT";
-    }));
+    /** Filter out deleted, and edit threads */
+    selectedPps = new Set(Array.from(selectedPps)
+      .filter((ppAhB64) => {
+        const thread = this.threads.get(new ActionId(ppAhB64));
+        if (!thread) return true;
+        return thread.pp.subject.typeName != SpecialSubjectType.TextBead || thread.pp.purpose !== "EDIT";
+      })
+      .filter((ppAhB64) => !this.deletedThreads.has(ppAhB64))
+    );
     /** applet subject types */
     const appletSubjectTypes: [EntryHashB64, [EntryHashB64, string][]][] = [];
     for (const [appletEh, map] of this.appletSubjectTypes.entries()) {
@@ -1050,11 +1060,48 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
 
 
   /** */
+  storeDeletedThread(ppAh: ActionId) {
+    console.debug(`storeDeletedThread() thread`, ppAh.b64);
+    this.deletedThreads.add(ppAh.b64);
+  }
+
+  // /** */
+  // unstoreThread(ppAh: ActionId) {
+  //   console.debug(`unstoreThread() thread`, ppAh.b64);
+  //   const thread = this.threads.get(ppAh);
+  //   if (!thread) {
+  //     return;
+  //   }
+  //   this.threads.delete(ppAh);
+  //   this.newThreads.delete(ppAh);
+  //   const subjectAddr = intoAnyId(thread.pp.subject.address);
+  //   const subjectThreads = this.threadsPerSubject.get(subjectAddr.b64);
+  //   if (subjectThreads) {
+  //     const filtered = [];
+  //     for (const thread of subjectThreads) {
+  //       if (!thread.equals(ppAh)) {
+  //         filtered.push(thread);
+  //       }
+  //     }
+  //     if (filtered.length > 0) {
+  //       this.threadsPerSubject.set(subjectAddr.b64, filtered);
+  //     } else {
+  //       this.threadsPerSubject.delete(subjectAddr.b64);
+  //     }
+  //   }
+  // }
+
+
+  /** */
   storeThread(cell: Cell, ppAh: ActionId, pp: ParticipationProtocol, maybeTitle: string | undefined, creationTime: Timestamp, author: AgentId, validation: ValidatedBy, isNew: boolean): ParticipationProtocol {
     //console.debug(`storeThread() thread "${ppAh.short}"`, author.short, isNew, pp, pp.subject.name, pp.subject.address);
     console.debug(`storeThread() thread`, pp.purpose, ppAh.b64, prettyTimestamp(creationTime));
     if (!pp || !cell) {
       throw Error("Arguments undefined when calling storeThread()");
+    }
+    if (this.deletedThreads.has(ppAh.b64)) {
+      console.log("storeThread aborted, since thread is marked deleted");
+      return pp;
     }
     this.setValidation(ppAh.b64, validation);
     if (isNew) {
@@ -1201,7 +1248,7 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
 
   /** */
   storeGlobalLog(latestGlobalLogTime: Timestamp) {
-    console.log("storeGlobalLog() newThreads cleared")
+    console.log("storeGlobalLog()")
     this.globalProbeLogTs = latestGlobalLogTime;
     //this.unreads.clear();
     //this.newThreads.clear();
@@ -1254,6 +1301,7 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
     this.inbox.clear();
     this.notifSettings.clear();
     this.newThreads.clear();
+    this.deletedThreads.clear();
     this.unreads.clear();
     /** this.appletIds */
     this.appletIds = [];
