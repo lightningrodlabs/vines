@@ -365,26 +365,27 @@ export class RulesEdit extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
     const selectedItems = e.detail.items;
     const selectedAgents: Uint8Array[] = [];
     console.log("handleModeratorSelectionChange", e, selectedItems);
-
+    /** Form array */
     for (const item of selectedItems) {
       const agentHashB64 = item.getAttribute('data-id');
       const agentId = new AgentId(agentHashB64);
       selectedAgents.push(agentId.hash);
     }
+    /** Update AllowChannelDelete state */
+    const elem = this.shadowRoot!.getElementById("allow-channel-delete") as Checkbox;
+    elem.checked = selectedAgents.length == 1;
+    elem.disabled = selectedAgents.length != 1;
+    this.moderation.canDeleteThread = elem.checked;
     /** Must have at least one moderator */
     const combo = this.shadowRoot!.getElementById("modsCombo") as unknown as MultiComboBox;
     const errorMsg = this.shadowRoot!.getElementById("modsErrorMsg") as HTMLElement;
     if (selectedAgents.length <= 0) {
       combo.valueState = ValueState.Error;
       errorMsg.textContent = msg("Must have at least one moderator");
-      return;
+    } else {
+      combo.valueState = ValueState.None;
+      this.moderation.moderators = selectedAgents;
     }
-    combo.valueState = ValueState.None;
-    /** */
-    this.moderation.moderators = selectedAgents;
-    /** Update AllowChannelDelete checkbox */
-    const elem = this.shadowRoot!.getElementById("allow-channel-delete") as Checkbox;
-    elem.checked = selectedAgents.length == 1;
     //elem.render();
     this.requestUpdate();
   }
