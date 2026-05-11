@@ -236,6 +236,8 @@ export class ImportSummary extends LitElement {
     const selectedTopics: Set<string> = new Set();
     for (const tuple of threadsSnapshot.pps) {
       if (this._selectedChannels.has(tuple[0])) {
+        // TODO: Implement schema validation after reading JSON, with something like zod
+        tuple[1].moderation.canDeleteThread = false;
         pps.push(tuple);
         selectedTopics.add(tuple[1].subject.address);
       }

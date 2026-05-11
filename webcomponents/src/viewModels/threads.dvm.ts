@@ -751,7 +751,7 @@ export class ThreadsDvm extends DnaViewModel {
   /** -- Import & Export -- */
 
   /** Probe all threads before exporting */
-  async exportAllPerspective(): Promise<string> {
+  async exportAllPerspective(appVersion: string): Promise<string> {
     await this.threadsZvm.probeAllInnerAsync(GetStrategy.Local);
     /* Probe all threads */
     let probes = []
@@ -760,14 +760,14 @@ export class ThreadsDvm extends DnaViewModel {
     }
     await Promise.all(probes);
     /* Done */
-    return this.exportPerspective();
+    return this.exportPerspective(appVersion);
   }
 
 
   /** Dump perspective as JSON */
-  exportPerspective(selectedChannels?: Set<string>): string {
-    console.debug("Dvm.exportPerspective()")
-    const dvmExport: any = {};
+  exportPerspective(appVersion: string, selectedChannels?: Set<string>): string {
+    console.debug("Dvm.exportPerspective()", appVersion)
+    const dvmExport: any = {version: appVersion};
 
     const tJson = this.threadsZvm.export(this.authorshipZvm, selectedChannels);
     dvmExport[ThreadsZvm.DEFAULT_ZOME_NAME] = JSON.parse(tJson);

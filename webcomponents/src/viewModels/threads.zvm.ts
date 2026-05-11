@@ -154,8 +154,10 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
     /** */
     import(json: string, canPublish: boolean, authorshipZvm: AuthorshipZvm) {
-        const snapshot = JSON.parse(json, holoIdReviver) as ThreadsSnapshot;
-        console.log("Importing perspective", snapshot);
+      const snapshot = JSON.parse(json, holoIdReviver) as ThreadsSnapshot;
+      // TODO: Implement schema validation after reading JSON, with something like zod
+      snapshot.pps.map((tuple) => tuple[1].moderation.canDeleteThread = false);
+      console.log("Importing perspective", snapshot);
         if (canPublish) {
             this._canNotify = false;
             /*await*/ this.publishAllFromSnapshot(snapshot, authorshipZvm).then(() => {

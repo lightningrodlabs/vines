@@ -2905,7 +2905,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                  }}></export-files-dialog>
             <export-summary-dialog id="export-dialog"
                                    @export-confirmed=${async (e: CustomEvent<Set<string>>) => {
-                                     const content = this._dvm.exportPerspective(e.detail);
+                                     const content = this._dvm.exportPerspective(APP_VERSION, e.detail);
                                      this.downloadTextFile("dump_threads.json", content);
                                      toasty(msg(`Exported data in Downloads folder`));
                                    }}
@@ -3176,7 +3176,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         break;
       // @ts-ignore
       case "exportAllItem":
-        if (content == "") content = await this._dvm.exportAllPerspective();
+        if (content == "") content = await this._dvm.exportAllPerspective(APP_VERSION);
       case "exportItem":
         /*await*/ this.exportDialogElem.open()
         break;
