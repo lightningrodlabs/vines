@@ -44,7 +44,9 @@ With multiple groups:
 With multiple tools:
 `npm run multitoolall`
 
-### Android
+### Tauri / Desktop
+
+### Tauri / Android
 
 This app supports android using p2p-shipyard.
 
@@ -82,6 +84,7 @@ npm run start:android
 
 `adb logcat`
 
+
 ## Package
 
 To package the web-happ:
@@ -93,18 +96,26 @@ npm run package:webapp
 All output files (`*.webhapp`, `*.dna`, `*.happ`, etc.) will be in the `artifacts` folder.
 
 
+### Android
+```bash
+nix develop .#androidDev
+npm run build:android
+```
+
 ## Project structure
 
-| Directory                                  | Description                                                                                                                 |
-|:-------------------------------------------| :-------------------------------------------------------------------------------------------------------------------------- |
-| `/artifacts/`                              | All final output files
-| `/bin/`                                    | holochain binairies when testing
-| `/dna/`                                    | DNA source code
-| `/scripts/`                                | Tool chain
-| `/testdata/`                               | Config files and asset fils for testing with @theweave/cli
-| `/we-applet/`                              | Source code for the Moss tool version of Vines
-| `/webapp/`                                 | The webapp source code off Vines
-| `/webcomponents/`                          | The web components source code
+| Directory         | Description                                                                                                                 |
+|:------------------| :-------------------------------------------------------------------------------------------------------------------------- |
+| `/artifacts/`     | All final output files
+| `/bin/`           | holochain binairies when testing
+| `/dna/`           | DNA source code
+| `/scripts/`       | Tool chain
+| `/src-tauri/`     | Source code for the Android version of Vines
+| `/submodules/`    | Local copies of other git repos used for development
+| `/testdata/`      | Config files and asset fils for testing with @theweave/cli
+| `/we-applet/`     | Source code for the Moss tool version of Vines
+| `/webapp/`        | The webapp source code off Vines
+| `/webcomponents/` | The web components source code
 
 ## License
 [![License: CAL 1.0](https://img.shields.io/badge/License-CAL%201.0-blue.svg)](https://github.com/holochain/cryptographic-autonomy-license)

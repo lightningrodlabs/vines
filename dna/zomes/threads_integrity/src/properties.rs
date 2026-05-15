@@ -24,6 +24,16 @@ pub struct ThreadsProperties {
    pub group_svg_icon: String,
 }
 
+impl ThreadsProperties {
+   pub fn new(min_topic_name_length: u8, max_topic_name_length: u16, group_name: &str, group_svg_icon: &str) -> Self {
+      Self {
+         min_topic_name_length,
+         max_topic_name_length,
+         group_name: group_name.to_string(),
+         group_svg_icon: group_svg_icon.to_string(),
+      }
+   }
+}
 
 impl ThreadsProperties {
    pub fn validate(&self) -> ExternResult<ValidateCallbackResult> {
@@ -56,4 +66,66 @@ pub fn get_properties() -> ExternResult<ThreadsProperties> {
       return Err(wasm_error!("Deserializing dna properties failed: {:?}", e));
    }
    Ok(maybe_properties.unwrap())
+}
+
+
+
+#[cfg(test)]
+mod tests {
+   use super::*;
+
+   fn random_string(size: usize) -> String {
+      const CHARS: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+      let mut result = String::with_capacity(size);
+      let mut seed = std::time::SystemTime::now()
+         .duration_since(std::time::UNIX_EPOCH)
+         .expect("time went backwards")
+         .as_nanos() as u64;
+
+      for _ in 0..size {
+         // Simple xorshift64 PRNG
+         seed ^= seed << 13;
+         seed ^= seed >> 7;
+         seed ^= seed << 17;
+
+         let index = seed as usize % CHARS.len();
+         result.push(CHARS[index] as char);
+      }
+      result
+   }
+
+   fn assert_invalid(properties: ThreadsProperties) {
+      let result = properties.validate().expect("validation should not fail");
+      match result {
+         ValidateCallbackResult::Invalid(_message) => (),
+         other => panic!("expected invalid validation result, got {:?}", other),
+      }
+   }
+
+   fn assert_valid(properties: ThreadsProperties) {
+      let result = properties.validate().expect("validation should not fail");
+      match result {
+         ValidateCallbackResult::Valid => (),
+         other => panic!("expected valid validation result, got {:?}", other),
+      }
+   }
+
+   #[test]
+   fn valid_properties() {
+      assert_valid(ThreadsProperties::new(1, 3, "test", ""));
+      assert_valid(ThreadsProperties::new(1, 3, "", "test"));
+      assert_valid(ThreadsProperties::new(0, 3, "test", ""));
+      assert_valid(ThreadsProperties::new(3, 3, "test", ""));
+      assert_valid(ThreadsProperties::new(0, 3, &random_string(64), &random_string(1024 * 1024)));
+   }
+
+   #[test]
+   fn invalid_properties() {
+      assert_invalid(ThreadsProperties::new(0, 0, "test", "test"));
+      assert_invalid(ThreadsProperties::new(10, 0, "test", "test"));
+      assert_invalid(ThreadsProperties::new(10, 9, "test", "test"));
+      assert_invalid(ThreadsProperties::new(0, 3, &random_string(65), &random_string(1024 * 1024)));
+      assert_invalid(ThreadsProperties::new(0, 3, &random_string(64), &random_string(1024 * 1024 + 1)));
+   }
 }

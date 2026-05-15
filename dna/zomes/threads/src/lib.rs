@@ -6,7 +6,6 @@
 #![allow(ill_formed_attribute_input)]
 
 mod semantic_topic;
-//pub(crate) mod utils;
 pub mod beads;
 mod participation_protocols;
 mod subjects;
@@ -16,7 +15,6 @@ mod favorite;
 mod dm;
 mod notifications;
 mod query_all;
-mod utils;
 
 extern crate zome_core;
 
