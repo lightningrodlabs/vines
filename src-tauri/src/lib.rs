@@ -42,13 +42,13 @@ pub fn run() {
                     //Target::new(TargetKind::LogDir { file_name: None }),
                     Target::new(TargetKind::Webview),
                  ])
-                .level(log::LevelFilter::Debug)
+                .level(log::LevelFilter::Warn)
                 .build(),
         )
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_clipboard_manager::init())
-        .plugin(tauri_plugin_holochain::init(
+        .plugin(tauri_plugin_holochain::async_init(
             vec_to_locked(vec![]),
             HolochainPluginConfig::new(holochain_dir(), network_config(TARGET_ARC))
         ))
@@ -66,11 +66,11 @@ pub fn run() {
                  println!("Holochain setup failed: {:?}", event);
                  handle_fail.exit(1);
               });
-           // app.handle()
-           //    .listen("holochain://setup-completed", move |event| {
+            app.handle()
+               .listen("holochain://setup-completed", move |event| {
                  //println!("Holochain plugin setup completed: {:?}", event);
                  let handle = handle.clone();
-                 tauri::async_runtime::block_on(async move {
+                 tauri::async_runtime::spawn(async move {
                     let Ok(admin_ws) = handle.clone().holochain().expect("Holochain failed to initialize").admin_websocket().await else {
                        eprintln!("Failed to setup Holochain.");
                        return;
@@ -152,10 +152,10 @@ pub fn run() {
                        }
                     }
                  }); // block_on
-                 Ok(())
-              })
-              //Ok(())
-           //}) // setup done
+                 //Ok(())
+              });
+              Ok(())
+           }) // setup done
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
