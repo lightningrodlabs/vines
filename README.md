@@ -46,6 +46,12 @@ With multiple tools:
 
 ### Tauri / Desktop
 
+```bash
+nix develop
+npm run start:tauri
+```
+
+
 ### Tauri / Android
 
 This app supports android using p2p-shipyard.

@@ -139,6 +139,7 @@ pub fn run() {
 
                     match res {
                        Ok(()) => {
+                          // Tauri's builtin splashscreen handling is desktop only
                            #[cfg(desktop)]
                            {
                               if let Some(splashscreen) = handle.get_webview_window("splashscreen") {

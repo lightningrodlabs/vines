@@ -3,4 +3,14 @@
     <style name="Theme.vinesapp" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <!-- Customize your theme here. -->
     </style>
+    <style name="Theme.vinesapp.Splash" parent="Theme.SplashScreen">
+        <!-- Background color -->
+        <item name="windowSplashScreenBackground">#FFFFFF</item>
+        <!-- Your app icon/logo drawable -->
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher_background</item>
+        <!-- Animation duration in ms -->
+        <item name="windowSplashScreenAnimationDuration">500</item>
+        <!-- Theme to switch to after splash -->
+        <item name="postSplashScreenTheme">@style/Theme.vinesapp</item>
+    </style>
 </resources>
