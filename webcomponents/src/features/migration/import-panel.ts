@@ -14,7 +14,7 @@ export class ImportPanel extends LitElement {
         return html`
             <!-- <h1>${msg('Import Data')}</h1> -->
             <h3>${msg('Bring your data from other apps')}</h3>
-            <div style="display: flex; flex-direction: row; gap:15px">
+            <div class="direction" style="display: flex; gap:15px">
                 <div class="card">
                     <h3>🎮 Discord</h3>
                     <div>${msg('Import a Discord Channel exported from')} <a href="https://github.com/Tyrrrz/DiscordChatExporter">Discord Chat Exporter</a> ${msg('as JSON')}</div>
@@ -65,7 +65,7 @@ export class ImportPanel extends LitElement {
               display: flex;
               flex-direction: column;
               gap: 5px;
-              width: 650px;
+              /*width: 650px;*/
               padding-right: 5px;
               margin-bottom: 10px;
           }
@@ -79,6 +79,17 @@ export class ImportPanel extends LitElement {
             padding:10px;
             flex:1;
             line-height: 24px;
+          }
+
+          .direction {
+              flex-direction: row;
+          }
+                
+          /* Mobile */
+          @media (max-width: 500px) {
+              .direction {
+                  flex-direction: column;
+              }
           }
     `]}
 }
