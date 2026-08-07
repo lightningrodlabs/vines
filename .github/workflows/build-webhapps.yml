@@ -7,17 +7,29 @@ jobs:
   build-webhapps:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      # Install npm dependencies
+      - uses: actions/checkout@v4
+      # Pin node rather than inheriting whatever ubuntu-latest ships this month
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+      # Install npm dependencies. `npm ci` installs strictly from
+      # package-lock.json and fails if the lock and package.json disagree.
       - name: Install npm dependencies
         shell: bash
         run: |
-          npm install
+          npm ci
       # install rust tools
       - name: install rust tools
         shell: bash
         run: |
           npm run install:rust
+      # Fail fast if Cargo.lock is out of sync with Cargo.toml, so a build can
+      # never silently resolve dependencies differently from a local checkout.
+      - name: Verify Cargo.lock is up to date
+        shell: bash
+        run: |
+          CARGO_NET_GIT_FETCH_WITH_CLI=true cargo metadata --locked --format-version 1 > /dev/null
       # install zits
       - name: install zits
         shell: bash

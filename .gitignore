@@ -29,6 +29,7 @@ bin/
 
 
 # Specific files
-Cargo.lock
+# Cargo.lock and package-lock.json are tracked on purpose: git dependencies are
+# pinned by rev and CI builds with --locked / npm ci, so an upstream push cannot
+# change what this repo builds without a commit here.
 hash_zome*
-package-lock.json

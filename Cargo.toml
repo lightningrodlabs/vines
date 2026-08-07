@@ -23,17 +23,25 @@ holochain_serialized_bytes = "=0.0.57"
 hdi = { version = "=0.7.1", default-features = false }
 hdk = { version = "=0.6.1", default-features = false }
 
-zome_utils = { git = "https://github.com/ddd-mtl/zdk", branch = "main-0.6" }
-zome_path = { git = "https://github.com/ddd-mtl/zdk", branch = "main-0.6" }
-zome_signals = { git = "https://github.com/ddd-mtl/zdk", branch = "main-0.6" }
-zome_core = { git = "https://github.com/ddd-mtl/zdk", branch = "main-0.6" }
+# Git dependencies are pinned to an exact rev, not a branch, so that a push
+# upstream cannot silently change what this repo builds. To bump, resolve the
+# branch head yourself and replace every rev for that repo in one commit:
+#   git ls-remote https://github.com/ddd-mtl/zdk main-0.6
+#
+# zdk @ main-0.6 (302a90f2 requires hdi =0.7.1 / hdk =0.6.1, matching above)
+zome_utils = { git = "https://github.com/ddd-mtl/zdk", rev = "302a90f2dd7b65feec1797bc808e41e1b81cf6fd" }
+zome_path = { git = "https://github.com/ddd-mtl/zdk", rev = "302a90f2dd7b65feec1797bc808e41e1b81cf6fd" }
+zome_signals = { git = "https://github.com/ddd-mtl/zdk", rev = "302a90f2dd7b65feec1797bc808e41e1b81cf6fd" }
+zome_core = { git = "https://github.com/ddd-mtl/zdk", rev = "302a90f2dd7b65feec1797bc808e41e1b81cf6fd" }
 
-time_indexing = { git = "https://github.com/ddd-mtl/zdk", branch = "main-0.6" }
-path_explorer_types = { git = "https://github.com/ddd-mtl/zdk", branch = "main-0.6" }
-path_explorer = { git = "https://github.com/ddd-mtl/zdk", branch = "main-0.6" }
+time_indexing = { git = "https://github.com/ddd-mtl/zdk", rev = "302a90f2dd7b65feec1797bc808e41e1b81cf6fd" }
+path_explorer_types = { git = "https://github.com/ddd-mtl/zdk", rev = "302a90f2dd7b65feec1797bc808e41e1b81cf6fd" }
+path_explorer = { git = "https://github.com/ddd-mtl/zdk", rev = "302a90f2dd7b65feec1797bc808e41e1b81cf6fd" }
 
-hc_zome_profiles_integrity = { git = "https://github.com/holochain-open-dev/profiles", branch = "main-0.6" }
-hc_zome_profiles_coordinator = {git = "https://github.com/ddd-mtl/zdk", branch = "main-0.6", package="profiles_alt_coordinator" }
+# profiles @ main-0.6 head. Repo also publishes tags (v0.601.4, v0.700.0), but
+# the branch has moved past v0.601.4 -- this rev is what CI was already building.
+hc_zome_profiles_integrity = { git = "https://github.com/holochain-open-dev/profiles", rev = "b3f14fb9d7ceadf274dc4cb2d5971b88803f8af7" }
+hc_zome_profiles_coordinator = { git = "https://github.com/ddd-mtl/zdk", rev = "302a90f2dd7b65feec1797bc808e41e1b81cf6fd", package = "profiles_alt_coordinator" }
 
 
 [profile.dev]
