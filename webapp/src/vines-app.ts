@@ -503,8 +503,6 @@ export class VinesApp extends HappMultiElement {
                       @dumpNetworkLogs=${this.onDumpNetworkLogs}
               ></vines-page>`;
           break;
-        case "block":
-          throw new Error("Threads/we-applet: Block view is not implemented.");
         case "asset":
           const assetViewInfo = this.appletView as AssetViewInfo;
           if (!assetViewInfo.recordInfo) {
