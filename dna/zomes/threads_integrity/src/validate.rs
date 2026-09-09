@@ -8,34 +8,38 @@ use crate::validation_create_entry::validate_create_entry;
 pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
    debug!("*** ThreadsIntegrityZome.validate() op = {:?}", op);
    match op {
-      Op::StoreRecord ( _ ) => Ok(ValidateCallbackResult::Valid),
-      Op::StoreEntry(storeEntry) => {
-         let creation_action = storeEntry.action.hashed.into_inner().0;
-         let res = validate_create_entry(creation_action.clone(), storeEntry.entry, Some(creation_action.entry_type()));
+      Op::CreateRecord ( _ ) => Ok(ValidateCallbackResult::Valid),
+      Op::CreateEntry(createEntry) => {
+         let creation_action = createEntry.action.hashed.into_inner().0;
+         let maybe_entry_type = creation_action.entry_type().cloned();
+         let res = validate_create_entry(creation_action, createEntry.entry, maybe_entry_type.as_ref());
          debug!("*** validate_entry() res = {:?}", res);
          res
       },
-      Op::RegisterCreateLink(reg_create_link) => {
+      Op::CreateLink(reg_create_link) => {
          return validate_create_link(reg_create_link.create_link.hashed);
          //Ok(ValidateCallbackResult::Valid)
       },
-      Op::RegisterDeleteLink (_)=> Ok(ValidateCallbackResult::Valid),
-      Op::RegisterUpdate { .. } => Ok(ValidateCallbackResult::Valid),
-      Op::RegisterDelete(reg_del) => {
+      Op::DeleteLink (_)=> Ok(ValidateCallbackResult::Valid),
+      Op::Update { .. } => Ok(ValidateCallbackResult::Valid),
+      Op::Delete(reg_del) => {
          return validate_delete_entry(reg_del);
          //Ok(ValidateCallbackResult::Valid)
       },
-      Op::RegisterAgentActivity { .. } => Ok(ValidateCallbackResult::Valid),
+      Op::AgentActivity { .. } => Ok(ValidateCallbackResult::Valid),
    }
 }
 
 ///
-pub fn validate_delete_entry(reg_del: RegisterDelete) -> ExternResult<ValidateCallbackResult> {
+pub fn validate_delete_entry(reg_del: Delete) -> ExternResult<ValidateCallbackResult> {
    let delete_action = reg_del.delete.hashed.into_inner().0;
-   let Ok(entry) = must_get_entry(delete_action.deletes_entry_address.clone()) else {
+   let ActionData::Delete(delete_data) = &delete_action.data else {
+      return Ok(ValidateCallbackResult::Invalid("Delete Entry not allowed: Action is not a Delete".to_string()));
+   };
+   let Ok(entry) = must_get_entry(delete_data.deletes_entry_address.clone()) else {
       return Ok(ValidateCallbackResult::Invalid("Delete Entry not allowed: Entry not found".to_string()));
    };
-   let Ok(sah) = must_get_action(delete_action.deletes_address.clone()) else {
+   let Ok(sah) = must_get_action(delete_data.deletes_address.clone()) else {
       return Ok(ValidateCallbackResult::Invalid("Delete Entry not allowed: Action not found".to_string()));
    };
    /// Dispatch according to base type

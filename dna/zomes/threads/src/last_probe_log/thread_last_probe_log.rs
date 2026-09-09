@@ -42,7 +42,7 @@ pub fn query_thread_logs(_: ()) -> ExternResult<Vec<ThreadLastProbeLog>> {
   let updates = query(query_args)?;
   /// Keep newest value
   for record in updates {
-    let Action::Update(update) = record.action().clone()
+    let ActionData::Update(update) = record.action().data.clone()
       else {return zome_error!("Should be an update Action")};
     let Some(prev_record) = hashmap.get(&update.original_action_address)
       else {return zome_error!("Should have a Create for each Update Action")};

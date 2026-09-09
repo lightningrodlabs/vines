@@ -1,10 +1,11 @@
 [package]
-name = "path_explorer"
+name = "path_explorer_zome"
 version.workspace = true
 rust-version.workspace = true
 edition.workspace = true
 
 [lib]
+name = "path_explorer_zome"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]

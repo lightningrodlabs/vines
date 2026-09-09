@@ -18,20 +18,30 @@ fn in_scope_link_type<LT>(zome_index: ZomeIndex, link_type: LinkType) -> Result<
 }
 
 
+/// In 0.7 the op carries a full `Action`; the link fields live on its `CreateLinkData`.
+fn create_link_data(action: &HoloHashed<Action>) -> ExternResult<&CreateLinkData> {
+  let ActionData::CreateLink(data) = &action.content.data else {
+    return Err(wasm_error!("Action is not a CreateLink"));
+  };
+  Ok(data)
+}
+
+
 ///
-pub fn validate_create_link(create_link: HoloHashed<CreateLink>) -> ExternResult<ValidateCallbackResult>  {
-  let link_type = in_scope_link_type(create_link.zome_index, create_link.link_type)?;
+pub fn validate_create_link(create_link: HoloHashed<Action>) -> ExternResult<ValidateCallbackResult>  {
+  let data = create_link_data(&create_link)?;
+  let link_type = in_scope_link_type(data.zome_index, data.link_type)?;
 
   match link_type {
     ThreadsLinkType::Flagged => {
       let rules = get_moderation_rules(&create_link)?;
       /// Only moderators can flag content
-      return is_moderator(&rules, &create_link.author);
+      return is_moderator(&rules, create_link.content.author());
     },
     ThreadsLinkType::Banned => {
       let rules = get_moderation_rules(&create_link)?;
       /// Only moderators can ban members
-      let is_mod = is_moderator(&rules, &create_link.author)?;
+      let is_mod = is_moderator(&rules, create_link.content.author())?;
       if let ValidateCallbackResult::Valid = is_mod {
         /// Must provide enough ah of flagged links for same pp
         return has_flagged_been_reached(&rules, &create_link);
@@ -44,8 +54,8 @@ pub fn validate_create_link(create_link: HoloHashed<CreateLink>) -> ExternResult
 
 
 ///
-fn get_moderation_rules(create_link: &HoloHashed<CreateLink>) -> ExternResult<Moderation> {
-  let ah = create_link.base_address.clone().into_action_hash().unwrap();
+fn get_moderation_rules(create_link: &HoloHashed<Action>) -> ExternResult<Moderation> {
+  let ah = create_link_data(create_link)?.base_address.clone().into_action_hash().unwrap();
   let pp_record = must_get_valid_record(ah.clone())?;
   let pp: ParticipationProtocol = get_typed_from_record(pp_record)?;
   Ok(pp.moderation)
@@ -63,20 +73,21 @@ fn is_moderator(rules: &Moderation, candidat: &AgentPubKey) -> ExternResult<Vali
 
 
 ///
-fn has_flagged_been_reached(rules: &Moderation, create_link: &HoloHashed<CreateLink>) -> ExternResult<ValidateCallbackResult> {
-  let vilain = create_link.target_address.clone().into_agent_pub_key().unwrap();
-  let tag_data = create_link.tag.clone().into_inner();
+fn has_flagged_been_reached(rules: &Moderation, create_link: &HoloHashed<Action>) -> ExternResult<ValidateCallbackResult> {
+  let data = create_link_data(create_link)?;
+  let vilain = data.target_address.clone().into_agent_pub_key().unwrap();
+  let tag_data = data.tag.clone().into_inner();
   let links: Vec<ActionHash> = decode(&tag_data)
     .map_err(|e|wasm_error!(SerializedBytesError::Deserialize(e.to_string())))?;
   /// Make sure all links are correct
   for link_ah in &links {
     let sah = must_get_action(link_ah.clone())?;
-    let Action::CreateLink(create_flag_link) = sah.action() else {
+    let ActionData::CreateLink(create_flag_link) = &sah.action().data else {
       return Err(wasm_error!("{}", format!("LinkTag does not hold an CreateLink ActionHash. {}", link_ah)));
     };
     /// Make sure link target entry is author is same as ban target
     let entry = must_get_valid_record(create_flag_link.target_address.clone().into_action_hash().unwrap())?;
-    if entry.action().author() != &vilain || create_link.base_address != create_flag_link.base_address {
+    if entry.action().author() != &vilain || data.base_address != create_flag_link.base_address {
       return Ok(ValidateCallbackResult::Invalid("Provided links must be for the same ParticipationProtocol and author".to_string()));
     }
   }

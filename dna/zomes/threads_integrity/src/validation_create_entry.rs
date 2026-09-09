@@ -4,7 +4,7 @@ use crate::debug::format_timestamp_micros;
 
 
 ///
-pub fn validate_create_entry(creation_action: EntryCreationAction, entry: Entry, maybe_entry_type: Option<&EntryType>) -> ExternResult<ValidateCallbackResult> {
+pub fn validate_create_entry(creation_action: Action, entry: Entry, maybe_entry_type: Option<&EntryType>) -> ExternResult<ValidateCallbackResult> {
    /// Dispatch according to base type
    let result = match entry.clone() {
       Entry::CounterSign(_data, _bytes) => Ok(ValidateCallbackResult::Invalid("CounterSign not allowed".into())),
@@ -26,7 +26,7 @@ pub fn validate_create_entry(creation_action: EntryCreationAction, entry: Entry,
 
 /// Call trait ZomeEntry::validate()
 pub(crate) fn validate_app_entry(
-    creation_action: EntryCreationAction,
+    creation_action: Action,
     entry_index: EntryDefIndex,
     entry: Entry,
 ) -> ExternResult<ValidateCallbackResult> {
@@ -59,7 +59,7 @@ pub(crate) fn validate_app_entry(
 
 ///
 fn validate_pp(
-    _creation_action: EntryCreationAction,
+    _creation_action: Action,
     pp: ParticipationProtocol,
 ) -> ExternResult<ValidateCallbackResult> {
     /// at least one moderator
@@ -111,7 +111,7 @@ fn validate_pp(
 
 ///
 fn validate_bead(
-    creation_action: EntryCreationAction,
+    creation_action: Action,
     base: BaseBeadKind,
 ) -> ExternResult<ValidateCallbackResult> {
     debug!("*** ThreadsIntegrityZome.validate_bead() {:?}", base);
@@ -119,7 +119,7 @@ fn validate_bead(
     let author = creation_action.author();
     /// Grab Rules
     let sah = must_get_action(bead.pp_ah)?;
-    let Action::Create(pp_create) = sah.action() else {
+    let ActionData::Create(pp_create) = &sah.action().data else {
         return Err(wasm_error!(
             "ppAh in bead should be a create action".to_string()
         ));
@@ -137,9 +137,14 @@ fn validate_bead(
     /// Check shared cap
     /// FIXME
     /// Check agent cap
+    let Some(prev_ah) = creation_action.prev_action() else {
+        return Err(wasm_error!(
+            "Bead creation action must have a previous action".to_string()
+        ));
+    };
     let check = check_agent_cap(
         creation_action.timestamp(),
-        creation_action.prev_action(),
+        prev_ah,
         author,
         &pp.limitations,
         sah.action_address(),
@@ -178,7 +183,7 @@ fn validate_bead(
 
 ///
 pub fn check_agent_cap(
-   creation_ts: &Timestamp,
+   creation_ts: Timestamp,
    prev_ah: &ActionHash,
    author: &AgentPubKey,
    rules: &Limitations,
@@ -202,11 +207,11 @@ pub fn check_agent_cap(
     let chain = must_get_agent_activity(author.to_owned(), filter)?;
     debug!("check_agent_cap()  chain: {}", chain.len());
     /// Get all author's Create Bead Entries since thread was created
-    let create_beads: Vec<Create> = chain
+    let create_beads: Vec<CreateData> = chain
         .iter()
         // Only creates
-        .filter_map(|activity| match &activity.action.hashed.content {
-            Action::Create(create) => Some(create.clone()),
+        .filter_map(|activity| match &activity.action.hashed.content.data {
+            ActionData::Create(create) => Some(create.clone()),
             _ => None,
         })
         // Only beads

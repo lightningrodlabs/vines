@@ -1,77 +1,84 @@
 use holochain_types::prelude::*;
-use tauri_plugin_holochain::{HolochainExt, Error};
+use holochain::prelude::{AppBundleSource, InstallAppPayload};
+use tauri_plugin_holochain::HolochainExt;
 use argon2::{
    password_hash::{rand_core::OsRng, PasswordHasher, SaltString},
    Argon2,
 };
+use std::collections::HashMap;
 use crate::utils::*;
 
+/// Commands return `String` errors: the 0.7 plugin's `Error` enum has no app-level
+/// variants (the old `ConductorApiError` / `OpenAppError` are gone), and it serializes
+/// to its `to_string()` anyway, so the frontend sees the same shape either way.
 
 #[tauri::command]
-pub async fn select(app: tauri::AppHandle, name: String) -> Result<(u16, String), Error> {
+pub async fn select(app: tauri::AppHandle, name: String) -> Result<(u16, String), String> {
    println!("select app {}", name);
+   let plugin = app.holochain().map_err(|e| e.to_string())?;
+   let hc = plugin.try_runtime().map_err(|e| e.to_string())?;
    // Look for happ
-   let hc = &app.holochain()?.holochain_runtime;
-   let admin_ws = hc.admin_websocket().await?;
-   let installed_apps = admin_ws
-      .list_apps(None)
-      .await
-      .map_err(|err| Error::ConductorApiError(err))?;
+   let installed_apps = hc.list_apps().await.map_err(|e| e.to_string())?;
    let maybe_app_info = installed_apps.iter().find(|app| app.installed_app_id == name);
    let Some(app_info) = maybe_app_info else {
-      return Err(Error::OpenAppError("App not found".to_string()));
+      return Err("App not found".to_string());
    };
    // Make sure app is enabled
    if app_info.status != AppStatus::Enabled {
-      hc.enable_app(app_info.installed_app_id.clone()).await?;
+      hc.enable_app(app_info.installed_app_id.clone()).await.map_err(|e| e.to_string())?;
    }
-   // Update conductor if necessary
-   hc.update_app_if_necessary(name.clone(), happ_bundle()).await?;
+   // NOTE: the 0.6 plugin's `update_app_if_necessary()` has no equivalent in the 0.7
+   // runtime. Coordinator-zome hot-swapping on launch is dropped for now.
    // Return HappInfo
-   let (app_port, token) = get_app_socket(app.clone(), &name).await;
+   let (app_port, token) = get_app_socket(app.clone(), &name).await?;
    println!("Selecting app ; app_port: {app_port}");
    Ok((app_port, token))
 }
 
 
 #[tauri::command]
-pub async fn install(handle: tauri::AppHandle, name: String, seed: Option<String>) -> Result<(u16, String), Error> {
+pub async fn install(handle: tauri::AppHandle, name: String, seed: Option<String>) -> Result<(u16, String), String> {
    println!("install app {name} | seed: {:?}", seed);
    let network_seed = match seed {
       Some(seed) => seed,
-      None => hash_string(&name).map_err(|err| Error::OpenAppError(err))?,
+      None => hash_string(&name)?,
    };
 
-   handle
-      .holochain()?
-      .install_app(
-         name.clone(),
-         happ_bundle(),
-         None,
-         None,
-         Some(network_seed),
-      )
-      .await?;
+   let plugin = handle.holochain().map_err(|e| e.to_string())?;
+   plugin
+      .try_runtime()
+      .map_err(|e| e.to_string())?
+      .install_app(InstallAppPayload {
+         source: AppBundleSource::Bytes(HAPP_BUNDLE_BYTES.to_vec().into()),
+         agent_key: None,
+         installed_app_id: Some(name.clone()),
+         network_seed: Some(network_seed),
+         roles_settings: Some(HashMap::new()),
+         ignore_genesis_failure: false,
+         restore_from_dht: false,
+      })
+      .await
+      .map_err(|e| e.to_string())?;
    return select(handle, name).await;
 }
 
 
 ///
-async fn get_app_socket(app: tauri::AppHandle, name: &str) -> (u16, String) {
-   let hc = &app.holochain()
-      .expect("Should have been able to get holochain runtime")
-      .holochain_runtime;
-   let app_websocket_auth = hc
-      .get_app_websocket_auth(&name.to_string(), get_allowed_origins())
+async fn get_app_socket(app: tauri::AppHandle, name: &str) -> Result<(u16, String), String> {
+   let plugin = app.holochain().map_err(|e| e.to_string())?;
+   let hc = plugin.try_runtime().map_err(|e| e.to_string())?;
+   let app_auth = hc
+      .ensure_app_websocket(name.to_string())
       .await
-      .expect("Should have been able to get websocket auth for app");
-   let token_vector: Vec<String> = app_websocket_auth
+      .map_err(|e| e.to_string())?;
+   let token_vector: Vec<String> = app_auth
+      .authentication
       .token
       .iter()
       .map(|n| n.to_string())
       .collect();
    let token = token_vector.join(",");
-   (app_websocket_auth.app_websocket_port, token)
+   Ok((app_auth.port, token))
 }
 
 

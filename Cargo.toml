@@ -20,20 +20,25 @@ edition = "2021"
 [workspace.dependencies]
 serde = { version = "=1.0.228", default-features = false }
 holochain_serialized_bytes = "=0.0.57"
-hdi = { version = "=0.7.1", default-features = false }
-hdk = { version = "=0.6.1", default-features = false }
+hdi = { version = "=0.8.0", default-features = false, features = ["trace"] }
+hdk = { version = "=0.7.0", default-features = false }
 
-zome_utils = { git = "https://github.com/ddd-mtl/zdk", branch = "main-0.6" }
-zome_path = { git = "https://github.com/ddd-mtl/zdk", branch = "main-0.6" }
-zome_signals = { git = "https://github.com/ddd-mtl/zdk", branch = "main-0.6" }
-zome_core = { git = "https://github.com/ddd-mtl/zdk", branch = "main-0.6" }
+# zdk 0.7 line, rev-pinned. Never a branch: a branch ref floats, so two builds of the
+# same commit of this repo can end up on different zdk code. Same rev as files pins.
+zome_utils = { git = "https://github.com/ddd-mtl/zdk", rev = "1aff80f11db0d7373b76a3ffbd4af65f363f0816" }
+zome_path = { git = "https://github.com/ddd-mtl/zdk", rev = "1aff80f11db0d7373b76a3ffbd4af65f363f0816" }
+zome_signals = { git = "https://github.com/ddd-mtl/zdk", rev = "1aff80f11db0d7373b76a3ffbd4af65f363f0816" }
+zome_core = { git = "https://github.com/ddd-mtl/zdk", rev = "1aff80f11db0d7373b76a3ffbd4af65f363f0816" }
 
-time_indexing = { git = "https://github.com/ddd-mtl/zdk", branch = "main-0.6" }
-path_explorer_types = { git = "https://github.com/ddd-mtl/zdk", branch = "main-0.6" }
-path_explorer = { git = "https://github.com/ddd-mtl/zdk", branch = "main-0.6" }
+time_indexing = { git = "https://github.com/ddd-mtl/zdk", rev = "1aff80f11db0d7373b76a3ffbd4af65f363f0816" }
+path_explorer_types = { git = "https://github.com/ddd-mtl/zdk", rev = "1aff80f11db0d7373b76a3ffbd4af65f363f0816" }
+path_explorer = { git = "https://github.com/ddd-mtl/zdk", rev = "1aff80f11db0d7373b76a3ffbd4af65f363f0816" }
 
-hc_zome_profiles_integrity = { git = "https://github.com/holochain-open-dev/profiles", branch = "main-0.6" }
-hc_zome_profiles_coordinator = {git = "https://github.com/ddd-mtl/zdk", branch = "main-0.6", package="profiles_alt_coordinator" }
+# v0.701.0, not v0.700.0: zdk at this rev pins v0.701.0, and two copies of
+# hc_zome_profiles_integrity in one graph means the coordinator and integrity zomes
+# disagree about EntryTypes.
+hc_zome_profiles_integrity = { git = "https://github.com/holochain-open-dev/profiles", tag = "v0.701.0" }
+hc_zome_profiles_coordinator = { git = "https://github.com/ddd-mtl/zdk", rev = "1aff80f11db0d7373b76a3ffbd4af65f363f0816", package = "profiles_alt_coordinator" }
 
 
 [profile.dev]

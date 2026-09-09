@@ -18,7 +18,7 @@ integrity:
 coordinator:
   zomes:
     - name: zPathExplorer
-      path: ../../target/wasm32-unknown-unknown/release/path_explorer.wasm
+      path: ../../target/wasm32-unknown-unknown/release/path_explorer_zome.wasm
     - name: zThreads
       path: ../../target/wasm32-unknown-unknown/release/threads_coordinator.wasm
       dependencies:

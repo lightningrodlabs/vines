@@ -22,15 +22,17 @@ tauri-build = { version = "2.2.0", default-features = false , features = [] }
 #android_logger = "0.13"
 
 [dependencies]
-serde = { version = "=1.0.219", default-features = false }
+serde = { version = "=1.0.228", default-features = false }
 tauri = { version = "=2.9", default-features = false , features = [] }
-tauri-plugin-holochain = { git = "https://github.com/darksoil-studio/tauri-plugin-holochain", branch = "main-0.6.1"}
+# Replaces darksoil-studio/p2p-shipyard: FFI-free unified desktop + Android plugin on the 0.7 line.
+tauri-plugin-holochain = { git = "https://github.com/holochain/android-service-runtime", branch = "main-0.7" }
 tauri-plugin-clipboard-manager = "2.0.0"
 
-holochain = { version = "0.6.1-rc", default-features = false, features = [ "sqlite-encrypted", "wasmer_sys", "transport-iroh" ] }
-holochain_types = {version = "0.6.1-rc", default-features = false }
+# 0.7 feature renames: sqlite-encrypted -> encryption, wasmer_sys -> wasmer-sys-cranelift, transport-iroh removed (iroh is the only transport)
+holochain = { version = "0.7.0", default-features = false, features = [ "encryption", "wasmer-sys-cranelift" ] }
+holochain_types = {version = "0.7.0", default-features = false }
 
-lair_keystore = { version = "0.6.3" }
+lair_keystore = { version = "0.7.1" }
 
 log = "0.4"
 tauri-plugin-log = "2.4.0"

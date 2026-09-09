@@ -1,7 +1,7 @@
 use holochain_types::prelude::*;
 use std::path::PathBuf;
-use tauri_plugin_holochain::{HolochainPluginConfig, HolochainExt, vec_to_locked};
-use tauri::{Listener, Manager, AppHandle, Runtime};
+use tauri_plugin_holochain::{HolochainPluginConfig, HolochainExt, vec_to_locked, WindowOptions, EVENT_READY, EVENT_SETUP_FAILED};
+use tauri::{Listener, Manager};
 use tauri_plugin_log::{Target, TargetKind};
 
 pub mod commands;
@@ -48,13 +48,17 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_clipboard_manager::init())
-        .plugin(tauri_plugin_holochain::async_init(
-            vec_to_locked(vec![]),
-            HolochainPluginConfig::new(holochain_dir(), network_config(TARGET_ARC))
-        ))
         .setup(|app| {
            let handle = app.handle().clone();
            let handle_fail = app.handle().clone();
+
+           // Registered here rather than on the builder: the 0.7 plugin exposes
+           // `init()` (not `async_init()`), and mobile needs a live handle for its
+           // data dir.
+           app.handle().plugin(tauri_plugin_holochain::init(
+              vec_to_locked(vec![]),
+              HolochainPluginConfig::new(holochain_dir(), network_config(TARGET_ARC)),
+           ))?;
 
            //#[cfg(target_os = "android")]
            //android::log("VINES Hello from Rust!");
@@ -62,23 +66,20 @@ pub fn run() {
            println!("Holochain plugin setup start");
 
            app.handle()
-              .listen("holochain://setup-failed", move |event| {
+              .listen(EVENT_SETUP_FAILED, move |event| {
                  println!("Holochain setup failed: {:?}", event);
                  handle_fail.exit(1);
               });
             app.handle()
-               .listen("holochain://setup-completed", move |event| {
+               .listen(EVENT_READY, move |_event| {
                  //println!("Holochain plugin setup completed: {:?}", event);
                  let handle = handle.clone();
                  tauri::async_runtime::spawn(async move {
-                    let Ok(admin_ws) = handle.clone().holochain().expect("Holochain failed to initialize").admin_websocket().await else {
+                    let Ok(hc) = handle.clone().holochain().expect("Holochain failed to initialize").try_runtime() else {
                        eprintln!("Failed to setup Holochain.");
                        return;
                     };
-                    let Ok(installed_apps) = admin_ws
-                       .list_apps(None)
-                       .await
-                       .map_err(|err| tauri_plugin_holochain::Error::ConductorApiError(err)) else {
+                    let Ok(installed_apps) = hc.list_apps().await else {
                        eprintln!("Failed to list installed apps.");
                        return;
                     };
@@ -92,22 +93,27 @@ pub fn run() {
                               println!("Only one app installed, loading it directly: {}", main_app.installed_app_id);
                               if main_app.status != AppStatus::Enabled {
                                  println!("Enabling app: {}", main_app.installed_app_id);
-                                 handle.holochain()?.holochain_runtime.enable_app(main_app.installed_app_id.clone()).await?;
+                                 handle.holochain()?.try_runtime()?.enable_app(main_app.installed_app_id.clone()).await?;
                               }
-                              //
-                              handle.clone().holochain()?.update_app_if_necessary(
-                                 String::from(main_app.installed_app_id.clone()),
-                                 happ_bundle()
-                              ).await?;
+                              // NOTE: `update_app_if_necessary()` has no equivalent in the
+                              // 0.7 runtime; coordinator hot-swap on launch is dropped.
                               // Load window
                               handle.holochain()?
-                                 .main_window_builder(String::from("main"), true, Some(main_app.installed_app_id), /*Some(url)*/ None).await?
+                                 .main_window_builder(String::from("main"), Some(main_app.installed_app_id), WindowOptions {
+                                     // Vines' UI talks to the conductor over the app websocket
+                                     // (see commands::apps::get_app_socket), not direct IPC.
+                                     use_app_websocket: true,
+                                     ..Default::default()
+                                 }).await?
                                  //.inner_size(360.,800.)
                                  //.build()?;
                        } else {
                           {
                              handle.holochain()?
-                                .main_window_builder(String::from("main"), true, None, None).await?
+                                .main_window_builder(String::from("main"), None, WindowOptions {
+                                    use_app_websocket: true,
+                                    ..Default::default()
+                                }).await?
                                //.main_window_builder(String::from("main"), true, None, Some(admin_url(true).await)).await?
                                //.inner_size(360.,800.)
                                //.build()?;
