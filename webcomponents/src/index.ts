@@ -81,3 +81,4 @@ export * from './bindings/threads.proxy';
 export * from './bindings/threads.types';
 
 export * from './markdown/md';
+export * from "./network-stats-source";

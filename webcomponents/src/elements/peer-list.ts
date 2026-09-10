@@ -17,7 +17,8 @@ import {
     TransportStats
 } from "@holochain/client";
 import {consume} from "@lit/context";
-import {networkCallerContext} from "../contexts";
+import {networkCallerContext, networkStatsContext} from "../contexts";
+import {NetworkStatsSource} from "../network-stats-source";
 import {NetworkCaller} from "@ddd-qc/lit-happ/dist/NetworkCaller";
 import {timeSince} from "../features/timezone/utils";
 
@@ -46,11 +47,17 @@ export class PeerList extends ZomeElement<ProfilesAltPerspective, ProfilesAltZvm
   @consume({context: networkCallerContext, subscribe: true})
   @property() networkCaller!: NetworkCaller;
 
+  /** Transport stats: from Moss when running in it, so listing who is connected
+   *  needs no call of its own. See network-stats-source.ts. */
+  @consume({context: networkStatsContext, subscribe: true})
+  @property() statsSource?: NetworkStatsSource;
+
   @property({type: Boolean}) self: boolean = false;
 
 
     /** After first render only */
     override async firstUpdated() {
+        this.statsSource?.onUpdate(() => this.requestUpdate());
         /** Register loop callback */
         this.networkCaller!.addCallback((r: NetworkInfoResponse) => {
             //console.log("TransportStats:", s.peer_urls);
@@ -71,14 +78,22 @@ export class PeerList extends ZomeElement<ProfilesAltPerspective, ProfilesAltZvm
         if (this.perspective.profiles.size <= 1) {
             return;
         }
-        /** Build peer status map */
-        if (this.networkCaller.networkMetricsLogs.length != 0 && this.networkCaller.networkStatsLogs.length != 0) {
-            let latestStats: TransportStats = this.networkCaller.networkStatsLogs[this.networkCaller.networkStatsLogs.length - 1]![1];
-            let latestMetrics: NetworkMetrics = this.networkCaller.networkMetricsLogs[this.networkCaller.networkMetricsLogs.length - 1]![1];
+        /** Build peer status map. Needs transport stats only: connections are
+         *  what say who is online, and they cover peers who joined vines from a
+         *  phone and so are not group members Moss knows about. Gossip metrics,
+         *  when there are any, only add detail. Rebuilt from scratch each time,
+         *  so a peer who disconnects stops showing as connected. */
+        const statsLogs = this.networkCaller.networkStatsLogs;
+        const latestStats: TransportStats | undefined = this.statsSource?.latest()
+            ?? (statsLogs.length? statsLogs[statsLogs.length - 1]![1] : undefined);
+        if (latestStats) {
+            const metricsLogs = this.networkCaller.networkMetricsLogs;
+            const latestMetrics: NetworkMetrics | undefined = metricsLogs.length? metricsLogs[metricsLogs.length - 1]![1] : undefined;
+            const map: Map<AgentPubKeyB64, PeerStatus> = new Map();
 
             // remap peerMeta map to use pub key instead of peer url
             const peerMetaMap = Object.fromEntries(
-                Object.entries(latestMetrics.gossip_state_summary.peer_meta).map(([key, value]) => {
+                Object.entries(latestMetrics? latestMetrics.gossip_state_summary.peer_meta : {}).map(([key, value]) => {
                     const newKey = key.split('/').at(-1) ?? key;
                     return [newKey, value];
                 })
@@ -107,9 +122,10 @@ export class PeerList extends ZomeElement<ProfilesAltPerspective, ProfilesAltZvm
                 }
                 const agentId = await this.networkCaller.peerKeyToAgentId(connection.pub_key);
                 if (agentId) {
-                    this._peerStatusMap.set(agentId.b64, peerStatus);
+                    map.set(agentId.b64, peerStatus);
                 }
             }
+            this._peerStatusMap = map;
         }
     }
 
@@ -117,10 +133,13 @@ export class PeerList extends ZomeElement<ProfilesAltPerspective, ProfilesAltZvm
   /** */
   override render() {
     //console.debug("<peer-list>.render()", this.perspective);
+    const latestStats = this.statsSource?.latest();
     const netLogCount = this.networkCaller.networkMetricsLogs.length;
-    const peerCount = netLogCount > 0
-      ? Object.keys(this.networkCaller.networkMetricsLogs[netLogCount - 1]![1].gossip_state_summary.peer_meta).length
-      : 0;
+    const peerCount = latestStats
+      ? latestStats.connections.length
+      : netLogCount > 0
+        ? Object.keys(this.networkCaller.networkMetricsLogs[netLogCount - 1]![1].gossip_state_summary.peer_meta).length
+        : 0;
 
     const importedProfiles = new Set<AgentPubKeyB64>();
     for (const [ah, [profile, _ts]] of this.perspective.profiles.entries()) {
@@ -177,7 +196,8 @@ export class PeerList extends ZomeElement<ProfilesAltPerspective, ProfilesAltZvm
           return;
         }
         /** */
-        if (status && this.networkCaller!.isLooping()) {
+        /** Shown whenever there are stats, not only while vines' own loop runs. */
+        if (status) {
             const date = new Date(status.connectedSince * 1000); // Timestamp is in seconds, Date wants milliseconds
             statusContent.push(html`<div style="align-content:center;">(${msg('since')} ${timeSince(date)})</div>`);
             // if (!status.hasMeta || status.errors > 0) {
