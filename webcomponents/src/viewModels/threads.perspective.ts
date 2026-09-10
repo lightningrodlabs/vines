@@ -660,7 +660,7 @@ export class ThreadsPerspective {
 
   /** Return matching beadAhs */
   searchTextBeads(parameters: SearchParameters): [ActionId, BeadInfo, string][] {
-    console.log("searchTextBeads()", parameters);
+    //console.log("searchTextBeads()", parameters);
     /** Must have at least one param */
     if (Object.keys(parameters).length == 1) {
       return [];
@@ -723,8 +723,12 @@ export class ThreadsPerspective {
         return false;
       })
     }
+    /** Newest first. Without this the results come out in the order the beads
+     *  happen to sit in the map -- arrival order, with the decrypted ones
+     *  concatenated after the rest -- which reads as no order at all. */
+    matchingTextBeads.sort(([_aAh, aInfo, _aText], [_bAh, bInfo, _bText]) => bInfo.creationTime - aInfo.creationTime);
     /** DONE */
-    console.log("searchTextBeads() result", /*matchingTextBeads.length,*/ matchingTextBeads);
+    //console.log("searchTextBeads() result", matchingTextBeads.length);
     return matchingTextBeads;
   }
 

@@ -27,7 +27,7 @@ export class SearchResultPanel extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   override render() {
-    console.log("<search-result-panel>.render()", this.parameters);
+    //console.log("<search-result-panel>.render()", this.parameters);
 
     const beadAhs = this._dvm.threadsZvm.perspective.searchTextBeads(this.parameters);
 
