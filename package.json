@@ -54,7 +54,7 @@
     "multiagent3": "AGENT_NUM=3 concurrently \"npm run multiagent:we-launch\"",
     "multiagentall": "concurrently \"npm run multiagent\" \"sleep 5 && npm run multiagent2\" \"sleep 7 && npm run multiagent3\"",
     "multiagent:we-launch": "weave --disable-os-notifications --dev-config testdata/we.multiagent.config.json --agent-idx $AGENT_NUM",
-    "weave": "env -u ELECTRON_RUN_AS_NODE TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\",\"target\":\"es2020\",\"esModuleInterop\":true}' weave",
+    "weave": "env -u ELECTRON_RUN_AS_NODE -u GDK_PIXBUF_MODULE_FILE -u GIO_EXTRA_MODULES -u GIO_MODULE_DIR -u GSETTINGS_SCHEMAS_PATH XDG_DATA_DIRS=/usr/local/share:/usr/share TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\",\"target\":\"es2020\",\"esModuleInterop\":true}' weave",
     "start:ui:we": "HAPP_BUILD_MODE=Retail npm run start:ui -w we-applet -- --no-open",
     "launch:moss": "concurrently \"UI_PORT=1420 npm run start:ui:we\" \"sleep 1 && npm run weave -- --agent-idx 1 --dev-config we_dev/config.ts\" \"sleep 20 && npm run weave -- --agent-idx 2 --sync-time 45000 --dev-config we_dev/config.ts\"",
     "launch:moss-1": "concurrently \"UI_PORT=1420 npm run start:ui:we\" \"sleep 1 && npm run weave -- --agent-idx 1 --dev-config we_dev/config.ts\"",
