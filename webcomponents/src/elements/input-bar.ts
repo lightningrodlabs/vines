@@ -279,6 +279,18 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   /** */
   private commitInput() {
     console.log(`<vines-input-bar> Commit input`);
+    /** A commit while one is in flight, or with nothing in it, set the page
+     *  waiting for a message that never got published, and the input stayed
+     *  hidden until a reload. Easy to hit while typing fast: the input hides
+     *  while busy, the next character is lost, and the trailing Enter lands on
+     *  the empty input the moment it comes back. */
+    if (this.busy) {
+      return;
+    }
+    const text = this.inputElem? this.inputElem.value : undefined;
+    if (!(text && text.trim()) && !this._file && !this._wal) {
+      return;
+    }
     /** Validate */
     if (this.inputElem) {
       const reason = this.validateText(this.inputElem.value);
@@ -289,7 +301,6 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       }
     }
     /** Shoot event */
-    const text = this.inputElem? this.inputElem.value : undefined;
     const event: VinesInputEvent = {
       ppAh: this.threadHash!,
       agent: this.agentHash!,
