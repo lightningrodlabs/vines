@@ -1,10 +1,9 @@
 import {css, html, PropertyValues} from "lit";
 import {consume} from "@lit/context";
 import {property, state, customElement} from "lit/decorators.js";
-import {ActionId, ActionIdMap, AgentId, DnaId, DnaMultiElement, intoLinkableId} from "@ddd-qc/lit-happ";
+import {ActionId, ActionIdMap, AgentId, DnaId, DnaMultiElement} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../../viewModels/threads.dvm";
 //import {ThreadsPerspective} from "../viewModels/threads.perspective";
-import {BeadLink} from "../../bindings/threads.types";
 import {msg} from "@lit/localize";
 //import {ts2day} from "../../render";
 import {weClientContext} from "../../contexts";
@@ -13,7 +12,6 @@ import {sharedStyles} from "../../styles";
 import {WeServicesEx} from "@ddd-qc/we-utils";
 import {determinerGroupProfile} from "../../utils";
 import {ts2day} from "../timezone/utils";
-import {GetStrategy} from "@holochain-open-dev/core-types";
 import {ScrollKeeper} from "./scroll-keeper";
 
 
@@ -162,20 +160,6 @@ export class ChatThreadMultiView extends DnaMultiElement<ThreadsDvm> {
   }
 
 
-  /** Check if beads have comments */
-  protected async loadBeadComments(bls: BeadLink[], dvm: ThreadsDvm): Promise<void> {
-    for (const bl of bls) {
-      const pps = await dvm.threadsZvm.pullSubjectThreads(intoLinkableId(bl.beadAh), GetStrategy.Local); // TODO: GeStrategy
-      for (const [ppAh, [pp, _ts, _author]] of pps.entries()) {
-        if (pp.purpose == "comment") {
-          dvm.threadsZvm.perspective.getAllBeadsOnThread(ppAh);
-          break;
-        }
-      }
-    }
-  }
-
-
   /** */
   protected loadlatestMessages(dvm: ThreadsDvm) {
     console.log("<chat-thread-multi-view>.loadlatestMessages() probe", this.agent, !!dvm);
@@ -189,9 +173,8 @@ export class ChatThreadMultiView extends DnaMultiElement<ThreadsDvm> {
     const ppAh = dvm.threadsZvm.perspective.dmAgents.get(this.agent);
     if (ppAh) {
       dvm.threadsZvm.pullLatestBeads(ppAh, undefined, undefined, 20)
-        .then(async (beadLinks) => {
+        .then(async () => {
           this._loading = false;
-          await this.loadBeadComments(beadLinks, dvm);
           await dvm.threadsZvm.commitThreadProbeLog(ppAh);
         });
       this._loading = true;
@@ -211,9 +194,8 @@ export class ChatThreadMultiView extends DnaMultiElement<ThreadsDvm> {
       return;
     }
     this._loading = true;
-    const bls = await dvm.threadsZvm.probePreviousBeads(ppAh, 10);
+    await dvm.threadsZvm.probePreviousBeads(ppAh, 10);
     this._loading = false;
-    await this.loadBeadComments(bls, dvm);
   }
 
 

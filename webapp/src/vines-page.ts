@@ -1153,19 +1153,31 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         this.weServices.onBeforeUnload(() => this.onBeforeUnload());
         this.weServices.onPeerStatusUpdate((peerStatusList: PeerStatusUpdate) => {
             //console.log("<vines-page>.onPeerStatusUpdate()", Object.keys(peerStatusList).length);
-            const livePeers = this._dvm.livePeers.map(id => id.b64);
+            const livePeers = new Set(this._dvm.livePeers.map(id => id.b64));
+            let hasNewPeer = false;
             for (const [peer, peerStatus] of Object.entries(peerStatusList)) {
                 const agentId = new AgentId(peer);
                 //console.debug("<vines-page>.onPeerStatusUpdate()", peerStatus.status, peerStatus.lastSeen);
-                if (!livePeers.includes(peer) && peerStatus.status == "online") {
+                if (!livePeers.has(peer) && peerStatus.status == "online") {
                     //console.log("Adding livePeer from PeerStatus", agentId.short);
                     this._dvm.storePresence(agentId, peerStatus.lastSeen);
-                    this._dvm.probeAll(GetStrategy.Local);
+                    /** The set is updated as we go: it used to be a snapshot taken
+                     *  before the loop, so every peer in an update looked new and
+                     *  each one started its own probe. */
+                    livePeers.add(peer);
+                    hasNewPeer = true;
                 } else {
-                  if (livePeers.includes(peer) && peerStatus.status == "offline") {
+                  if (livePeers.has(peer) && peerStatus.status == "offline") {
                     this._dvm.unstorePresence(agentId);
                   }
                 }
+            }
+            /** One probe for the whole update, and not while one is still
+             *  running: a probe walks every subject, so overlapping passes make
+             *  the same zome calls a few ms apart and the proxy throttles them
+             *  ("THROTTLING SPAM zThreads::probe_pps_from_subject_hash()"). */
+            if (hasNewPeer) {
+                this.probeAllSoon();
             }
         });
         setLocale(this.weServices.getLocale());
@@ -1457,6 +1469,28 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       console.log("onMergeTopicClicked()", e.detail);
       //this._dvm.threadsZvm.meerg
   }
+
+  /** Peer-status updates arrive in bursts, and each new peer used to start a
+   *  full probe. At most one runs at a time, with at most one more queued. */
+  private _probeRunning: boolean = false;
+  private _probeQueued: boolean = false;
+  private probeAllSoon() {
+    if (this._probeRunning) {
+      this._probeQueued = true;
+      return;
+    }
+    this._probeRunning = true;
+    Promise.resolve(this._dvm.probeAll(GetStrategy.Local))
+        .catch((e:any) => console.warn("probeAll() failed", e))
+        .finally(() => {
+          this._probeRunning = false;
+          if (this._probeQueued) {
+            this._probeQueued = false;
+            this.probeAllSoon();
+          }
+        });
+  }
+
 
   /** */
   async onReplyClicked(e: CustomEvent<ActionId>) {

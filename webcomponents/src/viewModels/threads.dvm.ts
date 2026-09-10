@@ -88,6 +88,9 @@ export type ThreadsDnaPerspectiveComparable = {
  *  - Threads
  *  - Profiles
  */
+/** How often a "typing" tip goes out while someone keeps typing. */
+const TYPING_TIP_INTERVAL_MS = 4000;
+
 export class ThreadsDvm extends DnaViewModel {
 
   static override readonly DEFAULT_BASE_ROLE_NAME = VINES_DEFAULT_ROLE_NAME;
@@ -259,8 +262,17 @@ export class ThreadsDvm extends DnaViewModel {
               const snapshot = [...this._perspective.myUnvalidatedBeads];
               // for the first 10 beads
               for (const unvalidatedBeadAhB64 of  snapshot.slice(0, 10)) {
-                const [_e, receipts] = await catchThrottled(this.threadsZvm.zomeProxy.getMyReceipts(new ActionId(unvalidatedBeadAhB64).hash));
-                const validationCount = receipts ? countValidReceipts(receipts) : 0;
+                /** Forced: this loop exists to notice receipts changing, and the
+                 *  cached answer is the one from when the message first appeared. */
+                const receipts = await this.threadsZvm.fetchMyReceipts(new ActionId(unvalidatedBeadAhB64), true);
+                if (!receipts) {
+                  /** Could not read them this time round. Asking peers to
+                   *  validate again on the strength of a failed read is what
+                   *  kept a backlog re-broadcasting for ever; leave the bead in
+                   *  the set and try again on the next tick. */
+                  continue;
+                }
+                const validationCount = countValidReceipts(receipts);
                 if (validationCount > 0) {
                   this._perspective.myUnvalidatedBeads.delete(unvalidatedBeadAhB64);
                   //console.debug("processMyUnvalidated Removed from myUnvalidatedBeads", unvalidatedBeadAhB64, this._perspective.myUnvalidatedBeads);
@@ -445,6 +457,14 @@ export class ThreadsDvm extends DnaViewModel {
   }
 
 
+  /** Acks sent recently, keyed "<bead>|<author>", with the time they were sent.
+   *  synchronizeCustomTip() is fire-and-forget, and the proxy throttles an
+   *  identical tip sent inside its ~200ms bucket, so a bead whose pulse is
+   *  handled more than once produced a burst of "THROTTLING SPAM
+   *  zThreads::synchronize_tip()" and one delivered ack. */
+  private _recentAcks: Map<string, number> = new Map();
+  static readonly ACK_DEDUPE_MS = 3000;
+
   /** */
   respondValidationRequest(beadAh: ActionHashB64) {
     console.log("ThreadsDvm.respondValidationRequest()", beadAh);
@@ -461,6 +481,19 @@ export class ThreadsDvm extends DnaViewModel {
       //console.debug("respondValidationRequest() aborted. Author not connected", others, author.b64)
       return;
     }
+    /** Skip a repeat of the same ack to the same author */
+    const ackKey = beadId.b64 + "|" + author.b64;
+    const now = Date.now();
+    const lastSent = this._recentAcks.get(ackKey);
+    if (lastSent && now - lastSent < ThreadsDvm.ACK_DEDUPE_MS) {
+      return;
+    }
+    for (const [key, ts] of [...this._recentAcks.entries()]) {
+      if (now - ts >= ThreadsDvm.ACK_DEDUPE_MS) {
+        this._recentAcks.delete(key);
+      }
+    }
+    this._recentAcks.set(ackKey, now);
     const tip: ThreadsAppTip = {type: "ack", data: beadId.b64};
     const serTip = this._encoder.encode(tip);
     //console.log("ThreadsDvm.respondValidationRequest() sync tip", this.isMainView, beadId.b64);
@@ -571,7 +604,8 @@ export class ThreadsDvm extends DnaViewModel {
             break
           case "ack":
             console.debug("ThreadsDvm.handleTip() received ack", appTip.data);
-            catchThrottled(this.threadsZvm.zomeProxy.getMyReceipts(new ActionId(appTip.data).hash)).then(([_err, receipts]) =>  {
+            /** Forced: an ack means the receipts just changed. */
+            this.threadsZvm.fetchMyReceipts(new ActionId(appTip.data), true).then((receipts) =>  {
               const validationCount = receipts? countValidReceipts(receipts) : 0;
               if (validationCount > 0) {
                 this._perspective.myUnvalidatedBeads.delete(appTip.data);
@@ -699,17 +733,30 @@ export class ThreadsDvm extends DnaViewModel {
 
 
   /** */
+  /** When the last "typing" tip went out, per thread. */
+  private _typingTipAt: ActionIdMap<number> = new ActionIdMap();
+
+  /** */
   storeThreadInput(ppAh: ActionId, value: string) {
     //console.debug("ThreadsDvm.storeThreadInput()", value);
     if (!value) {
       this._perspective.threadInputs.delete(ppAh);
-      /*await*/
-      this.signalTyping(ppAh, false);
+      /** Once: the input was cleared. Nothing to say if peers were never told. */
+      if (this._typingTipAt.has(ppAh)) {
+        this._typingTipAt.delete(ppAh);
+        /*await*/
+        this.signalTyping(ppAh, false);
+      }
       return;
     }
-    //if (!this._perspective.threadInputs.has(ppAh)) {
-    this.signalTyping(ppAh, true);
-    //}
+    /** Every keystroke sent an identical tip and the proxy refused all but the
+     *  first in each burst as spam. Receivers show "is typing" for 20s from
+     *  the last tip, so one every few seconds carries the same meaning. */
+    const last = this._typingTipAt.get(ppAh);
+    if (last === undefined || Date.now() - last > TYPING_TIP_INTERVAL_MS) {
+      this._typingTipAt.set(ppAh, Date.now());
+      this.signalTyping(ppAh, true);
+    }
     this._perspective.threadInputs.set(ppAh, value);
   }
 

@@ -2,16 +2,14 @@ import {css, html, PropertyValues, TemplateResult} from "lit";
 import {consume} from "@lit/context";
 import {repeat} from 'lit/directives/repeat.js'
 import {customElement, property, state} from "lit/decorators.js";
-import {ActionId, DnaElement, intoLinkableId} from "@ddd-qc/lit-happ";
+import {ActionId, DnaElement} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../../viewModels/threads.dvm";
 import {ThreadsPerspective} from "../../viewModels/threads.perspective";
-import {BeadLink} from "../../bindings/threads.types";
 import {msg} from "@lit/localize";
 import {onlineLoadedContext} from "../../contexts";
 import {sharedStyles} from "../../styles";
 import {ScrollKeeper} from "./scroll-keeper";
 import {formatTime} from "../timezone/utils";
-import {GetStrategy} from "@holochain-open-dev/core-types";
 
 
 /**
@@ -175,20 +173,6 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
   }
 
 
-  /** Check if beads have comments */
-  protected async loadBeadComments(bls: BeadLink[], dvm: ThreadsDvm): Promise<void> {
-    for (const bl of bls) {
-      const pps = await dvm.threadsZvm.pullSubjectThreads(intoLinkableId(bl.beadAh), GetStrategy.Local);
-      for (const [ppAh, [pp, _ts, _author]] of pps.entries()) {
-        if (pp.purpose == "comment") {
-          dvm.threadsZvm.perspective.getAllBeadsOnThread(ppAh);
-          break;
-        }
-      }
-    }
-  }
-
-
   /** */
   protected loadlatestMessages(newDvm?: ThreadsDvm) {
     console.log("<chat-thread-view>.loadlatestMessages() probe", this.threadHash);
@@ -210,7 +194,6 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
          *  on a channel's first open. Comment counts fill in on each item as
          *  they arrive, which is how the DM view has always ordered this. */
         this._loading = false;
-        await this.loadBeadComments(beadLinks, dvm);
         await dvm.threadsZvm.commitThreadProbeLog(threadAh);
       });
     this._loading = true;
@@ -233,7 +216,6 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
     const bls = await this._dvm.threadsZvm.probePreviousBeads(this.threadHash, this.batchSize);
     console.log("<chat-thread-view>.loadPreviousMessages() probed", bls.length);
     this._loading = false;
-    await this.loadBeadComments(bls, this._dvm);
     //this._commentsLoading = false; // This is for triggering a new requestUpdate
   }
 
