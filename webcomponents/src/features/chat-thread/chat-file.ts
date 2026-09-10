@@ -183,7 +183,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   override render() {
-    console.log("<chat-file>.render()", this.hash, this._loading, !!this._manifest, !!this._file, this._renderCount);
+    //console.log("<chat-file>.render()", this.hash, this._loading, !!this._manifest, !!this._file, this._renderCount);
     this._renderCount += 1;
 
     if (!this.hash) {
@@ -261,7 +261,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
     const mime = kind2mime(this._manifest.description.kind_info);
     //const fileType = kind2Type(this._manifest.description.kind_info);
 
-    console.log("<chat-file>.render() type:", this._manifest.description.name, fileType, mime, !!this._file);
+    //console.log("<chat-file>.render() type:", this._manifest.description.name, fileType, mime, !!this._file);
 
     /** Specific render depending on file type */
     /** this._file is set only for small files */

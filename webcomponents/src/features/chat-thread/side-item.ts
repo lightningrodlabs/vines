@@ -139,7 +139,7 @@ export class SideItem extends DnaElement<unknown, ThreadsDvm> {
       case ThreadsEntryType.EntryBead:
         content = html`<div>${`<${msg("File missing")}>`}</div>`;
         const entryBead = typedBead as EntryBeadMat;
-        console.log("<side-item> entryBead", entryBead, entryBead.sourceEh.b64);
+        //console.log("<side-item> entryBead", entryBead, entryBead.sourceEh.b64);
         const manifestEh = entryBead.sourceEh;
         const maybePprm = this._filesDvm.deliveryZvm.perspective.publicParcels.get(manifestEh);
         let desc: ParcelDescription | undefined = undefined;
@@ -195,7 +195,7 @@ export class SideItem extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   override render(): TemplateResult<1> {
-    console.log("<side-item>.render()", this.hash, this.deletable);
+    //console.log("<side-item>.render()", this.hash, this.deletable);
     const beadInfo = this._dvm.threadsZvm.perspective.getBeadInfo(this.hash);
     const [content, author, date] = this.renderContent();
     let maybeProfile: Profile | undefined = undefined;

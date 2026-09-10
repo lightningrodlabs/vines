@@ -73,7 +73,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
 
   /** Don't update during loading of beads  */
   override shouldUpdate(changedProperties: PropertyValues<this>) {
-    console.log("<chat-thread-view>.shouldUpdate()", !this._loading, changedProperties);
+    //console.log("<chat-thread-view>.shouldUpdate()", !this._loading, changedProperties);
     const shouldnt = !super.shouldUpdate(changedProperties);
     if (shouldnt) {
       return false;
@@ -234,7 +234,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   override render() {
-    console.log("<chat-thread-view>.render()", this._renderCount, this._loading, this.threadHash, this.beadAh, this._dvm.threadsZvm);
+    //console.log("<chat-thread-view>.render()", this._renderCount, this._loading, this.threadHash, this.beadAh, this._dvm.threadsZvm);
     this._renderCount += 1;
 
     /** */
@@ -252,7 +252,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
     /** chat-header */
     let maybeHeader = html``;
     const hasReachedBeginning = this._dvm.threadsZvm.perspective.hasReachedBeginning(this.threadHash);
-    console.log("<chat-thread-view>.render() hasReachedBeginning", hasReachedBeginning);
+    //console.log("<chat-thread-view>.render() hasReachedBeginning", hasReachedBeginning);
     if (hasReachedBeginning) {
       maybeHeader = html`<chat-header .threadHash=${this.threadHash}></chat-header>`;
     }
@@ -261,7 +261,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
     /** Should grab all probed messages and request probes if the end has been reached */
 
     const all = thread.getAll();
-    console.log("<chat-thread-view>.render() all", all.length);
+    //console.log("<chat-thread-view>.render() all", all.length);
     //all.sort((blm) => blm.creationTime)
 
     let myTimeZone = "UTC";

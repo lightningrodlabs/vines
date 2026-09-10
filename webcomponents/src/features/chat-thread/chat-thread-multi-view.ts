@@ -84,7 +84,7 @@ export class ChatThreadMultiView extends DnaMultiElement<ThreadsDvm> {
 
   /** Don't update during loading of beads */
   override shouldUpdate(changedProperties: PropertyValues<this>) {
-    console.log("<chat-thread-multi-view>.shouldUpdate()", changedProperties, this._loading);
+    //console.log("<chat-thread-multi-view>.shouldUpdate()", changedProperties, this._loading);
     const shouldnt = !super.shouldUpdate(changedProperties);
     if (shouldnt) {
       return false;
@@ -189,7 +189,7 @@ export class ChatThreadMultiView extends DnaMultiElement<ThreadsDvm> {
 
   /** */
   override render() {
-    console.log("<chat-thread-multi-view>.render()", this._loading, this._dvms.size, this.dmThreads.length, this.agent, this.beadAh);
+    //console.log("<chat-thread-multi-view>.render()", this._loading, this._dvms.size, this.dmThreads.length, this.agent, this.beadAh);
     /** */
     if (this.agent === undefined) {
       return html`<div style="margin:auto; color:red;font-weight: bold;font-size: 3rem">${msg("No peer selected")}</div>`;

@@ -46,7 +46,7 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
   /** */
   constructor() {
     super(ThreadsDvm.DEFAULT_BASE_ROLE_NAME);
-    console.log("<comment-thread-view>.ctor()", this.threadHash, this.beadAh)
+    //console.log("<comment-thread-view>.ctor()", this.threadHash, this.beadAh)
   }
 
 
@@ -271,7 +271,7 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
 
   /** */
   override render() {
-    console.log("<comment-thread-view>.render()", this.threadHash, this.showInput, this.subjectName);
+    //console.log("<comment-thread-view>.render()", this.threadHash, this.showInput, this.subjectName);
     const doodle_bg = html`
         <div style="flex-grow:1; position: absolute; top:0; left:0; z-index:-1;width:100%; height:100%;">
             ${doodle_weave}
@@ -306,7 +306,7 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
 
     const beads = this._dvm.threadsZvm.perspective.getAllBeadsOnThread(this.threadHash);
 
-    console.log("<comment-thread-view>.render() len =", beads.length);
+    //console.log("<comment-thread-view>.render() len =", beads.length);
     console.log("Has thread some unreads?", thread.hasUnreads());
 
     /** Check if the bead has been committed */

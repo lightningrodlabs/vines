@@ -118,7 +118,7 @@ export class ChatAttachment extends LitElement {
 
   /** */
   override render() {
-    console.log("<chat-attachment>.render()", this._att);
+    //console.log("<chat-attachment>.render()", this._att);
 
     if (!this.attachment) {
       return html`<div style="color:#c10a0a">${msg("No Attachment provided")}</div>`;
