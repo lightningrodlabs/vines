@@ -26,6 +26,7 @@ import {
   ThreadsEntryType,
 } from "../bindings/threads.types";
 import {ThreadsProxy} from "../bindings/threads.proxy";
+import {MyValidationReceiptSet} from "../bindings/threads.types";
 import {
   ActionId,
   ActionIdMap,
@@ -101,6 +102,13 @@ import {LitElement} from "lit";
 //generateSearchTest();
 
 /** Better way to catch and handle "throttled" error */
+/** How long a per-bead pull (reactions, receipts) is considered fresh. */
+export const PER_BEAD_PULL_TTL_MS = 2 * 60 * 1000;
+/** Receipt reads closer together than this share one answer, forced or not.
+ *  Longer than the proxy's 200ms throttle bucket. */
+const RECEIPT_COALESCE_MS = 500;
+
+
 export function catchThrottled<T>(promise: Promise<T>): Promise<[undefined, T] | [Error]> {
     return promise
         .then(data => [undefined, data] as [undefined, T])
@@ -275,7 +283,10 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         await this.pullAppletIds(strategy);
         await this.pullAllSubjects(strategy);
         await this.zomeProxy.probeDmThreads(strategy);
-        await this.zomeProxy.probeInbox(strategy);
+        /** Throttled here means the notification loop is already probing the
+         *  inbox; without catching it the rejection would abort the rest of
+         *  this probe -- favorites and every subject's threads. */
+        await catchThrottled(this.zomeProxy.probeInbox(strategy));
         await this.pullFavorites(strategy);
         console.debug("threadsZvm.probeAllInner() probing subjects...");
         /** Grab all threads of other subjects to see if there are new ones */
@@ -379,10 +390,21 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     }
 
 
+    /** In-flight probes by subject, so two passes over the same subject share one
+     *  zome call instead of racing and having the second throttled. */
+    private _subjectThreadFetches: Map<string, Promise<[Uint8Array, Timestamp][]>> = new Map();
+
     /** */
     async pullSubjectVersionThreads(subjectId: AnyId, strategy: GetStrategy): Promise<ActionIdMap<[ParticipationProtocol, Timestamp, AgentId]>> {
         let res: ActionIdMap<[ParticipationProtocol, Timestamp, AgentId]> = new ActionIdMap();
-        const pps = await this.zomeProxy.probePpsFromSubjectHash({lh: subjectId.hash, strategy});
+        const key = subjectId.b64 + "|" + strategy;
+        let probe = this._subjectThreadFetches.get(key);
+        if (!probe) {
+            probe = this.zomeProxy.probePpsFromSubjectHash({lh: subjectId.hash, strategy})
+                .finally(() => this._subjectThreadFetches.delete(key));
+            this._subjectThreadFetches.set(key, probe);
+        }
+        const pps = await probe;
         //console.debug("threadsZvm.pullSubjectVersionThreads() threads", pps.length, subjectId.b64);
         for (const [pp_ah, _linkTs] of pps) {
             const ppAh = new ActionId(pp_ah);
@@ -518,8 +540,41 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
 
     /** Probe all emojis on this bead */
-    async pullEmojiReactions(beadAh: ActionId, strategy: GetStrategy) {
-        await catchThrottled(this.zomeProxy.pullReactions({ah: beadAh.hash, strategy}));
+    /** When each bead's reactions were last pulled. Every message pulls its own
+     *  on mount, so without this a channel of N messages costs N calls on every
+     *  open, and N more each time the reader comes back to it. Changes made
+     *  while this app is running arrive as signals; the cache is short so
+     *  reactions added by a peer while this app was away are still picked up
+     *  on the next visit. */
+    private _reactionsPulledAt: Map<string, number> = new Map();
+
+    /** When each bead's comment thread was last looked for. See _reactionsPulledAt. */
+    private _commentThreadProbedAt: Map<string, number> = new Map();
+
+    /** Find out whether a bead has a comment thread, so the item can show its
+     *  count. Was one call per message per batch in the thread views, before
+     *  anything rendered; now each message asks once it is on screen. */
+    async probeCommentThread(beadAh: ActionId, strategy: GetStrategy = GetStrategy.Local, force: boolean = false): Promise<void> {
+        const last = this._commentThreadProbedAt.get(beadAh.b64);
+        if (!force && last !== undefined && Date.now() - last < PER_BEAD_PULL_TTL_MS) {
+            return;
+        }
+        this._commentThreadProbedAt.set(beadAh.b64, Date.now());
+        await this.pullSubjectThreads(intoLinkableId(beadAh.hash), strategy);
+    }
+
+
+    /** */
+    async pullEmojiReactions(beadAh: ActionId, strategy: GetStrategy, force: boolean = false) {
+        const last = this._reactionsPulledAt.get(beadAh.b64);
+        if (!force && last !== undefined && Date.now() - last < PER_BEAD_PULL_TTL_MS) {
+            return;
+        }
+        this._reactionsPulledAt.set(beadAh.b64, Date.now());
+        const [throttled] = await catchThrottled(this.zomeProxy.pullReactions({ah: beadAh.hash, strategy}));
+        if (throttled) {
+            this._reactionsPulledAt.delete(beadAh.b64);
+        }
     }
 
 
@@ -874,6 +929,56 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
     /** -- Fetch -- */
 
+    /** In-flight getMyReceipts() calls, by bead.
+     *  The proxy throttles an identical request (same fn AND same payload) made
+     *  inside its ~200ms bucket or while one is still in flight, and every ack
+     *  from every peer used to trigger its own fetch for the same bead. A dozen
+     *  peers acking one message is a dozen identical calls, of which one runs
+     *  and the rest log "THROTTLING SPAM zThreads::get_my_receipts()" and
+     *  resolve to nothing. Sharing the in-flight promise means one call and one
+     *  answer for all the callers. */
+    private _receiptFetches: Map<string, Promise<MyValidationReceiptSet[] | undefined>> = new Map();
+
+    /** True between firing the first inbox probe and the poll loop being set. */
+    private _notifLoopStarting: boolean = false;
+
+    /** The last answer per bead and when it came, so remounting one's own
+     *  messages does not ask again straight away. See _reactionsPulledAt. */
+    private _receiptCache: Map<string, {at: number, receipts: MyValidationReceiptSet[]}> = new Map();
+
+    /** Returns undefined when the call failed or was throttled -- which is not
+     *  the same answer as "no receipts", and callers must not read it as one. */
+    fetchMyReceipts(beadAh: ActionId, force: boolean = false): Promise<MyValidationReceiptSet[] | undefined> {
+        const cached = this._receiptCache.get(beadAh.b64);
+        /** A forced read skips the cache, but not an answer that arrived within
+         *  the proxy's throttle bucket: asking again that soon is refused as
+         *  spam and comes back as "could not read", which is worse than the
+         *  answer just received. */
+        const maxAge = force? RECEIPT_COALESCE_MS : PER_BEAD_PULL_TTL_MS;
+        if (cached && Date.now() - cached.at < maxAge) {
+            return Promise.resolve(cached.receipts);
+        }
+        const pending = this._receiptFetches.get(beadAh.b64);
+        if (pending) {
+            return pending;
+        }
+        const promise = this.zomeProxy.getMyReceipts(beadAh.hash)
+            .then((receipts) => {
+                this._receiptCache.set(beadAh.b64, {at: Date.now(), receipts});
+                return receipts;
+            })
+            .catch((e: any) => {
+                if (!e || !e.throttled) {
+                    console.warn("getMyReceipts() failed", beadAh.short, e);
+                }
+                return undefined;
+            })
+            .finally(() => this._receiptFetches.delete(beadAh.b64));
+        this._receiptFetches.set(beadAh.b64, promise);
+        return promise;
+    }
+
+
     /** Make sure we have a ParticipationProtocol */
     ensurePp(ppAh: ActionId, strategy: GetStrategy): void {
       //console.log("ThreadsZvm.fetchPp()", ppAh);
@@ -1011,8 +1116,20 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
             //await this.fetchPp(ppAh, true);
             //thread = this._threads.get(ppAh);
         }
+        /** fetch_beads resolves each bead's original author zome-side and
+         *  rewrites the pulse before it is stored, so for a bead first seen here
+         *  the stored author and time are already the original ones: nothing to
+         *  override, and nothing for chat-item to ask about. A bead that was
+         *  already known keeps whatever it was stored with (storeTypedBead does
+         *  not overwrite), so it is left for the per-item lookup as before. */
+        const firstSeen = beadLinks.map((bl) => new ActionId(bl.beadAh)).filter((ah) => !this._perspective.getBeadInfo(ah));
         await this.zomeProxy.fetchBeads({ahs: beadLinks.map((bl) => bl.beadAh), strategy});
         thread.addProbedInterval(probedInterval);
+        for (const ah of firstSeen) {
+            if (!this._cacheOriginalAuthor.has(ah)) {
+                this._cacheOriginalAuthor.set(ah, null);
+            }
+        }
     }
 
 
@@ -2160,9 +2277,10 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
     /** */
     async getOriginalAuthor(ah: ActionId): Promise<[Timestamp, Uint8Array] | null> {
-        const cached = this._cacheOriginalAuthor.get(ah);
-        if (cached != undefined) {
-            return cached;
+        /** null is an answer too: "nothing to override". `!= undefined` read a
+         *  cached null as a miss and asked the zome again on every mount. */
+        if (this._cacheOriginalAuthor.has(ah)) {
+            return this._cacheOriginalAuthor.get(ah)!;
         }
         const [throttleError, res] = await catchThrottled(this.zomeProxy.getOriginalAuthor({lh: ah.hash, strategy: GetStrategy.Local})); // FIXME strategy
         if (!throttleError) {
@@ -2258,20 +2376,37 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         /** Poll with an interval until we get it from the DHT */
         if (this.isMainView && !this._missingLinkAhs.has(notifTip.link_ah)) {
             this._missingLinkAhs.set(notifTip.link_ah, notifTip);
-            if (!this._notifLoopIntervalId) {
+            /** _notifLoopStarting as well as the interval id: the interval is
+             *  only set once the first probe resolves, so a burst of tips would
+             *  otherwise each fire their own probeInbox() in the same tick. The
+             *  proxy throttles the duplicates and, with no catch on the promise,
+             *  each one surfaced as "Uncaught (in promise) Throttled spam:
+             *  probe_inbox()". */
+            if (!this._notifLoopIntervalId && !this._notifLoopStarting) {
+                this._notifLoopStarting = true;
                 console.log(`ThreadZvm.handleCustomTip() calling probeInbox(GetStrategy.Network) from `, from.b64);
-                this.zomeProxy.probeInbox(GetStrategy.Network)
-                    .then(() => this._notifLoopIntervalId = setInterval(async () => {
-                        console.log("Polling Inbox for Missing links...");
-                        try {
-                            await this.zomeProxy.probeInbox(GetStrategy.Network);
-                        } catch (e) {
-                            console.error("Error when calling probeInbox() stopping the call loop.", e);
-                            clearInterval(this._notifLoopIntervalId);
-                            this._notifLoopIntervalId = undefined;
-                        }
-                    }, 5000)
-                )
+                catchThrottled(this.zomeProxy.probeInbox(GetStrategy.Network))
+                    .then(() => {
+                        this._notifLoopStarting = false;
+                        this._notifLoopIntervalId = setInterval(async () => {
+                            console.log("Polling Inbox for Missing links...");
+                            try {
+                                await this.zomeProxy.probeInbox(GetStrategy.Network);
+                            } catch (e: any) {
+                                if (e && e.throttled) {
+                                    /** Transient: it collided with another probe. Keep polling. */
+                                    return;
+                                }
+                                console.error("Error when calling probeInbox() stopping the call loop.", e);
+                                clearInterval(this._notifLoopIntervalId);
+                                this._notifLoopIntervalId = undefined;
+                            }
+                        }, 5000);
+                    })
+                    .catch((e) => {
+                        this._notifLoopStarting = false;
+                        console.error("Error when calling probeInbox()", e);
+                    });
             }
         }
 

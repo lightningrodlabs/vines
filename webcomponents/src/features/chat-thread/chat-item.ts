@@ -77,12 +77,65 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
   }
 
 
+  /** Loads once the message is actually on screen. A channel renders its
+   *  whole batch at once, and each item used to pull its reactions, receipts
+   *  and original author on mount: two or three zome calls per message, most
+   *  of them for messages below or above the fold that the reader may never
+   *  scroll to. The bead itself is already in the perspective for a batch, so
+   *  nothing visible waits on this. */
+  private _visibility: IntersectionObserver | undefined = undefined;
+  private _loaded: boolean = false;
+
   /** */
   protected override async firstUpdated(_changedProperties: PropertyValues) {
     super.firstUpdated(_changedProperties);
+    this.observeVisibility();
+  }
+
+
+  /** */
+  override connectedCallback() {
+    super.connectedCallback();
+    /** Re-observe if the node was moved before it had come into view. */
+    if (this.hasUpdated) {
+      this.observeVisibility();
+    }
+  }
+
+
+  /** */
+  override disconnectedCallback() {
+    super.disconnectedCallback();
+    this._visibility?.disconnect();
+    this._visibility = undefined;
+  }
+
+
+  /** */
+  private observeVisibility() {
+    if (this._loaded || this._visibility) {
+      return;
+    }
+    this._visibility = new IntersectionObserver((entries) => {
+      if (!entries.some((e) => e.isIntersecting)) {
+        return;
+      }
+      this._visibility?.disconnect();
+      this._visibility = undefined;
+      this._loaded = true;
+      /*await*/ this.loadOnceVisible();
+    }, {rootMargin: "200px 0px"});
+    this._visibility.observe(this);
+  }
+
+
+  /** */
+  private async loadOnceVisible() {
     /** Probe bead and its reactions */
     await this.loadBead(GetStrategy.Local);
-    /** Update if original author found */
+    /** Update if original author found. Answered from cache for any bead that
+     *  came in through a batch fetch; only a bead first seen another way --
+     *  a live tip of an imported message, say -- still asks the zome. */
     const maybe = await this._dvm.threadsZvm.getOriginalAuthor(this.hash);
     if (maybe) {
         //console.log("<chat-item> Original", prettyTimestamp(maybe[0]), this.hash.b64);
@@ -116,9 +169,23 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
   private async loadBead(strategy: GetStrategy) {
     await this._dvm.threadsZvm.fetchUnknownBead(this.hash, strategy);
     await this._dvm.threadsZvm.pullEmojiReactions(this.hash, strategy);
-    // TODO: dont call getMyReceipts() if this agent is not the bead's author
-    //console.log("loadBead() valid", this.hash);
-    this._receipts = await this._dvm.threadsZvm.zomeProxy.getMyReceipts(this.hash.hash);
+    await this._dvm.threadsZvm.probeCommentThread(this.hash, strategy);
+    /** Receipts are the delivery ticks on your OWN messages, so there is nothing
+     *  to ask for on someone else's -- this is the TODO that used to sit here.
+     *  It matters because every visible message ran this at once: a screenful of
+     *  them fires a burst of identical zome calls in the same tick and the proxy
+     *  throttles all but the first, which is the "THROTTLING SPAM
+     *  zThreads::get_my_receipts()" flood. A throttled call rejects, so it is
+     *  caught rather than left as an unhandled rejection; the ticks then arrive
+     *  with the next load. */
+    const beadInfo = this._dvm.threadsZvm.perspective.getBeadInfo(this.hash);
+    if (!beadInfo || !beadInfo.author.equals(this.cell.address.agentId)) {
+      return;
+    }
+    const receipts = await this._dvm.threadsZvm.fetchMyReceipts(this.hash);
+    if (receipts) {
+      this._receipts = receipts;
+    }
   }
 
 
@@ -205,7 +272,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
         toasty(msg("Message has been flagged"));
         break;
       case "receipts":
-        this._dvm.threadsZvm.zomeProxy.getMyReceipts(this.hash.hash).then(async (resp) => {
+        this._dvm.threadsZvm.fetchMyReceipts(this.hash, true).then((resp) => {
           console.log("Receipts for", this.hash.b64, resp);
         });
         break;
