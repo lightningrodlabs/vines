@@ -22,6 +22,7 @@ import {doodle_weave} from "../../doodles";
 import {beadJumpEvent, SpecialSubjectType, threadJumpEvent, VinesInputEvent} from "../../events";
 
 import {sharedStyles} from "../../styles";
+import {ScrollKeeper} from "./scroll-keeper";
 
 import {codeStyles} from "../../markdown/code-css";
 
@@ -89,6 +90,22 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
   @state() private _waitingForBeadCommit: Bead | undefined = undefined;
 
 
+  /** Shared with the main and DM views: see scroll-keeper.ts. #list scrolls
+   *  and #list-content is what grows as messages render. */
+  private _keeper = new ScrollKeeper({
+    scroller: () => this.listElem,
+    content: () => this.shadowRoot!.getElementById("list-content"),
+  });
+
+  /** The bead the view has already scrolled to, so a re-render does not do it again. */
+  private _scrolledToBead: string = "";
+
+  /** The load in flight and which thread it is for, so a render during the
+   *  load does not start another. */
+  private _loadingPromise: Promise<void> | undefined = undefined;
+  private _loadingFor: string = "";
+
+
   /** -- Getters -- */
 
    get listElem(): HTMLElement {
@@ -137,8 +154,12 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
   /** */
   protected override willUpdate(changedProperties: PropertyValues<this>) {
     super.willUpdate(changedProperties);
+    this._keeper.beforeRender();
     if (this._dvm && (changedProperties.has("threadHash") || (false /* WARN might need to check probeAllBeads has been called */))) {
       this._loading = true;
+      /** A different thread opens on its newest message. */
+      this._keeper.follow();
+      this._scrolledToBead = "";
       /* await */
       this.loadCommentThread();
     }
@@ -157,15 +178,17 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
   protected override updated(_changedProperties: PropertyValues) {
     super.updated(_changedProperties);
 
-    /** Scroll the list container to the requested bead */
-      if (this.beadAh) {
-          const beadItem = this.shadowRoot!.getElementById(`${this.beadAh.b64}`);
-          console.debug("<comment-threaded-view>.updated()", this.beadAh.b64, beadItem)
-          if (beadItem) {
-              const scrollY = beadItem.offsetTop - this.offsetTop;
-              this.listElem.scrollTo({top: scrollY, behavior: 'smooth'});
-          }
+    this._keeper.attach();
+    this._keeper.afterRender();
+    /** Scroll to the requested bead, once: this runs on every update, and the
+     *  reader may have moved on since. */
+    if (this.beadAh && this.beadAh.b64 != this._scrolledToBead) {
+      const beadItem = this.shadowRoot!.getElementById(this.beadAh.b64);
+      if (beadItem) {
+        this._scrolledToBead = this.beadAh.b64;
+        this._keeper.reveal(beadItem);
       }
+    }
 
     // try {
     //   //const scrollContainer = this.listElem.shadowRoot!.children[0].children[0];
@@ -183,14 +206,35 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
 
 
   /** */
-  private async loadCommentThread() {
-    console.log("<comment-thread-view>.loadCommentThread() threadHash", this.threadHash);
-    const maybePpMat = this._dvm.threadsZvm.perspective.getParticipationProtocol(this.threadHash!);
-    if (maybePpMat && this.threadHash) {
-      await this._dvm.threadsZvm.pullAllBeads(this.threadHash, GetStrategy.Local);
-      await this._dvm.threadsZvm.commitThreadProbeLog(this.threadHash);
-      this._loading = false;
+  private loadCommentThread(): Promise<void> {
+    const threadHash = this.threadHash;
+    if (!threadHash) {
+      return Promise.resolve();
     }
+    /** render() calls this on every update while loading, and every pulse
+     *  that lands during the load causes an update: one load per thread. */
+    if (this._loadingPromise && this._loadingFor == threadHash.b64) {
+      return this._loadingPromise;
+    }
+    console.log("<comment-thread-view>.loadCommentThread() threadHash", threadHash);
+    const maybePpMat = this._dvm.threadsZvm.perspective.getParticipationProtocol(threadHash);
+    if (!maybePpMat) {
+      return Promise.resolve();
+    }
+    this._loadingFor = threadHash.b64;
+    this._loadingPromise = (async () => {
+      await this._dvm.threadsZvm.pullAllBeads(threadHash, GetStrategy.Local);
+      /** Show the messages before the probe-log write, not after it. */
+      if (this._loadingFor == threadHash.b64) {
+        this._loading = false;
+      }
+      await this._dvm.threadsZvm.commitThreadProbeLog(threadHash);
+    })().finally(() => {
+      if (this._loadingFor == threadHash.b64) {
+        this._loadingPromise = undefined;
+      }
+    });
+    return this._loadingPromise;
   }
 
 
@@ -231,8 +275,16 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
   /** */
   async onCreateComment(e: CustomEvent<VinesInputEvent>) {
     console.log("<comment-thread-view>.onInputCommit()", e.detail);
+    /** Sending puts the message at the bottom, so go there even if the reader
+     *  had scrolled up. */
+    this._keeper.follow();
     let ppAh = e.detail.ppAh;
-    this._waitingForBeadCommit = await this._dvm.threadsZvm.createNextBead(ppAh);
+    /** The placeholder has to be built with the same prevBead the message will
+     *  be published with. publishMessage()'s 5th argument IS the bead's
+     *  prevBeadAh, so on a reply the committed bead points at the message being
+     *  replied to, not at the end of the thread. Built without it, the
+     *  placeholder never matches what arrives and the "sending" dots never stop. */
+    this._waitingForBeadCommit = await this._dvm.threadsZvm.createNextBead(ppAh, this._replyToAh);
     /** DM */
     if (e.detail.agent) {
       console.debug("onInputCommit() is DM");
@@ -266,6 +318,13 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
         console.warn(e);
       }
     }
+  }
+
+
+  /** */
+  override disconnectedCallback() {
+    super.disconnectedCallback();
+    this._keeper.detach();
   }
 
 
@@ -485,11 +544,11 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
                 <copy-wal-button .dnaId=${this.cell.address.dnaId} .hash=${this.threadHash!} name=${msg("comment thread")}></copy-wal-button>
                 <ui5-button design="Transparent" tooltip=${msg('Go to Bottom')}
                             icon="pull-down"
-                            @click=${(_e: any) => this.listElem.scrollTo(0, this.listElem.scrollHeight)}>
+                            @click=${(_e: any) => this._keeper.follow()}>
                 </ui5-button>
                 <ui5-button id="pull-up" design="Transparent" tooltip=${msg('Go to Top')}
                             icon="pull-down"
-                            @click=${(_e: any) => this.listElem.scrollTo(0, 0)}>
+                            @click=${(_e: any) => {this._keeper.release(); this.listElem.scrollTo(0, 0);}}>
                 </ui5-button>
             </div>
         </h3>
@@ -503,7 +562,9 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
                      inputBar.focusInput();
                  }
              }}>
-            ${commentItems}
+            <div id="list-content" style="display:flex; flex-direction:column;">
+                ${commentItems}
+            </div>
         </div>
         <div class="reply-to-div" style="display: ${this._replyToAh? "flex" : "none"};">
             ${msg("Replying to")}<span style="font-weight: bold; color:#4270A8; margin-left:3px;">${replyToAuthorName}</span>

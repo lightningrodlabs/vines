@@ -14,6 +14,7 @@ import {WeServicesEx} from "@ddd-qc/we-utils";
 import {determinerGroupProfile} from "../../utils";
 import {ts2day} from "../timezone/utils";
 import {GetStrategy} from "@holochain-open-dev/core-types";
+import {ScrollKeeper} from "./scroll-keeper";
 
 
 /**
@@ -24,7 +25,6 @@ export class ChatThreadMultiView extends DnaMultiElement<ThreadsDvm> {
   /** */
   constructor() {
     super(ThreadsDvm.DEFAULT_BASE_ROLE_NAME);
-    this.addEventListener('scroll', this.onWheel);
   }
 
 
@@ -49,6 +49,17 @@ export class ChatThreadMultiView extends DnaMultiElement<ThreadsDvm> {
   /** -- State variables -- */
 
   @state() _loading = true;
+
+  /** Shared with the main and asset views: see scroll-keeper.ts. The host is
+   *  the scroller and #content is what grows as messages render. */
+  private _keeper = new ScrollKeeper({
+    scroller: () => this,
+    content: () => this.shadowRoot!.getElementById("content"),
+    onNearTop: () => {this.loadAllPreviousMessages();},
+  });
+
+  /** The bead the view has already scrolled to, so a re-render does not do it again. */
+  private _scrolledToBead: string = "";
 
 
   /** -- Getters -- */
@@ -99,6 +110,7 @@ export class ChatThreadMultiView extends DnaMultiElement<ThreadsDvm> {
   /** */
   protected override async willUpdate(changedProperties: PropertyValues<this>) {
     super.willUpdate(changedProperties);
+    this._keeper.beforeRender();
     /** Fetch notifSetting for current thread */
     if (changedProperties.has("agent") && this.agent) {
       for (const dvm of this._dvms.values()) {
@@ -117,13 +129,15 @@ export class ChatThreadMultiView extends DnaMultiElement<ThreadsDvm> {
 
   /** */
   protected override async updated(_changedProperties: PropertyValues) {
-    /** Scroll the list container to the requested bead */
-    if (this.beadAh) {
-      console.log("<chat-threaded-view>.updated()", this.beadAh)
-      const beadItem = this.shadowRoot!.getElementById(`${this.beadAh.b64}`);
+    this._keeper.attach();
+    this._keeper.afterRender();
+    /** Scroll to the requested bead, once: this runs on every update, and the
+     *  reader may have moved on since. */
+    if (this.beadAh && this.beadAh.b64 != this._scrolledToBead) {
+      const beadItem = this.shadowRoot!.getElementById(this.beadAh.b64);
       if (beadItem) {
-        const scrollY = beadItem.offsetTop - this.offsetTop;
-        this.scrollTo({top: scrollY, behavior: 'smooth'});
+        this._scrolledToBead = this.beadAh.b64;
+        this._keeper.reveal(beadItem);
       }
     }
     /** Set background according to load state */
@@ -132,6 +146,19 @@ export class ChatThreadMultiView extends DnaMultiElement<ThreadsDvm> {
     } else {
       this.style.background = "#FBFCFD";
     }
+  }
+
+
+  /** */
+  override disconnectedCallback() {
+    super.disconnectedCallback();
+    this._keeper.detach();
+  }
+
+
+  /** Sending a message means wanting to see it, wherever the reader was. */
+  jumpToNewest() {
+    this._keeper.follow();
   }
 
 
@@ -152,6 +179,9 @@ export class ChatThreadMultiView extends DnaMultiElement<ThreadsDvm> {
   /** */
   protected loadlatestMessages(dvm: ThreadsDvm) {
     console.log("<chat-thread-multi-view>.loadlatestMessages() probe", this.agent, !!dvm);
+    /** Opening a conversation starts at the newest message. */
+    this._keeper.follow();
+    this._scrolledToBead = "";
     if (!this.agent) {
       this._loading = false;
       return;
@@ -289,26 +319,37 @@ export class ChatThreadMultiView extends DnaMultiElement<ThreadsDvm> {
 
         prevBeadAh = blm.beadAh;
         /** Render chatItem */
-        return html`${chatItem}${hr}${timeHr}`;
+        return html`${timeHr}${hr}${chatItem}`;
       }
     );
 
 
-    /** render all (in reverse) */
+    /** Oldest first, top to bottom. The header and the history spinner sit
+     *  above the messages, at the older end. The spinner for a conversation
+     *  with nothing to show yet fills the pane instead. */
+    const busyHistory = html`
+      <ui5-busy-indicator delay="50" size="Medium" active
+                          style="width:100%; margin-bottom:20px; margin-top:20px;"></ui5-busy-indicator>`;
     return html`
-      ${chatItems.reverse()}
-      ${this._loading? html`<ui5-busy-indicator delay="50" size="Medium" active style="width:100%; height:100%;margin-bottom:20px;margin-top:20px"></ui5-busy-indicator>` : html``}
-      ${maybeHeader}
+      ${this._loading && chatItems.length == 0? html`
+        <ui5-busy-indicator delay="50" size="Large" active
+                            style="width:100%; height:100%; margin:auto;"></ui5-busy-indicator>` : html``}
+      <div id="content">
+        ${maybeHeader}
+        ${this._loading && chatItems.length > 0? busyHistory : html``}
+        ${chatItems}
+      </div>
     `;
   }
 
 
-  /** */
-  async onWheel(_event: any) {
-    if (this.clientHeight - this.scrollHeight == this.scrollTop) {
-      for (const dvm of this._dvms.values()) {
-        await this.loadPreviousMessages(dvm);
-      }
+  /** The reader scrolled up to the top: older messages from every group. */
+  async loadAllPreviousMessages(): Promise<void> {
+    if (this._loading) {
+      return;
+    }
+    for (const dvm of this._dvms.values()) {
+      await this.loadPreviousMessages(dvm);
     }
   }
 
@@ -322,11 +363,20 @@ export class ChatThreadMultiView extends DnaMultiElement<ThreadsDvm> {
           flex:1;
           overflow-y: scroll;
           display: flex;
-          flex-direction: column-reverse;
+          /* See chat-thread-view: a plain top-anchored list, kept on the newest
+             message by the ScrollKeeper. */
+          flex-direction: column;
           /*gap:15px;*/
           height: inherit;
           background: #FBFCFD;
           font-family: '72-Light';
+        }
+
+        #content {
+          display: flex;
+          flex-direction: column;
+          /* A short conversation sits at the bottom, by the input bar. */
+          margin-top: auto;
         }
       `,
     ];

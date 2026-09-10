@@ -542,13 +542,14 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       }
       return;
     }
-    /** Determine replyToAh */
-    let replyToAh = this._replyToAh;
-    if (!this._selectedThreadHash || this._selectedThreadHash != ppAh) {
-      replyToAh = undefined;
-    }
     this._selectedBeadAh = undefined;
     this._replyToAh = undefined;
+    /** The message lands at the bottom of the thread, so follow it there even if
+     *  the reader had scrolled up into history. */
+    const chatView = this.shadowRoot!.getElementById("chat-view") as any;
+    if (chatView && chatView.jumpToNewest) {
+      chatView.jumpToNewest();
+    }
     /** Cleanup */
     /* Create Text Message */
     if (e.detail.text) {
