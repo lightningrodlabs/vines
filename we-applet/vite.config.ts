@@ -16,6 +16,16 @@ const DIST_FOLDER = "."
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  optimizeDeps: {
+    esbuildOptions: {
+      // @ddd-qc/cell-proxy uses top-level await. esbuild's dev prebundling is
+      // not covered by the rollup-side TLA transform, so the dev server needs a
+      // target that supports TLA natively. Without this, `vite dev` -- i.e. the
+      // localhost source Moss uses in we_dev/config.ts -- fails with
+      // "Top-level await is not available in the configured target environment".
+      target: 'esnext',
+    },
+  },
   resolve: {
     alias: {
       '@vines/app': path.resolve(__dirname, '../webapp/src'),
