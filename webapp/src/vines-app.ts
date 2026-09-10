@@ -1,5 +1,4 @@
 import {NetworkInfoResponse} from "@ddd-qc/lit-happ";
-import {TransportStats} from "@holochain/client";
 import {html, css, PropertyValues, TemplateResult} from "lit";
 import {state, customElement} from "lit/decorators.js";
 import {ContextProvider} from "@lit/context";
@@ -312,9 +311,10 @@ export class VinesApp extends HappMultiElement {
      *  panel is open) or, elsewhere, from the NetworkCaller loop. vines-page
      *  fetches them itself while one of its views is open and neither is. */
     const statsSource = new NetworkStatsSource(20, !!this._weServices);
-    if (this._weServices) {
-      this._weServices.onNetworkStatsUpdate((stats: TransportStats) => statsSource.add(stats));
-    } else {
+    /** Moss 0.15's WeaveServices has no network-stats feed (onNetworkStatsUpdate
+     *  arrived with the 0.7 line), so inside Moss nothing feeds the source and
+     *  vines-page's fallback asks the conductor itself while a view is open. */
+    if (!this._weServices) {
       this.networkCaller?.addCallback((r: NetworkInfoResponse) => {
         if (r.stats) {
           statsSource.add(r.stats);

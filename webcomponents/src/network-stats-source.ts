@@ -4,11 +4,9 @@ import {TransportStats} from "@holochain/client";
 /**
  * Transport stats for the peer list and the network health panel, from one place.
  *
- * Inside Moss they come from WeaveServices.onNetworkStatsUpdate -- but Moss only
- * sends them while its own debugging panel is open: pollNetworkStats() lives in
- * debugging-panel.ts and is the only thing that emits network-stats-update. So
- * isFresh() lets an open vines view tell whether anyone is feeding this, and
- * vines-page asks for stats itself when nobody is. Outside Moss (Tauri, a plain
+ * Inside Moss 0.15 nothing feeds this: its WeaveServices has no network-stats
+ * feed (that arrived with the 0.7 line). So isFresh() stays false and
+ * vines-page asks for stats itself while one of its views is open. Outside Moss (Tauri, a plain
  * browser) vines-app feeds this from the NetworkCaller loop when it runs.
  *
  * Only transport stats -- connections, bytes, messages. The gossip and fetch
