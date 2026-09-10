@@ -520,7 +520,17 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   async onInputCommit(e: CustomEvent<VinesInputEvent>) {
     console.log("<vines-page> onInputCommit()", e.detail);
     let ppAh = e.detail.ppAh;
-    this._waitingForBeadCommit = await this._dvm.threadsZvm.createNextBead(ppAh);
+    /** Determine replyToAh */
+    let replyToAh = this._replyToAh;
+    if (!this._selectedThreadHash || this._selectedThreadHash != ppAh) {
+      replyToAh = undefined;
+    }
+    /** The placeholder has to be built with the same prevBead the message will
+     *  be published with. publishMessage()'s 5th argument IS the bead's
+     *  prevBeadAh, so on a reply the committed bead points at the message being
+     *  replied to, not at the end of the thread. Built without it, the
+     *  placeholder never matches what arrives and the "sending" dots never stop. */
+    this._waitingForBeadCommit = await this._dvm.threadsZvm.createNextBead(ppAh, replyToAh);
     /** DM */
     if (e.detail.agent) {
       console.debug("onInputCommit() is DM");

@@ -13,6 +13,9 @@ import {ThreadsPerspective} from "../../viewModels/threads.perspective";
 import {latestThreadName} from "../../utils";
 
 import "../../elements/input-bar";
+/** Side-effect import: the asset view renders one, and nothing else in this
+ *  module references the class, so a type import would not register it. */
+import "./chat-item";
 import {consume} from "@lit/context";
 import {filesContext, weClientContext} from "../../contexts";
 import {doodle_weave} from "../../doodles";
@@ -60,21 +63,15 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
 
   @property({type: Boolean}) assetview: boolean = false;
 
+  /** Bead being replied to, if any. chat-item's Reply button only announces the
+   *  intent with a bubbling event; whoever owns the input bar has to hold the
+   *  target and pass it on at publish time. In the main view that is
+   *  vines-page; here the input bar is ours. */
+  @state() private _replyToAh: ActionId | undefined = undefined;
+
   /** Subject info */
   @property() subjectName?: string;
   @property() subjectType?: string;
-
-  // TODO
-  // /** View beads in chronological order, otherwise use timeReference as end-time and display older beads only. */
-  // @property()
-  // startFromBeginning: boolean = false;
-  // /** */
-  // @property()
-  // timeReferenceMs: number = Date.now();
-  // /** Number of beads to retrieve per 'get' */
-  // @property()
-  // batchSize: number = 20
-
 
   @consume({context: weClientContext, subscribe: true})
   weServices?: WeServicesEx;
@@ -255,8 +252,10 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
         this._waitingForBeadCommit = undefined;
         return;
       }
+      const replyToAh = this._replyToAh;
+      this._replyToAh = undefined;
       try {
-        await this._dvm.publishMessage(ThreadsEntryType.TextBead, e.detail.text, ppAh, undefined, undefined, this.weServices);
+        await this._dvm.publishMessage(ThreadsEntryType.TextBead, e.detail.text, ppAh, undefined, replyToAh, this.weServices);
       } catch(error:any) {
         toasty(msg("Publish Message failed: ") + error.failure);
         this._waitingForBeadCommit = undefined;
@@ -334,8 +333,14 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
       const isNew = !!initialProbeLogTs && initialProbeLogTs < beadInfo.creationTime;
       console.log("Is msg new?", isNew, initialProbeLogTs, thread.latestProbeLogTime, beadInfo.creationTime);
       //return renderSideBead(this, beadAh, beadInfo, typedBead, this._dvm, this._filesDvm, isNew, this.weServices);
-      const item = html`
-          <side-item id=${beadAh.b64} .hash=${beadAh} .prevBeadAh=${prevBeadAh} ?new=${isNew}></side-item>`;
+      /** The asset view is a reading-and-replying view, so it gets the same row
+       *  the main view uses, hover toolbar and all. Not `shortmenu`: that
+       *  collapses the toolbar to the overflow button alone, which buries reply
+       *  -- the most frequent action -- and drops Edit entirely. side-item is
+       *  the compact side-panel row, whose whole body is a jump link. */
+      const item = this.assetview
+          ? html`<chat-item id=${beadAh.b64} .hash=${beadAh} .prevBeadAh=${prevBeadAh}></chat-item>`
+          : html`<side-item id=${beadAh.b64} .hash=${beadAh} .prevBeadAh=${prevBeadAh} ?new=${isNew}></side-item>`;
       prevBeadAh = beadAh;
       return item;
     });
@@ -378,6 +383,15 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
 
     const titleTip = "Type: " + subjectType;
 
+    let replyToAuthorName = "unknown";
+    if (this._replyToAh) {
+      const replyToInfo = this._dvm.threadsZvm.perspective.getBeadInfo(this._replyToAh);
+      const maybeProfile = replyToInfo? this._dvm.profilesZvm.perspective.getProfile(replyToInfo.author) : undefined;
+      if (maybeProfile) {
+        replyToAuthorName = maybeProfile.nickname;
+      }
+    }
+
     let openInMainViewBtn = html``;
     if (!this.assetview) {
       openInMainViewBtn = html`
@@ -399,7 +413,7 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
     return html`
         ${doodle_bg}
         <!-- Title row -->
-        <h3 style="margin:10px; color:#021133;">
+        <h3 id="titleRow">
             ${openInMainViewBtn}
             ${this.assetview? html`` : html`
                 <ui5-button design="Transparent" tooltip=${msg('Close')}
@@ -416,6 +430,13 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
             <span class="subjectName" style="cursor: pointer;"
                   @click=${(_e: any) => {
                       console.log("<comment-thread-view> title click", thread.pp.subject);
+                      /** In the asset view the title is the channel itself, and it
+                       *  is the only way back into Vines now that the messages no
+                       *  longer navigate. */
+                      if (this.assetview) {
+                          this.dispatchEvent(threadJumpEvent(this.threadHash!));
+                          return;
+                      }
                       /** Use subject as WAL */
                               // const wal: WAL = {hrl: [new HoloHash(thread.pp.subject.dnaHashB64), new HoloHash(thread.pp.subject.address)], context: null};
                       const dhtId = intoDhtId(thread.pp.subject.address);
@@ -457,22 +478,38 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
               ${subjectName}
             </span>
             </sl-tooltip>
-            <copy-wal-button .dnaId=${this.cell.address.dnaId} .hash=${this.threadHash!} name=${msg("comment thread")}
-                             style="margin-left:5px;"></copy-wal-button>
-            <ui5-button design="Transparent" tooltip=${msg('Go to Bottom')}
-                        icon="pull-down"
-                        style="margin-right:-5px;"
-                        @click=${(_e: any) => this.listElem.scrollTo(0, this.listElem.scrollHeight)}>
-            </ui5-button>
-            <ui5-button id="pull-up" design="Transparent" tooltip=${msg('Go to Top')}
-                        icon="pull-down"
-                        style="margin-right:-5px;"
-                        @click=${(_e: any) => this.listElem.scrollTo(0, 0)}>
-            </ui5-button>
+            <!-- Grouped and pushed right: as loose children of the title they
+                 wrapped onto a line of their own, which in the asset view is a
+                 whole row of chrome above the first message. -->
+            <div id="titleActions">
+                <copy-wal-button .dnaId=${this.cell.address.dnaId} .hash=${this.threadHash!} name=${msg("comment thread")}></copy-wal-button>
+                <ui5-button design="Transparent" tooltip=${msg('Go to Bottom')}
+                            icon="pull-down"
+                            @click=${(_e: any) => this.listElem.scrollTo(0, this.listElem.scrollHeight)}>
+                </ui5-button>
+                <ui5-button id="pull-up" design="Transparent" tooltip=${msg('Go to Top')}
+                            icon="pull-down"
+                            @click=${(_e: any) => this.listElem.scrollTo(0, 0)}>
+                </ui5-button>
+            </div>
         </h3>
         <!-- thread -->
-        <div id="list" @show-profile=${(e: any) => console.log("onShowProfile div", e)}>
+        <div id="list" @show-profile=${(e: any) => console.log("onShowProfile div", e)}
+             @reply-clicked=${(e: CustomEvent<ActionId>) => {
+                 e.stopPropagation();
+                 this._replyToAh = e.detail;
+                 const inputBar = this.shadowRoot!.getElementById("input-bar") as InputBar;
+                 if (inputBar) {
+                     inputBar.focusInput();
+                 }
+             }}>
             ${commentItems}
+        </div>
+        <div class="reply-to-div" style="display: ${this._replyToAh? "flex" : "none"};">
+            ${msg("Replying to")}<span style="font-weight: bold; color:#4270A8; margin-left:3px;">${replyToAuthorName}</span>
+            <div style="flex-grow: 1"></div>
+            <ui5-button icon="decline" design="Transparent" style="border:none; padding:0px"
+                        @click=${(_e: any) => {this._replyToAh = undefined;}}></ui5-button>
         </div>
         ${maybeInput}
     `;
@@ -497,6 +534,31 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
           height: 100%;
         }
 
+          #titleRow {
+              display: flex;
+              flex-direction: row;
+              align-items: center;
+              gap: 2px;
+              margin: 10px;
+              color: #021133;
+          }
+
+          /* The name takes the slack so the buttons sit at the right edge. */
+          #titleRow .subjectName {
+              flex: 1 1 auto;
+              min-width: 0;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              white-space: nowrap;
+          }
+
+          #titleActions {
+              display: flex;
+              align-items: center;
+              flex-shrink: 0;
+              margin-left: auto;
+          }
+
           #pull-up::part(icon) {
               transform: rotate(180deg);
           }
@@ -509,6 +571,17 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
           overflow: auto;
           display: flex;
           flex-direction: column;
+        }
+
+        .reply-to-div {
+          flex-direction: row;
+          background: #6f6f6f2e;
+          margin: 0px 12px -4px;
+          border-radius: 12px;
+          font-size: smaller;
+          padding-left: 5px;
+          align-items: center;
+          color: #202020;
         }
 
         vines-input-bar {
