@@ -156,7 +156,7 @@
     "@ddd-qc/we-utils"              : "=0.35.0",
     "@ddd-qc/profiles-dvm"          : "=0.35.0",
     "@ddd-qc/path-explorer"         : "=1.35.0",
-    "@ddd-qc/files"                 : "=0.9.11",
+    "@ddd-qc/files"                 : "=0.9.13",
     "@ddd-qc/delivery"              : "=0.21.3",
     "@msgpack/msgpack"              : "^3.1.1",
     "cytoscape"                     : "~3.30.3",
