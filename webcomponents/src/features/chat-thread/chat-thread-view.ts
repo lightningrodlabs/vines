@@ -9,6 +9,7 @@ import {BeadLink} from "../../bindings/threads.types";
 import {msg} from "@lit/localize";
 import {onlineLoadedContext} from "../../contexts";
 import {sharedStyles} from "../../styles";
+import {ScrollKeeper} from "./scroll-keeper";
 import {formatTime} from "../timezone/utils";
 import {GetStrategy} from "@holochain-open-dev/core-types";
 
@@ -22,7 +23,6 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
   /** */
   constructor() {
     super(ThreadsDvm.DEFAULT_BASE_ROLE_NAME);
-    this.addEventListener('scroll', this.onWheel);
   }
 
 
@@ -112,6 +112,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
   /** */
   protected override async willUpdate(changedProperties: PropertyValues<this>) {
     super.willUpdate(changedProperties);
+    this._keeper.beforeRender();
     /** Fetch notifSetting for current thread */
     if (this._dvm) {
       if (this.threadHash && !this._dvm.threadsZvm.perspective.notifSettings.get(this.threadHash)) {
@@ -121,26 +122,48 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
   }
 
 
+  /** Shared with the DM and asset views: see scroll-keeper.ts. The host is the
+   *  scroller and #content is what grows as messages render. */
+  private _keeper = new ScrollKeeper({
+    scroller: () => this,
+    content: () => this.shadowRoot!.getElementById("content"),
+    onNearTop: () => {this.loadPreviousMessages();},
+  });
+
+  /** The bead the view has already scrolled to, so a re-render does not do it again. */
+  private _scrolledToBead: string = "";
+
+
+  /** */
+  jumpToNewest() {
+    this._keeper.follow();
+  }
+
+
+  /** */
+  protected override async firstUpdated(_changedProperties: PropertyValues) {
+    this._keeper.attach();
+  }
+
+
+  /** */
+  override disconnectedCallback() {
+    super.disconnectedCallback();
+    this._keeper.detach();
+  }
+
+
   /** */
   protected override async updated(_changedProperties: PropertyValues) {
-    // try {
-    //   /** Scroll to bottom when chat-view finished updating (e.g. loading chat-items) */
-    //   //console.log("ChatView.updated() ", this.scrollTop, this.scrollHeight, this.clientHeight)
-    //   // TODO: store scrollTop in localStorage when changing displayed thread
-    //   //if (this._firstLoad) {
-    //     this.scrollTop = this.scrollHeight;
-    //     //this._firstLoad = false;
-    //   //}
-    // } catch(e:any) {
-    //   /** i.e. element not present */
-    // }
-    /** Scroll the list container to the requested bead */
-    if (this.beadAh) {
-      console.log("<chat-threaded-view>.updated()", this.beadAh)
-      const beadItem = this.shadowRoot!.getElementById(`${this.beadAh.b64}`);
+    this._keeper.attach();
+    this._keeper.afterRender();
+    /** Scroll to the requested bead, once: this runs on every update, and the
+     *  reader may have moved on since. */
+    if (this.beadAh && this.beadAh.b64 != this._scrolledToBead) {
+      const beadItem = this.shadowRoot!.getElementById(this.beadAh.b64);
       if (beadItem) {
-        const scrollY = beadItem.offsetTop - this.offsetTop;
-        this.scrollTo({top: scrollY, behavior: 'smooth'});
+        this._scrolledToBead = this.beadAh.b64;
+        this._keeper.reveal(beadItem);
       }
     }
     /** Set background according to load state */
@@ -169,6 +192,9 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
   /** */
   protected loadlatestMessages(newDvm?: ThreadsDvm) {
     console.log("<chat-thread-view>.loadlatestMessages() probe", this.threadHash);
+    /** Opening a channel starts at the newest message. */
+    this._keeper.follow();
+    this._scrolledToBead = "";
     if (!this.threadHash) {
       this._loading = false;
       return;
@@ -178,9 +204,14 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
     dvm.threadsZvm.pullLatestBeads(threadAh, undefined, undefined, this.batchSize)
       .then(async (beadLinks) => {
         console.log("<chat-thread-view>.loadlatestMessages() pulled", beadLinks.length);
+        /** Show the messages now. Every render is held back while _loading is
+         *  set, and what follows is one zome call per bead to find its comment
+         *  thread plus a write to commit the probe log: seconds of blank pane
+         *  on a channel's first open. Comment counts fill in on each item as
+         *  they arrive, which is how the DM view has always ordered this. */
+        this._loading = false;
         await this.loadBeadComments(beadLinks, dvm);
         await dvm.threadsZvm.commitThreadProbeLog(threadAh);
-        this._loading = false;
       });
     this._loading = true;
   }
@@ -204,31 +235,6 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
     this._loading = false;
     await this.loadBeadComments(bls, this._dvm);
     //this._commentsLoading = false; // This is for triggering a new requestUpdate
-  }
-
-
-  /** */
-  async onWheel(_event: any) {
-    if (this._loading) {
-        return;
-    }
-    const  pixelsToTop =  Math.abs(this.clientHeight - this.scrollHeight - this.scrollTop);
-    //console.log("ChatView.onWheel() ", pixelsToTop, this.scrollTop, this.scrollHeight, this.clientHeight)
-    //if (this.scrollTop == 0) {
-    //if (this.clientHeight - this.scrollHeight == this.scrollTop) {
-    if (pixelsToTop < 100) {
-      //this.style.background = 'grey';
-      await this.loadPreviousMessages();
-    } else {
-      //this.style.background = 'white';
-    }
-    //   // this.listElem.scrollTop
-    //   const hasScrolledUp = event.wheelDeltaY > 0
-    //   var scrollY = this.listElem.scrollHeight - this.listElem.clientHeight;
-    //   const hasOverScrolledTop = scrollY == 0 && hasScrolledUp;
-    //   //const e = {deltaY: event.deltaY, wheelDeltaY: event.wheelDeltaY}
-    //   const elem = {scroll: this.listElem.scroll, scrollHeight: this.listElem.scrollHeight}
-    //   //console.log("<chat-thread-view>.onWheel event: ", /*e,*/ elem, scrollY, hasOverScrolledTop);
   }
 
 
@@ -276,12 +282,20 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
     const initialProbeLogTs = this._dvm.perspective.initialThreadProbeLogTss.get(this.threadHash);
 
 
-    // <!-- ${chatItems.reverse()} -->
-    /** render all (in reverse) */
+    /** Oldest first, top to bottom. The header and the history spinner sit
+     *  above the messages, at the older end. The spinner for a thread with
+     *  nothing to show yet fills the pane instead. */
+    const busyHistory = html`
+        <ui5-busy-indicator delay="50" size="Medium" active
+                            style="width:100%; margin-bottom:20px; margin-top:20px;"></ui5-busy-indicator>`;
     return html`
         <!-- <div>${this._renderCount}</div> -->
-        <!-- render chat items -->
-        <div style="display: flex; flex-direction: column;">
+        ${this._loading && all.length == 0? html`
+            <ui5-busy-indicator delay="50" size="Large" active
+                                style="width:100%; height:100%; margin:auto;"></ui5-busy-indicator>` : html``}
+        <div id="content">
+            ${maybeHeader}
+            ${this._loading && all.length > 0? busyHistory : html``}
             ${repeat(all, (blm) => blm.beadAh.b64, (blm) => {               
                 /** */
                 let hr: TemplateResult<1> | undefined = undefined;
@@ -342,10 +356,6 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
                 return html`${hr}${chatItem}`;
             })}
         </div>
-        ${this._loading? html`
-            <ui5-busy-indicator delay="50" size="Medium" active
-                                style="width:100%; height:100%;margin-bottom:20px;margin-top:20px"></ui5-busy-indicator>` : html``}
-        ${maybeHeader}
     `;
   }
 
@@ -361,11 +371,23 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
           flex: 1;
           overflow-y: scroll;
           display: flex;
-          flex-direction: column-reverse;
+          /* A plain top-anchored list. The newest message is kept in view by
+             the ScrollKeeper, and while someone reads history the browser's
+             scroll anchoring holds their place as messages above them render.
+             It was column-reverse, which pins the bottom natively but, on the
+             Chromium Moss ships, does not hold the reader's place. */
+          flex-direction: column;
           /*gap:15px;*/
           height: inherit;
           max-height: 100%;
           font-family: '72-Light';
+        }
+
+        #content {
+          display: flex;
+          flex-direction: column;
+          /* A short conversation sits at the bottom, by the input bar. */
+          margin-top: auto;
         }
       `,
     ];
