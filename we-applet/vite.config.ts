@@ -41,6 +41,14 @@ export default defineConfig({
           rename: "styles.css"
         },
         //{ src: '../node_modules/@shoelace-style/shoelace', dest: DIST_FOLDER }
+        /** To the root (DIST_FOLDER), not shoelace-assets. In the applet the Shoelace
+         *  base path is './', set by @ddd-qc/we-utils' setupProd() when setup() runs at
+         *  startup -- after vines-page's setBasePath('/shoelace-assets'), which it
+         *  overrides. So default-set icons are fetched from ./assets/icons/. Copying
+         *  them to shoelace-assets (6dc5da64) left every such icon blank: the files
+         *  table's Type icons and row menus, and the image viewer's download button.
+         *  webapp/vite.config.ts is separate: the standalone webapp does not go
+         *  through setup(), so /shoelace-assets is right there. */
         {src: '../node_modules/@shoelace-style/shoelace/dist/assets', dest: DIST_FOLDER}
       ]
     }),
