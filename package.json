@@ -152,6 +152,7 @@
   },
   "overrides": {
     "@holochain/client": "^0.21.0",
-    "@holochain-open-dev/core-types": "^0.700.0"
+    "@holochain-open-dev/core-types": "^0.700.0",
+    "@shoelace-style/shoelace": "2.20.1"
   }
 }
