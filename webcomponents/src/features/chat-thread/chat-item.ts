@@ -673,6 +673,10 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
           cursor: pointer;
         }
 
+        /* Sits above the message rather than on top of it: at top:5px it landed
+           on the toolbar of an embedded asset, which is the first thing in the
+           message body. Overlapping the message above is fine -- it only shows
+           on hover, and the row above is not interactive at that point. */
         #buttonsPop {
           padding: 1px 2px 1px 2px;
           border-radius: 8px;
@@ -680,8 +684,9 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
           display: none;
           background: rgba(255, 255, 255, 0.95);
           position: absolute;
-          top: 5px;
+          top: -14px;
           right: 5px;
+          z-index: 10;
         }
 
         #agentName {

@@ -223,8 +223,6 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     //   colorIdx = 3;
     // }
 
-    const hash = new ActionId(dhtId.b64)
-
     /** render valid link */
     return html`
         <!-- <sl-tooltip content="To ${this._toolName}"> -->
@@ -232,12 +230,17 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
                      @click=${(e: any) => {
       e.stopPropagation();
       e.preventDefault();
+      /** Only the two Vines cases are ActionHashes. Any other tool's asset can
+       *  be any hash type, and ActionId rejects anything that is not one, so
+       *  this is built here rather than during render: an EntryHash-backed
+       *  embed used to throw "The hash must have a valid HoloHashB64 type" out
+       *  of render() and take the whole message with it. */
       if (this._vinesTypes == ThreadsEntryType.ParticipationProtocol) {
-        this.dispatchEvent(threadJumpEvent(hash))
+        this.dispatchEvent(threadJumpEvent(new ActionId(dhtId.b64)))
         return;
       }
       if (this._vinesTypes == ThreadsEntryType.AnyBead) {
-        this.dispatchEvent(beadJumpEvent(hash))
+        this.dispatchEvent(beadJumpEvent(new ActionId(dhtId.b64)))
         return;
       }
       if (this.weServices) {
