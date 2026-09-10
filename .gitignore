@@ -29,6 +29,4 @@ bin/
 
 
 # Specific files
-Cargo.lock
 hash_zome*
-package-lock.json
