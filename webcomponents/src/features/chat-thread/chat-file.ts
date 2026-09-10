@@ -1,4 +1,5 @@
 import {css, html, PropertyValues} from "lit";
+import "@shoelace-style/shoelace/dist/components/icon-button/icon-button.js";
 import {customElement, property, state} from "lit/decorators.js";
 import {ActionId, delay, DnaElement, EntryId} from "@ddd-qc/lit-happ";
 import {ThreadsDvm} from "../../viewModels/threads.dvm";
@@ -81,14 +82,16 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
   protected override async updated(_changedProperties: PropertyValues) {
     /** click file for preview */
     const maybeImg = this.shadowRoot!.getElementById("img-bead") as HTMLElement;
-    if (maybeImg) {
+    /** Once per element: this runs on every update, and adding a listener each
+     *  time stacked them, so one click dispatched the event once per update. */
+    if (maybeImg && !maybeImg.dataset["viewEmbedBound"]) {
+      maybeImg.dataset["viewEmbedBound"] = "1";
       maybeImg.addEventListener('click', (e: any) => {
         e.stopPropagation();
         e.preventDefault();
         const mime = kind2mime(this._manifest!.description.kind_info);
-        console.log("view-embed image clicked!", mime, this._maybeBlobUrl);
         this.dispatchEvent(new CustomEvent<ViewEmbedEvent>('view-embed', {
-          detail: {blobUrl: this._maybeBlobUrl!, mime},
+          detail: {blobUrl: this._maybeBlobUrl!, mime, name: this._manifest!.description.name},
           bubbles: true,
           composed: true
         }));
@@ -300,7 +303,23 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
           break;
         default:
           //item = html`<div class="preview">Preview not available for this type</div>`;
-          item = html`<embed class="preview ${fileType}" src=${this._maybeBlobUrl} type=${mime} />`;
+          /** Text and anything else shown inline: the preview gets a bar with the
+           *  name -- previously only in a hover tooltip -- and a way to download
+           *  it, which the preview alone did not offer. */
+          item = html`
+              <div class="embedded-file">
+                  <!-- Download on the left: the message's hover toolbar sits over the
+                       top-right of the message and covered it at the right end. -->
+                  <div class="embedded-file-bar">
+                      <sl-icon-button name="download" label=${msg("Download")}
+                                      @click=${(e: any) => {
+                                          e.stopPropagation();
+                                          this.downloadBlob(fileDesc.name);
+                                      }}></sl-icon-button>
+                      <span class="embedded-file-name">${fileDesc.name}</span>
+                  </div>
+                  <embed class="preview ${fileType}" src=${this._maybeBlobUrl} type=${mime} />
+              </div>`;
           break;
       }
     }
@@ -314,6 +333,19 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
   }
 
   private _renderCount = 0;
+
+
+  /** Same technique FilesDvm.downloadFile() ends with, which already works in
+   *  Moss for other attachments; the data is already here as this blob. */
+  private downloadBlob(name: string) {
+    if (!this._maybeBlobUrl) {
+      return;
+    }
+    const a = document.createElement("a");
+    a.href = this._maybeBlobUrl;
+    a.download = name || "download";
+    a.click();
+  }
 
 
   /** */
@@ -340,6 +372,26 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
           margin: 10px;
         }
 
+
+        .embedded-file {
+          display: flex;
+          flex-direction: column;
+          max-width: 600px;
+        }
+        .embedded-file-bar {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          font-size: small;
+          color: #5e5e6b;
+        }
+        .embedded-file-name {
+          flex: 1;
+          min-width: 0;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
 
         .preview {
           background: #ffffff;
