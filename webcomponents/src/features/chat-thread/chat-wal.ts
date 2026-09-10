@@ -47,7 +47,7 @@ export class ChatWal extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
   /** Don't update during online loading */
   override shouldUpdate(changedProperties: PropertyValues<this>) {
-    console.log("<chat-wal>.shouldUpdate()", changedProperties, this.hash);
+    //console.log("<chat-wal>.shouldUpdate()", changedProperties, this.hash);
     const upper = super.shouldUpdate(changedProperties);
     /** */
     if (changedProperties.has("hash")) {
@@ -99,7 +99,7 @@ export class ChatWal extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
   /** */
   async loadHrl(hash: ActionId, zvm: ThreadsZvm) {
-    console.log("<chat-wal>.loadHrl()", hash);
+    //console.log("<chat-wal>.loadHrl()", hash);
     if (!hash) {
       return;
     }
@@ -118,7 +118,7 @@ export class ChatWal extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
   /** */
   override render() {
-    console.log("<chat-wal>.render()", this.hash, this._appletInfo);
+    //console.log("<chat-wal>.render()", this.hash, this._appletInfo);
     /** No WeServices */
     if (!this.weServices) {
       return html`        

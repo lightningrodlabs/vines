@@ -115,6 +115,12 @@ export type ThreadsPerspectiveComparable = {
 /** */
 export class ThreadsPerspective {
 
+  /** Hashes already reported as missing, so the warnings below print once each
+   *  rather than on every render that reads them. */
+  protected static _warnedUnknownProbeLog: Set<string> = new Set();
+  protected static _warnedMissingBeads: Set<string> = new Set();
+
+
   /** Entries that have been found with New = true */
   isNewStorageMap: Set<AnyDhtHashB64> = new Set();
 
@@ -408,7 +414,11 @@ export class ThreadsPerspective {
     }
     const lastBeads = pair[1].getLast(1);
     if (lastBeads.length == 0) {
-      console.warn("Missing beads in EditThread", beadAh.short);
+      /** Once per bead: also read per render. */
+      if (!ThreadsPerspective._warnedMissingBeads.has(beadAh.b64)) {
+        ThreadsPerspective._warnedMissingBeads.add(beadAh.b64);
+        console.warn("Missing beads in EditThread", beadAh.short);
+      }
       return bead.value;
     }
     const lastBead = lastBeads[0]!;
@@ -1262,7 +1272,12 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
     const ppAh = new ActionId(log.ppAh);
     const thread = this.threads.get(ppAh);
     if (!thread) {
-      console.warn("Getting ThreadLastProbeLog for unknown thread", ppAh);
+      /** Once per thread: this is read on every render of every lister, so an
+       *  unknown thread used to print dozens of identical lines per second. */
+      if (!ThreadsPerspective._warnedUnknownProbeLog.has(ppAh.b64)) {
+        ThreadsPerspective._warnedUnknownProbeLog.add(ppAh.b64);
+        console.warn("Getting ThreadLastProbeLog for unknown thread", ppAh);
+      }
       this._tempThreadLogs.set(ppAh, log);
       return;
     }
