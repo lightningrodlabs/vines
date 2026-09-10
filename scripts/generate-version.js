@@ -1,4 +1,5 @@
 const fs = require('fs');
+const path = require('path');
 const packageJson = require('../package.json');
 const crypto = require('crypto');
 
@@ -28,7 +29,12 @@ function writeVersionJs(happSha256) {
 export const APP_VERSION = '${packageJson.version}';
 export const HAPP_SHA256 = '${happSha256}';
 `;
-    fs.writeFileSync('./webapp/src/generated/version.js', content);
+    // src/generated/ is gitignored, so on a fresh clone the directory does not
+    // exist yet; without the mkdir, writeFileSync threw, the .catch below
+    // swallowed it, and the build failed later on a missing module.
+    const out = './webapp/src/generated/version.js';
+    fs.mkdirSync(path.dirname(out), { recursive: true });
+    fs.writeFileSync(out, content);
 }
 
 
@@ -37,5 +43,5 @@ getFileSHA256('./artifacts/vines.happ')
         console.log('SHA256:', hash);
         writeVersionJs(hash);
     })
-    .catch(err => console.error('Error:', err));
+    .catch(err => { console.error('Error:', err); process.exit(1); });
 

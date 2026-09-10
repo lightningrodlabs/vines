@@ -1,5 +1,10 @@
 name: build-webhapps
 
+# VERIFICATION ONLY. This workflow rebuilds the happ from source to check that
+# the tree still builds; it must never publish anything. The happ that ships is
+# the frozen one in the happ-v* release (see RELEASE.md and
+# scripts/release-happ.sh) — a CI-rebuilt happ has a different DNA hash and
+# would fork the network.
 on:
   workflow_call:
 
@@ -7,81 +12,47 @@ jobs:
   build-webhapps:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      # Install npm dependencies
+      - uses: actions/checkout@v4
+
+      - name: Install nix
+        uses: cachix/install-nix-action@v27
+        with:
+          extra_nix_config: |
+            experimental-features = flakes nix-command
+
+      - uses: cachix/cachix-action@v15
+        with:
+          name: holochain-ci
+
       - name: Install npm dependencies
-        shell: bash
-        run: |
-          npm install
-      # install rust tools
-      - name: install rust tools
-        shell: bash
-        run: |
-          npm run install:rust
-      # install zits
-      - name: install zits
-        shell: bash
-        run: |
-          npm run install:zits
-      # install hc tool
-      - name: Install hc tool
-        shell: bash
-        run: |
-          npm run install:hc
-      # Install hash-zome
-      - name: Install hash-zome
-        run: |
-          npm run install:hash-zome
-      # Download submodules
+        run: nix develop --no-update-lock-file --accept-flake-config --command npm ci
+
+      # The happ embeds the files DNA, built from the files repo's hdk-7.0 branch.
       - name: Download submodules
-        shell: bash
+        run: nix develop --no-update-lock-file --accept-flake-config --command npm run install:submodules
+
+      - name: Build files DNA
+        run: nix develop --no-update-lock-file --accept-flake-config --command npm run build:files
+
+      - name: Build happ (verification only — NOT the shipped happ)
+        run: nix develop --no-update-lock-file --accept-flake-config --command npm run build:happ
+
+      - name: Build UI
+        run: nix develop --no-update-lock-file --accept-flake-config --command npm run build:webapp
+
+      - name: Pack we-applet webhapp (verification only)
+        run: nix develop --no-update-lock-file --accept-flake-config --command npm run dist:we
+
+      - name: Report hashes of this verification build
         run: |
-          npm run install:submodules
-      # Build Files happ
-      - name: Build Files happ
-        shell: bash
-        run: |
-          npm run build:files
-      # Build happ
-      - name: Build happ
-        shell: bash
-        run: |
-          CARGO_NET_GIT_FETCH_WITH_CLI=true npm run build:happ
-      # Localize
-      - name: Localize
-        run: |
-          npm run extract:localize
-          npm run build:localize
-      # Build webapp
-      - name: Build webapp
-        run: |
-          npm run build:webapp
-      # Package web-happ
-      - name: Package web-happ
-        run: |
-          npm run package:webapp
-      # build we-applet
-      - name: build we-applet
-        shell: bash
-        run: |
-          npm run build -w we-applet
-      # Package we-applet
-      - name: Package we-applet
-        shell: bash
-        run: |
-          npm run package:we
-      ## Display we-applet hash
-      #- name: Display we-applet hash
-      #  run: npm run hash
-      # Regroup artifacts
-      - name: Regroup artifacts
-        run: |
-          cp target/wasm32-unknown-unknown/release/*.wasm ./artifacts
-      # List uploaded files
-      - name: List uploaded files
-        run: ls -R
-        working-directory: ./artifacts
-      # "upload" artifacts
+          sha256sum artifacts/threads.dna artifacts/files.dna artifacts/vines.happ artifacts/vines-we_applet.webhapp
+          echo "Canonical (frozen) happ sha256, for reference: $(tr -d '[:space:]' < .happ-sha256)"
+
       - uses: actions/upload-artifact@v4
         with:
-          path: artifacts
+          name: verification-build
+          path: |
+            artifacts/threads.dna
+            artifacts/files.dna
+            artifacts/vines.happ
+            artifacts/vines-we_applet.webhapp
