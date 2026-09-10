@@ -284,7 +284,11 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
      *  prevBeadAh, so on a reply the committed bead points at the message being
      *  replied to, not at the end of the thread. Built without it, the
      *  placeholder never matches what arrives and the "sending" dots never stop. */
-    this._waitingForBeadCommit = await this._dvm.threadsZvm.createNextBead(ppAh, this._replyToAh);
+    /** Only when there is something to publish, and cleared when the publish
+     *  returns: see vines-page.onInputCommit(). */
+    if (e.detail.text) {
+      this._waitingForBeadCommit = await this._dvm.threadsZvm.createNextBead(ppAh, this._replyToAh);
+    }
     /** DM */
     if (e.detail.agent) {
       console.debug("onInputCommit() is DM");
@@ -292,6 +296,7 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
         await this._dvm.publishDm(e.detail.agent, ThreadsEntryType.TextBead, e.detail.text!, undefined, this.weServices);
       } catch(e:any) {
         toasty(msg("Publish DM failed: ") + e.failure);
+      } finally {
         this._waitingForBeadCommit = undefined;
       }
       return;
@@ -310,12 +315,13 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
         await this._dvm.publishMessage(ThreadsEntryType.TextBead, e.detail.text, ppAh, undefined, replyToAh, this.weServices);
       } catch(error:any) {
         toasty(msg("Publish Message failed: ") + error.failure);
-        this._waitingForBeadCommit = undefined;
         const inputBar = this.shadowRoot!.getElementById("input-bar") as InputBar;
         if (inputBar) {
           inputBar.setValue(e.detail.text);
         }
         console.warn(e);
+      } finally {
+        this._waitingForBeadCommit = undefined;
       }
     }
   }

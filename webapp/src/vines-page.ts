@@ -530,7 +530,13 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
      *  prevBeadAh, so on a reply the committed bead points at the message being
      *  replied to, not at the end of the thread. Built without it, the
      *  placeholder never matches what arrives and the "sending" dots never stop. */
-    this._waitingForBeadCommit = await this._dvm.threadsZvm.createNextBead(ppAh, replyToAh);
+    /** Only when there is something to publish. Set for an empty commit, this
+     *  waited for a message that never came and hid the input until a reload.
+     *  It is cleared when the publish returns; the render-time check below
+     *  only ends the wait early if the bead shows up first. */
+    if (e.detail.text || e.detail.wal) {
+      this._waitingForBeadCommit = await this._dvm.threadsZvm.createNextBead(ppAh, replyToAh);
+    }
     /** DM */
     if (e.detail.agent) {
       console.debug("onInputCommit() is DM");
@@ -538,6 +544,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           await this._dvm.publishDm(e.detail.agent, ThreadsEntryType.TextBead, e.detail.text!, undefined, this.weServices);
       } catch(e:any) {
           toasty(msg("Publish DM failed: ") + e.failure);
+      } finally {
           this._waitingForBeadCommit = undefined;
       }
       return;
@@ -566,12 +573,13 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         await this._dvm.publishMessage(ThreadsEntryType.TextBead, e.detail.text, ppAh, undefined, replyToAh, this.weServices);
       } catch(error:any) {
         toasty(msg("Publish Message failed: ") + error.failure);
-        this._waitingForBeadCommit = undefined;
         const inputBar = this.shadowRoot!.getElementById("input-bar") as InputBar;
         if (inputBar) {
           inputBar.setValue(e.detail.text);
         }
         console.warn(e);
+      } finally {
+        this._waitingForBeadCommit = undefined;
       }
     }
     /* Create Wal Message */
@@ -582,12 +590,13 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         await this._dvm.publishMessage(ThreadsEntryType.AnyBead, e.detail.wal, ppAh, undefined, replyToAh, this.weServices);
       } catch(error:any) {
         toasty(msg("Publish Message failed: ") + error.failure);
-        this._waitingForBeadCommit = undefined;
         console.warn(error);
         const inputBar = this.shadowRoot!.getElementById("input-bar") as InputBar;
         if (inputBar) {
           inputBar.setWal(e.detail.wal);
         }
+      } finally {
+        this._waitingForBeadCommit = undefined;
       }
     }
     /* Create File Message */
