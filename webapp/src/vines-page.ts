@@ -735,7 +735,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   /** */
   async onViewEmbed(e: CustomEvent<ViewEmbedEvent>) {
     const dialog = this.shadowRoot!.getElementById("view-embed") as ViewEmbedDialog;
-    dialog.open(e.detail.blobUrl, e.detail.mime);
+    dialog.open(e.detail.blobUrl, e.detail.mime, e.detail.name);
   }
 
 

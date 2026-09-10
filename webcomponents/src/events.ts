@@ -18,6 +18,8 @@ export type FavoritesEvent = {
 export type ViewEmbedEvent = {
   blobUrl: string,
   mime: string,
+  /** Shown as the viewer's title. */
+  name?: string,
 }
 
 export type MicEvent = {
