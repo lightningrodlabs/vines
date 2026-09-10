@@ -1,3 +1,5 @@
+import {NetworkInfoResponse} from "@ddd-qc/lit-happ";
+import {TransportStats} from "@holochain/client";
 import {html, css, PropertyValues, TemplateResult} from "lit";
 import {state, customElement} from "lit/decorators.js";
 import {ContextProvider} from "@lit/context";
@@ -30,7 +32,7 @@ import {
     JumpEvent,
     VINES_DEFAULT_ROLE_NAME,
     onlineLoadedContext,
-    toasty, hrl2Id, allFilesContext, networkCallerContext, getRandomHexColor, generateRandomName,
+    toasty, hrl2Id, allFilesContext, networkCallerContext, networkStatsContext, NetworkStatsSource, getRandomHexColor, generateRandomName,
     renderWelcomeScreen, BeadInfo, determinerGroupProfile,
 } from "@vines/elements";
 import {setLocale} from "./localization";
@@ -306,6 +308,21 @@ export class VinesApp extends HappMultiElement {
     //this.networkCaller?.startCallLoop(1000);
     // @ts-ignore
     new ContextProvider(this, networkCallerContext, this.networkCaller);
+    /** Transport stats, from Moss when it sends them (only while its debugging
+     *  panel is open) or, elsewhere, from the NetworkCaller loop. vines-page
+     *  fetches them itself while one of its views is open and neither is. */
+    const statsSource = new NetworkStatsSource(20, !!this._weServices);
+    if (this._weServices) {
+      this._weServices.onNetworkStatsUpdate((stats: TransportStats) => statsSource.add(stats));
+    } else {
+      this.networkCaller?.addCallback((r: NetworkInfoResponse) => {
+        if (r.stats) {
+          statsSource.add(r.stats);
+        }
+      });
+    }
+    // @ts-ignore
+    new ContextProvider(this, networkStatsContext, statsSource);
     /** Grab Group Name and set happShareCodes */
     const allShareCodes: [string, string | null, string][] = this.hvms.map(([_proxy, hvm]) => {
       let customName = undefined;

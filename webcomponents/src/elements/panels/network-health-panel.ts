@@ -5,7 +5,8 @@ import '@weblogin/trendchart-elements';
 import {NetworkMetrics, TransportStats} from "@holochain/client";
 import {NetworkCaller} from "@ddd-qc/lit-happ/dist/NetworkCaller";
 import {consume} from "@lit/context";
-import {networkCallerContext} from "../../contexts";
+import {networkCallerContext, networkStatsContext} from "../../contexts";
+import {NetworkStatsSource} from "../../network-stats-source";
 import Switch from "@ui5/webcomponents/dist/Switch";
 import {NetworkInfoResponse} from "@ddd-qc/lit-happ";
 
@@ -27,9 +28,19 @@ export class NetworkHealthPanel extends LitElement {
   @consume({context: networkCallerContext, subscribe: true})
   @property() networkCaller!: NetworkCaller;
 
+  /** Transport stats: from Moss when running in it. See network-stats-source.ts. */
+  @consume({context: networkStatsContext, subscribe: true})
+  @property() statsSource?: NetworkStatsSource;
+
+  /** */
+  private get statsLogs() {
+    return this.statsSource? this.statsSource.logs : this.networkCaller.networkStatsLogs;
+  }
+
 
   /** After first render only */
   override async firstUpdated() {
+    this.statsSource?.onUpdate(() => this.requestUpdate());
     /** Register loop callback */
     this.networkCaller!.addCallback((r: NetworkInfoResponse) => {
       //console.log("networkInfo:", info);
@@ -84,7 +95,7 @@ export class NetworkHealthPanel extends LitElement {
 
 
     /** Network Stats */
-    const allStatsLogs = this.networkCaller.networkStatsLogs;
+    const allStatsLogs = this.statsLogs;
     let latestStats: TransportStats = {backend: "unknown", peer_urls: [], connections: []};
     if (allStatsLogs.length != 0) {
         latestStats = allStatsLogs[allStatsLogs.length - 1]![1];
@@ -99,26 +110,26 @@ export class NetworkHealthPanel extends LitElement {
     //console.debug("<network-health>.render()", pendingRequestsLine);
 
     const totalSendBytes = Math.round(Object.values(latestStats.connections).reduce((sum, connection) =>  sum + connection.send_bytes, 0) / 1024);
-    const alltotalSendBytes: number[] = Object.values(this.networkCaller.networkStatsLogs).map(
+    const alltotalSendBytes: number[] = Object.values(this.statsLogs).map(
         ([_ts, stats]) => Math.round(Object.values(stats.connections).reduce((sum, connection) => sum + connection.send_bytes, 0) / 1024));
       const totalSendBytesDiffs = alltotalSendBytes.slice(0, -1).map((num, index) => alltotalSendBytes[index + 1]! - num);
     const totalSendBytesDiffLine = intoLine(totalSendBytesDiffs);
 
     const totalSendMsg = Object.values(latestStats.connections).reduce((sum, connection) =>  sum + connection.send_message_count, 0);
-    const alltotalSendMsg: number[] = Object.values(this.networkCaller.networkStatsLogs).map(
+    const alltotalSendMsg: number[] = Object.values(this.statsLogs).map(
         ([_ts, stats]) => Object.values(stats.connections).reduce((sum, connection) => sum + connection.send_message_count, 0));
     const totalSendMsgDiffs = alltotalSendMsg.slice(0, -1).map((num, index) => alltotalSendMsg[index + 1]! - num);
     const totalSendMsgDiffLine = intoLine(totalSendMsgDiffs);
 
 
       const totalRcvBytes = Math.round(Object.values(latestStats.connections).reduce((sum, connection) =>  sum + connection.recv_bytes, 0) / 1024);
-      const alltotalRcvBytes: number[] = Object.values(this.networkCaller.networkStatsLogs).map(
+      const alltotalRcvBytes: number[] = Object.values(this.statsLogs).map(
           ([_ts, stats]) => Math.round(Object.values(stats.connections).reduce((sum, connection) => sum + connection.recv_bytes, 0) / 1024));
       const totalRcvBytesDiffs = alltotalRcvBytes.slice(0, -1).map((num, index) => alltotalRcvBytes[index + 1]! - num);
       const totalRcvBytesDiffLine = intoLine(totalRcvBytesDiffs);
 
       const totalRcvMsg = Object.values(latestStats.connections).reduce((sum, connection) =>  sum + connection.recv_message_count, 0);
-      const alltotalRcvMsg: number[] = Object.values(this.networkCaller.networkStatsLogs).map(
+      const alltotalRcvMsg: number[] = Object.values(this.statsLogs).map(
           ([_ts, stats]) => Object.values(stats.connections).reduce((sum, connection) => sum + connection.recv_message_count, 0));
       const totalRcvMsgDiffs = alltotalRcvMsg.slice(0, -1).map((num, index) => alltotalRcvMsg[index + 1]! - num);
       const totalRcvMsgDiffLine = intoLine(totalRcvMsgDiffs);

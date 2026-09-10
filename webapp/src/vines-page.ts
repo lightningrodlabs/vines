@@ -217,6 +217,8 @@ import {
   md,
   multiJumpEvent,
   networkCallerContext,
+  networkStatsContext,
+  NetworkStatsSource,
   NotifiableEvent,
   NotifySetting,
   onlineLoadedContext,
@@ -304,6 +306,10 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   @consume({context: networkCallerContext, subscribe: true})
   @property() networkCaller!: NetworkCaller;
+
+  /** Transport stats, from Moss when running in it. See network-stats-source.ts. */
+  @consume({context: networkStatsContext, subscribe: true})
+  @property() statsSource?: NetworkStatsSource;
 
   @consume({context: happShareCodeContext, subscribe: true})
   @property() happShareCodes!: [string, string | null, string][];
@@ -499,8 +505,63 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     this.removeEventListener('copy', this.onCopy);
     // @ts-ignore
     this.removeEventListener('loop-network-info', this.onLoopNetworkInfo);
+    this._liveNetworkViews.clear();
+    if (this._livePoll !== undefined) {
+      clearInterval(this._livePoll);
+      this._livePoll = undefined;
+    }
     // @ts-ignore
     this.removeEventListener('vines-input-commit', this.onInputCommit);
+  }
+
+
+  /** Which of vines' own views want live network data right now.
+   *
+   *  Stats come from Moss when it sends them, but Moss only does that while its
+   *  own debugging panel is open. So while a view here is open and nothing has
+   *  arrived for a few seconds, vines asks for stats itself; the moment Moss (or
+   *  the NetworkCaller loop outside Moss) is feeding the source, it stops. Gossip
+   *  and fetch metrics are never provided by Moss, so inside Moss they are asked
+   *  for while the health panel is open. Nothing polls while no view is open. */
+  private _liveNetworkViews: Set<"health" | "peers"> = new Set();
+  private _livePoll: number | undefined = undefined;
+  private _livePollRunning: boolean = false;
+
+  private openLiveNetworkView(view: "health" | "peers") {
+    this._liveNetworkViews.add(view);
+    if (this._livePoll !== undefined) {
+      return;
+    }
+    const tick = async () => {
+      if (this._livePollRunning || !this.networkCaller) {
+        return;
+      }
+      this._livePollRunning = true;
+      try {
+        if (this.statsSource && !this.statsSource.isFresh(3000)) {
+          this.statsSource.add(await this.networkCaller.callNetworkStats());
+        }
+        if (this._liveNetworkViews.has("health") && this.statsSource?.fromMoss) {
+          await this.networkCaller.callNetworkMetrics();
+          (this.shadowRoot!.getElementById("nhp") as LitElement | null)?.requestUpdate();
+        }
+      } catch (e: any) {
+        console.warn("Live network poll failed", e);
+      } finally {
+        this._livePollRunning = false;
+      }
+    };
+    /*await*/ tick();
+    this._livePoll = window.setInterval(tick, 2000);
+  }
+
+  /** */
+  private closeLiveNetworkView(view: "health" | "peers") {
+    this._liveNetworkViews.delete(view);
+    if (this._liveNetworkViews.size == 0 && this._livePoll !== undefined) {
+      clearInterval(this._livePoll);
+      this._livePoll = undefined;
+    }
   }
 
 
@@ -1986,7 +2047,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     }
     setLocale(lang);
 
-    const avatar = renderAvatar(this, this._dvm.profilesZvm, this.cell.address.agentId, "S");
+    const avatar = renderAvatar(this, this._dvm.profilesZvm, this.cell.address.agentId, "XS");
 
     const publicFilesItems = Array.from(this._filesDvm.deliveryZvm.perspective.publicParcels.entries())
       .map(([ppEh, pprm]) => {
@@ -2406,44 +2467,14 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                         </div>
                     </div>
                     <ui5-button icon="documents" design="Transparent" tooltip=${msg("View Files")}
-                                style="margin-top:10px; ${this._mainView == MainViewType.Files? "background: #4684FD; color: white;" : ""}"
+                                class="bottom-btn" style="${this._mainView == MainViewType.Files? "background: #4684FD; color: white;" : ""}"
                                 @click=${() => this.dispatchEvent(filesJumpEvent())}>
                     </ui5-button>
                     <ui5-button icon="favorite-list" design="Transparent" tooltip=${msg("View Favorites")}
-                                style="margin-top:10px; ${this._mainView == MainViewType.Favorites? "background: #4684FD; color: white;" : ""}"
+                                class="bottom-btn" style="${this._mainView == MainViewType.Favorites? "background: #4684FD; color: white;" : ""}"
                                 @click=${() => this.dispatchEvent(favoritesJumpEvent())}>
                     </ui5-button>
-                    <ui5-button icon="group" name="group" design="Transparent"
-                                style="margin-top:10px;position:relative; width: 100px;"
-                                tooltip=${msg('online peers')}
-                                @click=${async (e: any) => {
-                                    e.stopPropagation();
-                                    await this.updateComplete;
-                                    const dialog = this.shadowRoot!.getElementById("view-agents-dialog") as Dialog;
-                                    await dialog.show();
-                                }}
-                    >
-                        ${this.networkCaller.isLooping()? html`
-                            <peer-status-badge id="peer-status"></peer-status-badge">
-                        ` : html`
-                            <span class="status-badge" style="background:#82afd5">
-            ? / ?
-        </span>
-                        `}
-                    </ui5-button>
-                    <ui5-button id="netBtn" .icon=${this._canSpin? "synchronize" : "electrocardiogram"}
-                                class=${this._canSpin? "spinning" : ""}
-                                design="Transparent" tooltip=${msg("Network Health")}
-                                style="margin-top:10px;"
-                                @click=${async (e: any) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    const popover = this.shadowRoot!.getElementById("networkPopover") as Popover;
-                                    const btn = this.shadowRoot!.getElementById("netBtn") as HTMLElement;
-                                    popover.showAt(btn);
-                                }}>
-                    </ui5-button>
-                    <ui5-button id="settingsBtn" style="margin-top:10px;"
+                    <ui5-button id="settingsBtn" class="bottom-btn"
                                 design="Transparent" icon="action-settings" tooltip=${msg("Settings")}
                                 @click=${(_e: any) => {
                                     const settingsMenu = this.shadowRoot!.getElementById("settingsMenu") as Menu;
@@ -2458,6 +2489,10 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                         ${globalThis.IS_TAURI
                                 ? html`<ui5-menu-item id="gotoadmin" icon="share" text=${msg("Change group")}></ui5-menu-item>` 
                                 : html`<ui5-menu-item id="shareNetwork" icon="cloud" text=${msg("Share invite code")} ></ui5-menu-item>`}                        
+                        <ui5-menu-item id="peersItem" text=${msg("Online peers")} icon="group"
+                                       starts-section></ui5-menu-item>
+                        <ui5-menu-item id="networkHealthItem" text=${msg("Network health")}
+                                       icon="electrocardiogram"></ui5-menu-item>
                         <ui5-menu-item id="exportItem" text=${msg('Export')} icon="save" starts-section></ui5-menu-item>
                         <ui5-menu-item id="importCommitItem" text=${msg("Import")}
                                        icon="open-folder"></ui5-menu-item>
@@ -2480,7 +2515,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     </ui5-menu>
 
                     <!-- Network Health Panel -->
-                    <ui5-popover id="networkPopover">
+                    <ui5-popover id="networkPopover"
+                                 @after-open=${() => this.openLiveNetworkView("health")}
+                                 @after-close=${() => this.closeLiveNetworkView("health")}>
                         <div slot="header"
                              style="display:flex; flex-direction:row; width:100%; margin:5px; font-weight: bold;">
                             <abbr title=${this.cell.address.dnaId.b64}>${msg("Network Health")}</abbr>
@@ -2490,7 +2527,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                         <div slot="footer"
                              style="display:flex; flex-direction:row; gap: 10px; width:100%; margin:5px; margin-right:0px;">
                             <div style="flex-grow: 1;"></div>
-                            ${this.networkCaller.isLooping()
+                            ${this.statsSource?.fromMoss? html`` : this.networkCaller.isLooping()
                                     ? html`<ui5-button style="border-color:red; color:red" 
                                             @click=${() => {
                                                 this.dispatchEvent(new CustomEvent<boolean>('loop-network-info', {
@@ -2798,7 +2835,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                 <ui5-busy-indicator delay="0" size="Large" active
                                     style="padding-top:20px; width:100%;"></ui5-busy-indicator>
             </ui5-dialog>
-            <ui5-dialog id="view-agents-dialog" style="width:600px;" header-text=${msg('Peers')}>
+            <ui5-dialog id="view-agents-dialog" style="width:600px;" header-text=${msg('Peers')}
+                        @after-open=${() => this.openLiveNetworkView("peers")}
+                        @after-close=${() => this.closeLiveNetworkView("peers")}>
                 <peer-list id="peer-status-list"
                            @avatar-clicked=${async (e: any) => {
                                e.stopPropagation();
@@ -3253,6 +3292,18 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     /*await*/ this.waitDialogElem.show();
     let content = "";
     switch (e.detail.item.id) {
+      case "peersItem": {
+        await this.updateComplete;
+        const dialog = this.shadowRoot!.getElementById("view-agents-dialog") as Dialog;
+        /*await*/ dialog.show();
+        break;
+      }
+      case "networkHealthItem": {
+        const popover = this.shadowRoot!.getElementById("networkPopover") as Popover;
+        const anchor = this.shadowRoot!.getElementById("settingsBtn") as HTMLElement;
+        popover.showAt(anchor);
+        break;
+      }
       case "editProfileItem":
           /*await*/ this.profileDialogElem.show();
         break;
@@ -3402,10 +3453,33 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         #profile-row {
           display: flex;
           flex-direction: row;
+          align-items: center;
           margin-bottom: 2px;
           padding-right: 5px;
           background: rgba(221, 233, 240, 0.68);
           box-shadow: -1px -18px 14px -2px rgba(0, 0, 0, 0.08);
+        }
+
+        /* Profile, Files, Favorites and Settings share the row and should read as
+           one set: the icons up a size, the avatar down one (XS), both 2.5rem. */
+        #profile-row ui5-button.bottom-btn {
+          height: 2.5rem;
+          min-width: 2.5rem;
+        }
+        #profile-row ui5-button.bottom-btn::part(icon) {
+          width: 1.35rem;
+          height: 1.35rem;
+        }
+        /* All four, not just width and height: ui5's XS rule also sets min-width and
+           min-height to 2rem, and this row is allowed to shrink, so with only
+           width/height raised the width was squeezed back towards 2rem while the
+           height stayed 2.5rem -- an oval. */
+        #profile-row ui5-avatar {
+          width: 2.5rem;
+          height: 2.5rem;
+          min-width: 2.5rem;
+          min-height: 2.5rem;
+          flex-shrink: 0;
         }
 
         #mainSide {
