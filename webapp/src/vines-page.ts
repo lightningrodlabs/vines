@@ -333,6 +333,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   @state() private _canViewArchivedSubjects = false;
   @state() private _selectedAgent: AgentId | undefined = undefined; // for cross-view only since we don't know which thread from which tool to use
   @state() private _createTopicHash: ActionId | undefined = undefined;
+  /** Set while the create-category dialog is standing in for "create a channel". */
+  private _createChannelAfterTopic: boolean = false;
 
   /** Right panels */
   @state() private _canShowComments = false;
@@ -850,8 +852,16 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     if (!title) {
       return;
     }
-    await this._dvm.threadsZvm.publishSemanticTopic(title);
+    const topicAh = await this._dvm.threadsZvm.publishSemanticTopic(title);
     this.createTopicDialogElem.close();
+    /** Started from the first-run panel: carry on into the channel itself,
+     *  otherwise the installer is left with a category and no way of knowing a
+     *  channel is the next step. */
+    if (this._createChannelAfterTopic) {
+      this._createChannelAfterTopic = false;
+      this._createTopicHash = topicAh;
+      /*await*/ this.createThreadDialogElem.show();
+    }
   }
 
 
@@ -884,6 +894,26 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     }
     await this._dvm.threadsZvm.editThreadTitle(new ActionId(hash), title);
     this.editChannelDialogElem.close();
+  }
+
+
+  /** The panel's "create a channel" path. A channel lives under a category, and
+   *  on a fresh install there is no category yet, so this starts there and picks
+   *  the channel dialog up again in onCreateTopic(). With one category already
+   *  present it goes straight to the channel. */
+  onCreateFirstChannel() {
+    const topics = Array.from(this._dvm.threadsZvm.perspective.semanticTopics.keys());
+    if (topics.length == 1) {
+      this._createTopicHash = topics[0];
+      /*await*/ this.createThreadDialogElem.show();
+      return;
+    }
+    if (topics.length > 1) {
+      this._listerToShow = "topics-option";
+      return;
+    }
+    this._createChannelAfterTopic = true;
+    /*await*/ this.createTopicDialogElem.show();
   }
 
 
@@ -1766,6 +1796,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                         //const canPublish = e.detail;
                         loadImportFile(this._dvm as ThreadsDvm, this.onImportFile);
                       }}
+                      @create-channel-requested=${(_e: CustomEvent) => this.onCreateFirstChannel()}
               ></import-panel>
           </div>
       `;
