@@ -1,5 +1,6 @@
 import {LitElement} from "lit";
 import {
+  AppClient,
   AppWebsocket,
 } from "@holochain/client";
 import {
@@ -96,7 +97,9 @@ export async function createProfilesCellProxy(profilesClient: ProfilesClient): P
   const profilesHcl = new HCL(profilesAppInfo.installed_app_id, profilesBaseRoleName, maybeCloneId);
   /* Create profilesCellProxy */
   const profilesApi = new ProfilesApi(profilesClient);
-  const profilesAppProxy = new ExternalAppProxy(profilesApi, "", 10 * 1000);
+  /** @ddd-qc/we-utils 0.36 ProfilesApi predates @holochain/client 0.21.1, which added
+   * sendDirectSignal/grantDirectSignalCapability to AppClient. ExternalAppProxy never calls them. */
+  const profilesAppProxy = new ExternalAppProxy(profilesApi as unknown as AppClient, "", 10 * 1000);
   await profilesAppProxy.fetchCells(profilesAppInfo.installed_app_id, profilesBaseRoleName);
   const profilesCellProxy = await profilesAppProxy.createCellProxy(profilesHcl);
   console.log("createVinesApplet() profilesCellProxy", profilesCellProxy);

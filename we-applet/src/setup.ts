@@ -35,7 +35,6 @@ export async function setupVinesApplet(): Promise<LitElement> {
   switch (APPLET_VIEW) {
     case ThreadsEntryType.ParticipationProtocol:
       return setupVinesEntryView();
-    //case ThreadsEntryType.ParticipationProtocol: return setupThreadsBlockView();
     case "main":
     default:
       return setupVinesMainView();

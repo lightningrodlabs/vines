@@ -2,7 +2,7 @@
   "name": "vines-dev",
   "version": "1.29.0",
   "config": {
-    "hc_version": "0.7.0",
+    "hc_version": "0.7.1",
     "zits_version": "1.17.2",
     "bin": "bin"
   },
@@ -117,10 +117,10 @@
   },
   "devDependencies": {
     "@ddd-qc/hc-prebuilt": "0.601.0",
-    "@holochain/hc-spin": "^0.700.0",
+    "@holochain/hc-spin": "^0.700.1-rc.0",
     "@lit/localize-tools": "^0.6.3",
     "@tauri-apps/cli": "^2.0.0-beta.22",
-    "@theweave/cli": "0.16.0-dev.5",
+    "@theweave/cli": "^0.16.0-rc.2",
     "@types/jest": "^29.5.1",
     "@types/ws": "^8.5.3",
     "bestzip": "^2.2.0",
@@ -143,15 +143,15 @@
     "@ddd-qc/path-explorer": "^1.36.0",
     "@ddd-qc/profiles-dvm": "^0.37.0",
     "@ddd-qc/we-utils": "^0.36.0",
-    "@holochain-open-dev/core-types": "^0.700.0",
-    "@holochain-open-dev/profiles": "^0.700.0",
-    "@holochain/client": "^0.21.0",
+    "@holochain-open-dev/core-types": "^0.701.0",
+    "@holochain-open-dev/profiles": "^0.702.0",
+    "@holochain/client": "^0.21.1",
     "@lit/context": "1.1.6",
     "@lit/localize": "0.12.2",
     "@msgpack/msgpack": "^3.1.1",
     "@tauri-apps/api": "2.9.0",
-    "@theweave/api": "0.7.0-dev.3",
-    "@theweave/elements": "0.7.0-dev.2",
+    "@theweave/api": "^0.7.0-rc.1",
+    "@theweave/elements": "^0.7.0-rc.1",
     "cytoscape": "~3.30.3",
     "lit": "3.3.2"
   },
@@ -159,8 +159,11 @@
     "npm": ">=7.0.0"
   },
   "overrides": {
-    "@holochain/client": "^0.21.0",
-    "@holochain-open-dev/core-types": "^0.700.0",
+    "@holochain/client": "^0.21.1",
+    "@holochain-open-dev/core-types": "^0.701.0",
+    "@holochain-open-dev/elements": "^0.701.0",
+    "@holochain-open-dev/profiles": "^0.702.0",
+    "@theweave/api": "^0.7.0-rc.1",
     "@shoelace-style/shoelace": "2.20.1"
   }
 }

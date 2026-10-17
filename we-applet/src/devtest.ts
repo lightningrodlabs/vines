@@ -11,11 +11,6 @@ export const devtestNames: DevTestNames = {
   provisionedRoleName: VINES_DEFAULT_ROLE_NAME,
 }
 
-export function setupVinessBlockView() {
-  // FIXME
-}
-
-
 /** */
 export async function setupVinesEntryView(): Promise<LitElement> {
   console.log("setupVinesEntryView()");
