@@ -1,0 +1,14 @@
+{
+  "name": "tests",
+  "private": true,
+  "scripts": {
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@holochain-open-dev/tryorama": "^0.21.0",
+    "@holochain/client": "^0.21.1",
+    "typescript": "~5.9.0",
+    "vitest": "^2.1.4"
+  },
+  "type": "module"
+}

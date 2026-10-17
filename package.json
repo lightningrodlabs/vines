@@ -11,7 +11,8 @@
     "webcomponents",
     "webapp",
     "we-applet",
-    "we-applet_feed"
+    "we-applet_feed",
+    "tests"
   ],
   "scripts": {
     "postinstall": "mkdir -p artifacts && mkdir -p bin && mkdir -p webapp/src/generated",
@@ -94,7 +95,7 @@
     "local2": "INDEX=2 npm run _local",
     "launch": "echo pass | hc-launch --piped -n 1 artifacts/vines.webhapp",
     "launch:we": "echo pass | hc-launch --piped -n 1 artifacts/vines-we_applet.webhapp",
-    "test": "npm run build:happ && npm run build -w @vines/elements && npm t -w @vines/tests",
+    "test": "npm run build:happ && npm t -w tests",
     "package:webapp": "rm -rf artifacts/vines-webapp-ui.zip && cd webapp/dist && rm -f *.map && bestzip ../../artifacts/vines-webapp-ui.zip * && cd ../../ && hc web-app pack webapp/webhapp.workdir -o artifacts/vines.webhapp",
     "package:we": "rm -rf artifacts/vines-we_applet-ui.zip & cd we-applet/dist && rm -f *.map && bestzip ../../artifacts/vines-we_applet-ui.zip * && cd ../../ && hc web-app pack we-applet/webhapp.workdir -o artifacts/vines-we_applet.webhapp",
     "dist:we": "npm run build -w webapp && npm run dist -w we-applet && npm run package:we",
