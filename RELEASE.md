@@ -34,6 +34,18 @@ and 0.6 and 0.7 agents form disjoint networks. Conversations on the 1.28.x line
 do not carry over by themselves — export them there and import them here — and
 everyone in a group has to move together.
 
+DNA version 1.30.0 (Holochain 0.7.1, profiles 0.702.0) is again a new network.
+Holochain 0.7.1 changed the capability-grant format, and 0.7.0 and 0.7.1
+conductors cannot gossip. This line cannot see conversations from the 1.29.x
+line (`happ-v1.29.0`), so a group has to upgrade together. It needs Moss
+0.16.0-rc.1 or later. To carry conversations over, export them from 1.29.x and
+import them into 1.30.x (Export/Import in the Vines UI).
+
+The `rFiles` DNA in the canonical 1.30.0 happ was built from the files repo's
+Holochain 0.7.1 commit (`294f34a`, the pins on top of `hdk-7.0` 466357f). A
+`submodules/files` checkout at any other Rust state produces a different happ,
+which `scripts/release-happ.sh` rejects.
+
 ## Why the happ is frozen (never rebuilt)
 
 The zome wasm embeds the builder's absolute paths (`~/.cargo/...` and source
@@ -108,7 +120,8 @@ The workflow run summary (and the release body) contains:
 }
 ```
 
-Add a new `versions[]` entry for `vines` in the 0.16 curation list with the new
+Add a new `versions[]` entry for `vines` in the 0.16 curation list
+(`versionBranch: "1.30.x"`; 1.29.x was the Holochain 0.7.0 network) with the new
 `version`, the release's `vines-we_applet.webhapp` `url`, and these hashes.
 Because `happSha256` is unchanged, Moss treats it as an in-place upgrade on the
 same network. To get the hashes for a local artifact: `npm run weave-hash`.
