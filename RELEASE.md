@@ -123,8 +123,9 @@ The workflow run summary (and the release body) contains:
 Add a new `versions[]` entry for `vines` in the 0.16 curation list
 (`versionBranch: "1.30.x"`; 1.29.x was the Holochain 0.7.0 network) with the new
 `version`, the release's `vines-we_applet.webhapp` `url`, and these hashes.
-Because `happSha256` is unchanged, Moss treats it as an in-place upgrade on the
-same network. To get the hashes for a local artifact: `npm run weave-hash`.
+The first entry of a new DNA line carries a new `happSha256` and goes on a new
+`versionBranch`. Later UI-only releases on the line keep that `happSha256`, so
+Moss treats them as in-place upgrades on the same network. To get the hashes for a local artifact: `npm run weave-hash`.
 
 ## `build-webhapps.yml` is verification only
 
