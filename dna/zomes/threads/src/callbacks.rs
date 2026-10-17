@@ -9,9 +9,9 @@ pub fn init(_: ()) -> ExternResult<InitCallbackResult> {
    debug!("{} init() CALLED", THREADS_DEFAULT_COORDINATOR_ZOME_NAME);
     let mut fns = HashSet::new();
     fns.insert((zome_info()?.name, FunctionName("recv_remote_signal".into())));
-    let cap_grant_entry: CapGrantEntry = CapGrantEntry::new(
+    let cap_grant_entry: CapGrantEntry = CapGrantEntry::new_zome_call_grant(
         String::from("remote signals"), // A string by which to later query for saved grants.
-        ().into(), // Unrestricted access means any external agent can call the extern
+        GrantConstraint::Unrestricted, // Any external agent can call the extern
         GrantedFunctions::Listed(fns),
     );
     create_cap_grant(cap_grant_entry)?;
