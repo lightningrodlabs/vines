@@ -736,6 +736,10 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
           max-width: 100%;
         }
 
+        #menu-btn::part(icon) {
+          transform: rotate(90deg);
+        }
+
         #avatarColumn:hover {
           cursor: pointer;
         }

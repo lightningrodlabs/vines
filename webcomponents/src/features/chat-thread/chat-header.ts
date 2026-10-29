@@ -6,7 +6,7 @@ import {
     DnaElement, DnaId, EntryId,
     intoAnyId, intoDhtId,
 } from "@ddd-qc/lit-happ";
-import {determineSubjectPrefix, latestThreadName} from "../../utils";
+import {latestSubjectName} from "../../utils";
 import {ThreadsDvm} from "../../viewModels/threads.dvm";
 import {renderAvatar, renderModerators, renderProfileAvatar} from "../../render";
 import {beadJumpEvent, CommentRequest, ShowRulesEvent, SpecialSubjectType} from "../../events";
@@ -121,63 +121,56 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
       return this.renderDmThreadHeader(maybeDmThread);
     }
 
-    //const subjectAddr = thread.pp.subject.address;
-    let maybeSemanticTopicTitle: string | undefined = undefined;
-    //const subjectHashType = getHashType(subjectAddr);
-    if (thread.pp.subject.typeName == SpecialSubjectType.SemanticTopic) {
-      const pair = this._dvm.threadsZvm.perspective.semanticTopics.get(new ActionId(this._latestSubjectId!.b64))!;
-      maybeSemanticTopicTitle = pair[0];
-    }
-    //console.debug("subjectHashType", thread.pp.subject.typeName);
     const subjectId = ActionId.from(this._latestSubjectId!);
-    let title: TemplateResult<1>;
-    let subText: TemplateResult<1>;
-    const copyBtn = html`<copy-wal-button .dnaId=${this.cell.address.dnaId} .hash=${this.threadHash!} .name=${msg('channel')}></copy-wal-button>`;
+    const isComment = thread.pp.purpose == "comment";
+    const subjectName = latestSubjectName(thread.pp, this._dvm.threadsZvm);
+    const copyBtn = html`<copy-wal-button .dnaId=${this.cell.address.dnaId} .hash=${this.threadHash!} .name=${isComment? msg('comment thread') : msg('channel')}></copy-wal-button>`;
 
-    const subjectPrefix = determineSubjectPrefix(thread.pp.subject.typeName as SpecialSubjectType);
-    const threadName = latestThreadName(thread.title, thread.pp, this._dvm.threadsZvm);
-    if (maybeSemanticTopicTitle) {
-      title = html`<span class="subject-name">${msg("Welcome to")} ${threadName} !</span> `;
-      subText = html`${msg("This is the start of a channel about topic")} ${thread.title}`;
+    /** Title: "<Category> / <channel>" or "Comments on <subject>" */
+    let title: TemplateResult<1>;
+    if (thread.pp.subject.typeName == SpecialSubjectType.SemanticTopic) {
+      title = html`
+          <span class="path">${subjectName}</span>
+          <span class="sep">/</span>
+          <span class="path">${isComment? msg("Discussion") : thread.title}</span>`;
     } else {
-      //console.debug("<chat-header>.render(): pp.subjectHash", this._latestSubjectId);
       const subjectBead = this._dvm.threadsZvm.perspective.getBeadInfo(subjectId);
       if (subjectBead) {
-        const avatarElem = renderAvatar(this, this._dvm.profilesZvm, subjectBead.author, "S");
         title = html`
-            <div style="max-width:100%;">
-                <span>${msg("About")}</span> 
-                <span class="subject-name">${threadName}</span> 
-                <div style="display: flex; flex-direction: row; gap: 8px;"><span>${msg("from")}</span> ${avatarElem}</div> 
-            </div>`;
-        subText = html`
-            <div>
-              <span>${msg("This is the start of comment thread about chat message")} </span>
-              <span style="color:blue; cursor:pointer; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;" 
-                    @click=${(_e: any) => this.dispatchEvent(beadJumpEvent(subjectId))}>
-                ${threadName}
-              </span>
-            </div>`;
+            <span class="path">${msg("Comments on")}</span>
+            <span class="path quote link" @click=${(_e: any) => this.dispatchEvent(beadJumpEvent(subjectId))}>"${subjectName}"</span>
+            ${renderAvatar(this, this._dvm.profilesZvm, subjectBead.author, "XS")}`;
       } else {
-          let wal: WAL | undefined = undefined;
-          let fromElem = html``;
-          if (this.weServices) {
-              wal = {
-                  hrl: intoHrl(new DnaId(thread?.pp.subject.dnaHashB64), intoDhtId(thread?.pp.subject.address)),
-                  context: undefined
-              };
-              fromElem = html`${msg('from Tool:')} <span class="link" @click=${() => { /*await*/ this.weServices.openAppletMain(new EntryId(thread?.pp.subject.appletId).hash, wal)}}>
+        let wal: WAL | undefined = undefined;
+        let fromElem = html``;
+        if (this.weServices) {
+          wal = {
+            hrl: intoHrl(new DnaId(thread.pp.subject.dnaHashB64), intoDhtId(thread.pp.subject.address)),
+            context: undefined
+          };
+          fromElem = html`<span class="muted">${msg('from')}</span>
+              <span class="path link" @click=${() => { /*await*/ this.weServices.openAppletMain(new EntryId(thread?.pp.subject.appletId).hash, wal)}}>
                   ${this._appletInfo?.appletName}
               </span>`;
-          }
-          title = html`
-              <div>
-                  ${msg("About")}
-                  <span class="subject-name ${wal? "link" : ""}" @click=${() => {if (wal) this.weServices.openAsset(wal, 'side')}}>${threadName}</span>
-              </div>`;
-          subText = html`${msg("This is the start of a comment thread about a")} ${thread.pp.subject.typeName} ${fromElem}`;
+        }
+        title = html`
+            <span class="path">${msg("Comments on")}</span>
+            <span class="path ${wal? "link" : ""}" @click=${() => {if (wal) this.weServices.openAsset(wal, 'side')}}>${subjectName}</span>
+            ${fromElem}`;
       }
     }
+
+    /** Origin: who started it and when */
+    const authorProfile = this._dvm.profilesZvm.perspective.getProfile(thread.author);
+    const authorName = authorProfile? authorProfile.nickname : msg("unknown");
+    const createdOn = new Date(thread.creationTime / 1000).toLocaleDateString(undefined, {year: "numeric", month: "long", day: "numeric"});
+    const origin = html`
+        <span>${!isComment? msg("Channel created by")
+            : thread.pp.subject.typeName == SpecialSubjectType.SemanticTopic? msg("Discussion started by")
+            : msg("Comment thread started by")}</span>
+        ${renderAvatar(this, this._dvm.profilesZvm, thread.author, "XS")}
+        <span style="font-weight:bold">${authorName}</span>
+        <span>${msg("on")} ${createdOn}</span>`;
 
     const toSideBtn = html`
         <ui5-button    tooltip=${msg("Open in side view")} icon="navigation-right-arrow" design="Transparent"
@@ -198,14 +191,14 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
     /** render all */
     return html`
         <div id="chat-header">
-          <div class="rounded-emoji">${subjectPrefix}</div>
           <h2>
+            ${isComment? html`<ui5-icon name="comment" class="kind-icon"></ui5-icon>` : html``}
             ${title}
+            <span style="flex-grow:1"></span>
             ${copyBtn}
             ${toSideBtn}
           </h2>
-          <div class="subtext">${subText}</div>
-          <!-- <div class="subtext">Purpose: ${thread.title}</div> -->
+          <div class="subtext">${origin}</div>
           <div class="subtext">
               <span class="rules" 
                     @click=${(e: any) => {
@@ -244,40 +237,44 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
           font-weight: bold;
         }
         
-        .rounded-emoji {
-          width: 80px;
-          height: 80px;
-          font-size: 36px;
-          /*background: #9f9d9dbf;*/
-          background: rgba(227, 227, 227, 0.75);
-          border-radius: 50%;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          font-weight: bold;
-        }
-        
         h2 {
-          line-height: 44px;
-          /*margin: 3px 0px 3px 0px;*/
-          display: flex; 
-          align-items: center; 
-          /*gap: 15px;*/
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          min-height: 44px;
+          margin: 8px 0px 4px 0px;
+          font-size: 1.4em;
+          font-weight: 600;
+          color: #2b3340;
         }
-        h2 > ui5-button {
-          display: none;
+        h2 > ui5-button, h2 > copy-wal-button {
+          color: #8a8f98;
+          flex-shrink: 0;
         }
-        h2:hover > ui5-button {
-          display: inline-block;
+        .kind-icon {
+          width: 1.2em;
+          height: 1.2em;
+          color: #8a8f98;
+        }
+        .path {
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        .sep {
+          color: #a0a4ab;
+          font-weight: 400;
+        }
+        .quote {
+          font-style: italic;
+          font-weight: 400;
+          max-width: 50%;
+        }
+        .muted {
+          color: #8a8f98;
+          font-weight: 400;
         }
 
-        h2 > copy-wal-button {
-          display: none;
-        }
-        h2:hover > copy-wal-button {
-          display: inline-block;
-        }
-        
         .chatAvatar {
           /*cursor:pointer;*/  
         }
@@ -297,19 +294,6 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
           align-items: center;
         }
 
-          .subject-name {
-              font-style: italic;
-              background: #fbfbfb9c;
-              /*padding: 4px;*/
-              margin-left: 10px;
-              margin-right: 15px;
-              white-space: nowrap;
-              /*overflow: hidden;*/
-              text-overflow: ellipsis;
-              /*display: block;*/
-          }
-
-          
           .link {
               cursor: pointer;
           }

@@ -253,12 +253,12 @@ export class AnyIdMap<T> extends Map<HoloHashB64, T> {}
 
 
 /** Determine pp's name */
-export function latestThreadName(threadTitle: string, pp: ParticipationProtocol, threadsZvm: ThreadsZvm): string {
+/** Current display name of a thread's subject (follows subject edits) */
+export function latestSubjectName(pp: ParticipationProtocol, threadsZvm: ThreadsZvm): string {
   const curSubjectId = intoAnyId(pp.subject.address);
   const subjectType = pp.subject.typeName as SpecialSubjectType;
   const latestSubjectId = threadsZvm.perspective.getLatestSubject(curSubjectId);
   const latestSubject = threadsZvm.perspective.subjects.get(latestSubjectId.b64);
-  //console.debug("latestThreadName", subjectType, latestSubject);
   let subjectName = pp.subject.name;
   if (!latestSubject) {
     if (subjectType == SpecialSubjectType.SemanticTopic) {
@@ -269,17 +269,33 @@ export function latestThreadName(threadTitle: string, pp: ParticipationProtocol,
     }
   } else {
     subjectName = latestSubject.name;
-    /** Handle Edit message special case */
-    if (subjectType == SpecialSubjectType.TextBead && threadTitle == "EDIT") {
-      const beadAh = ActionId.from(latestSubject.address);
-      const tuple = threadsZvm.perspective.beads.get(beadAh);
-      if (tuple) {
-        return `"${(tuple[1] as TextBeadMat).value}"`;
-      }
+  }
+  return subjectName;
+}
+
+
+/** Display name of a thread's purpose: comment threads are the "Discussion" of a category, "Comments" on anything else */
+export function threadPurposeName(threadTitle: string, subjectType: SpecialSubjectType): string {
+  if (threadTitle != "comment") {
+    return threadTitle;
+  }
+  return subjectType == SpecialSubjectType.SemanticTopic? msg("Discussion") : msg("Comments");
+}
+
+
+/** Full display name of a thread: "<subject> / <purpose>" */
+export function latestThreadName(threadTitle: string, pp: ParticipationProtocol, threadsZvm: ThreadsZvm): string {
+  const subjectType = pp.subject.typeName as SpecialSubjectType;
+  const subjectName = latestSubjectName(pp, threadsZvm);
+  /** Handle Edit message special case */
+  if (subjectType == SpecialSubjectType.TextBead && threadTitle == "EDIT") {
+    const latestSubjectId = threadsZvm.perspective.getLatestSubject(intoAnyId(pp.subject.address));
+    const tuple = threadsZvm.perspective.beads.get(ActionId.from(latestSubjectId));
+    if (tuple) {
+      return `"${(tuple[1] as TextBeadMat).value}"`;
     }
   }
-  //console.log("latestThreadName", curSubjectId.b64, latestSubjectId.b64, threadsZvm.perspective.subjects);
-  return `${determineSubjectPrefix(subjectType)} ${subjectName}: ${threadTitle}`;
+  return `${subjectName} / ${threadPurposeName(threadTitle, subjectType)}`;
 }
 
 

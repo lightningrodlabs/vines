@@ -333,7 +333,7 @@ export class ToolLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> impl
       for (const [appletId, appletInfo] of Array.from(this.weServices.cache.appletInfos.entries())) {
            console.log("appletId appletInfo", appletInfo?.appletName, appletId.b64);
            /** exclude this tool as it is handled specifically elsewhere */
-           if (!appletInfo) {
+           if (!appletInfo || this.weServices.appletIds.includes(appletId.b64)) {
               continue;
            }
            appletOptions.push(html`<ui5-option .id=${appletId.b64} ?selected=${this._appletId && this._appletId.b64 == appletId.b64} >${appletInfo.appletName}</ui5-option>`);

@@ -8,6 +8,19 @@ import {sharedStyles} from "../../styles";
 import {latestThreadName} from "../../utils";
 import {renderAvatar, renderAvatarGroup} from "../../render";
 import {ThreadsDnaPerspective, ThreadsDvm} from "../../viewModels/threads.dvm";
+import Menu from "@ui5/webcomponents/dist/Menu";
+import Button from "@ui5/webcomponents/dist/Button";
+
+
+/** Target of the shared "more" popup menu */
+interface MenuTarget {
+  kind: "Topic" | "Channel";
+  address: ActionId;
+  title: string;
+  hidden: boolean;
+  isAuthor?: boolean;
+  commentThread?: ActionId | null;
+}
 
 
 /** */
@@ -38,6 +51,8 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
   // onlineLoaded!: boolean;
 
   private _dragged: any;
+
+  @state() private _menuTarget?: MenuTarget;
 
 
   /** -- Methods -- */
@@ -84,6 +99,60 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
       composed: true
     }));
   }
+
+  /** Open the shared popup menu for the clicked Topic or Channel */
+  async openMenu(e: Event, target: MenuTarget) {
+    e.stopPropagation();
+    e.preventDefault();
+    this._menuTarget = target;
+    await this.updateComplete;
+    const menu = this.shadowRoot!.getElementById("moreMenu") as Menu;
+    menu.showAt(e.currentTarget as Button);
+  }
+
+
+  /** */
+  onMenuItemClick(e: any) {
+    const target = this._menuTarget;
+    if (!target) {
+      return;
+    }
+    switch (e.detail.item.id) {
+      case "hide":
+      case "show":
+        this.dispatchEvent(new CustomEvent<HideEvent>('archive', {
+          detail: {hide: e.detail.item.id == "hide", address: target.address, type: target.kind},
+          bubbles: true, composed: true
+        }));
+        break;
+      case "editTitle":
+        this.onClickEditTopic(target.address, target.title);
+        break;
+      case "comments":
+        this.onClickCommentTopic(target.commentThread!, target.address, target.title);
+        break;
+    }
+  }
+
+
+  /** Items of the shared popup menu, depending on its current target */
+  renderMenuItems() {
+    const target = this._menuTarget;
+    if (!target) {
+      return html``;
+    }
+    const hideItem = target.hidden
+      ? html`<ui5-menu-item id="show" icon="show" text=${msg("Show")}></ui5-menu-item>`
+      : html`<ui5-menu-item id="hide" icon="hide" text=${msg("Hide")}></ui5-menu-item>`;
+    if (target.kind == "Channel") {
+      return hideItem;
+    }
+    return html`
+      ${target.isAuthor? html`<ui5-menu-item id="editTitle" icon="edit" text=${msg("Edit Title")}></ui5-menu-item>` : html``}
+      <ui5-menu-item id="comments" icon="discussion" text=${msg("Category discussion")}></ui5-menu-item>
+      ${hideItem}`;
+  }
+
 
     /** */
     onClickMerge(topicHash: ActionId, subjectName: string) {
@@ -194,33 +263,10 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
               }
             }
 
-            const hideShowBtn = this.showArchivedTopics && isThreadHidden?
-              html`
-                <ui5-button icon="show" tooltip=${msg("Show")} design="Transparent"
-                            class="showBtn" style="${isSelected? "color:#444;" : ""}"
-                            @click=${async (e: any) => {
-                              e.stopPropagation();
-                              this.dispatchEvent(new CustomEvent<HideEvent>('archive', {
-                                detail: {
-                                  hide: false,
-                                  address: ppAh,
-                                  type: "Channel"
-                                }, bubbles: true, composed: true
-                              }));
-                            }}></ui5-button>
-              ` : html`
-                    <ui5-button icon="hide" tooltip=${msg("Hide")} design="Transparent"
-                                class="showBtn" style="${isSelected? "color:#444;" : ""}"
-                                @click=${async (e: any) => {
-                                  e.stopPropagation();
-                                  this.dispatchEvent(new CustomEvent<HideEvent>('archive', {
-                                    detail: {
-                                      hide: true,
-                                      address: ppAh,
-                                      type: "Channel"
-                                    }, bubbles: true, composed: true
-                                  }));
-                                }}></ui5-button>`;
+            const menuBtn = html`
+                <ui5-button icon="overflow" tooltip=${msg("More")} design="Transparent"
+                            class="menuBtn" style="${isSelected? "color:white;" : ""}"
+                            @click=${(e: any) => this.openMenu(e, {kind: "Channel", address: ppAh, title: thread.title, hidden: !!isThreadHidden})}></ui5-button>`;
 
             /** Create an avatar group */
             const agents: AgentId[] = this._dvm.allCurrentOthers(undefined, ppAh);
@@ -268,7 +314,7 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
                       <span style="flex-grow:1; margin-left:10px; margin-right:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight:${hasNewBeads || isSelected? "bold" : ""}; color:${isSelected? "white" : ""};"
                       >${thread.title}</span>
                       ${avatarGrp}
-                      ${hideShowBtn}                
+                      ${menuBtn}
                   </div>
                 </sl-tooltip>`
           })
@@ -285,22 +331,11 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
           topicHasUnreadComments = unreadSubjects.map((id) => id.b64).includes(topicAh.b64);
         }
 
-        let topicCommentButton = html``;
-        if (topicHasUnreadComments) {
-          topicCommentButton = html`<ui5-button icon="comment" tooltip=${msg("View comments")}
-                                               design="Negative" style="border:none;background: transparent"
-                                               @click=${(_e: any) => this.onClickCommentTopic(maybeCommentThread, topicAh, title)}></ui5-button>`;
-        } else {
-          topicCommentButton = maybeCommentThread != null
-            ? html`
-                  <ui5-button id=${"cmt-" + topicAh.b64} icon="comment" tooltip=${msg("View comments")} design="Transparent" 
-                              style="border:none;display: none"
-                              @click="${(_e: any) => this.onClickCommentTopic(maybeCommentThread, topicAh, title)}"></ui5-button>`
-            : html`
-                  <ui5-button id=${"cmt-" + topicAh.b64} icon="sys-add" tooltip=${msg("Create comment thread for this Category")} design="Transparent"
-                              style="border:none; padding:0px; display:none" 
-                              @click="${(_e: any) => this.onClickCommentTopic(maybeCommentThread, topicAh, title)}"></ui5-button>`;
-        }
+        const topicCommentButton = topicHasUnreadComments
+          ? html`<ui5-button icon="discussion" tooltip=${msg("New in category discussion")}
+                             design="Negative" style="border:none;background: transparent"
+                             @click=${(_e: any) => this.onClickCommentTopic(maybeCommentThread, topicAh, title)}></ui5-button>`
+          : html``;
 
 
         /** 'new', 'notif' and 'unread' badge to display */
@@ -325,33 +360,13 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
           }
       }
 
-      const topicHideBtn = this.showArchivedTopics && isSubjectHidden? html`
-          <ui5-button id=${"hide-" + topicAh.b64} icon="show" tooltip=${msg("Show")} design="Transparent"
-                      style="border:none; padding:0px;display:none;"
-                      @click="${async (e: any) => {
-                        e.stopPropagation();
-                        this.dispatchEvent(new CustomEvent<HideEvent>('archive', {
-                        detail: {
-                          hide: false,
-                          address: topicAh,
-                          type: "Topic"
-                        }, bubbles: true, composed: true
-                      }));
-                    }}">
-          </ui5-button>
-      ` : html`
-          <ui5-button id=${"hide-" + topicAh.b64} icon="hide" tooltip=${msg("Hide")} design="Transparent"
-                      style="border:none; padding:0px;display:none;"
-                      @click="${async (e: any) => {
-                        e.stopPropagation();
-                        this.dispatchEvent(new CustomEvent<HideEvent>('archive', {
-                          detail: {hide: true, address: topicAh, type: "Topic"},
-                          bubbles: true,
-                          composed: true
-                        }));
-                      }}">
-          </ui5-button>
-      `;
+      const topicMenuBtn = html`
+          <ui5-button icon="overflow" tooltip=${msg("More")} design="Transparent" class="menuBtn"
+                      @click=${(e: any) => this.openMenu(e, {
+                        kind: "Topic", address: topicAh, title, hidden: !!isSubjectHidden,
+                        isAuthor: this.cell.address.agentId.equals(author),
+                        commentThread: maybeCommentThread,
+                      })}></ui5-button>`;
 
       // const delButton = html`<ui5-button icon="delete" tooltip=${msg("Delete topic")}
       //                                        design="Negative" style="border:none;background: transparent"
@@ -397,35 +412,15 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
                         //console.log("<topics-lister> TOGGLED", e.target.collapsed);
                         this.collapsed.set(topicAh, e.target.collapsed);
                         this.requestUpdate();
-                      }}
-                     @mouseover=${(_e: any) => {
-                        const hide = this.shadowRoot!.getElementById("hide-" + topicAh.b64);
-                        const cmt = this.shadowRoot!.getElementById("cmt-" + topicAh.b64);
-                        const edit = this.shadowRoot!.getElementById("edit-" + topicAh.b64);
-                        if (hide) hide.style.display = "block";
-                        if (cmt) cmt.style.display = "block";
-                        if (edit && this.cell.address.agentId.equals(author)) edit.style.display = "block";
-                      }}
-                     @mouseout=${(_e: any) => {
-                        const hide = this.shadowRoot!.getElementById("hide-" + topicAh.b64);
-                        const cmt = this.shadowRoot!.getElementById("cmt-" + topicAh.b64);
-                        const edit = this.shadowRoot!.getElementById("edit-" + topicAh.b64);
-                        if (hide) hide.style.display = "none";
-                        if (cmt) cmt.style.display = "none";
-                        if (edit) edit.style.display = "none";
                       }}>
             <!-- header -->
             <div slot="header" style="display:flex; flex-direction:row; overflow:hidden; width:100%;">
                 <div style="flex-grow:1; height:18px; margin-top:8px; margin-right:10px; font-weight:${topicHasUnreads? "bold" : ""}; text-overflow:ellipsis; overflow:hidden;">${title}</div>
                 <!-- ${topicBadge} -->
-                <ui5-button id=${"edit-" + topicAh.b64} icon="edit" tooltip=${msg("Edit Title")} design="Transparent"
-                        style="border:none;display: none"
-                        @click=${(_e: any) => this.onClickEditTopic(topicAh, title)}></ui5-button>
-                ${topicHideBtn}                
                 ${topicCommentButton}
                 <!-- TODO: test mergeSubject <ui5-button id=${"merge-" + topicAh.b64} icon="edit" tooltip=${msg("Merge")} design="Transparent"
                             @click=${(_e: any) => this.onClickMerge(topicAh, title)}></ui5-button> -->
-                <ui5-button icon="add" tooltip=${msg("Create a new Channel for this Category")}
+                <ui5-button icon="add" tooltip=${msg("New Channel")}
                             design="Transparent" 
                             style="color:grey"
                             @click=${async (e: any) => {
@@ -439,6 +434,7 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
                                 }));
                               }}>
                 </ui5-button>
+                ${topicMenuBtn}
             </div>
             <!-- threads -->              
            ${threadElems}
@@ -450,7 +446,7 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
 
     /** Handle empty tree case */
     if (treeItems.length == 0) {
-      treeItems.push(html`<div style="color: grey; margin: 10px auto 20px auto;">${msg('No topics found')}</div>`);
+      treeItems.push(html`<div style="color: grey; margin: 10px auto 20px auto;">${msg('No categories found')}</div>`);
       //if (this._dvm.profilesZvm.perspective.agents.length <= 1) {
       treeItems.push(html`<div style="color: grey; margin: 10px auto 20px auto;">${msg('(Might not be connected to peers yet)')}</div>`);
       //}
@@ -458,6 +454,9 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
 
     /** render all */
     return html`
+        <ui5-menu id="moreMenu" @item-click=${this.onMenuItemClick}>
+            ${this.renderMenuItems()}
+        </ui5-menu>
     <div id="container"
          @dragstart=${(e: any) => {
            this._dragged = e.target.closest('ui5-panel');
@@ -617,9 +616,12 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
               padding-left: 7px;
           }
 
+          /** Same right inset as the channel rows (margin-right 5px) and the top bar,
+           *  so the "+" and "⋮" columns line up at every level */
           ui5-panel::part(header) {
               border: none;
               color: #588AD7;
+              padding-right: 5px;
           }
 
           ui5-panel::part(header):hover {
@@ -628,22 +630,17 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
               color: #0087ff !important;
           }
 
-          ui5-panel::part(header) > ui5-button {
-              border: 1px solid black;
-              background: #33A000;
+          .menuBtn {
+              border: none;
+              padding: 0px;
+              color: grey;
+          }
+          .menuBtn::part(icon) {
+              transform: rotate(90deg);
           }
 
-          ui5-panel::part(header) > copy-wal-button {
-              border: 1px solid black;
-              background: #33A000;
-          }
-
-
-          ui5-panel::part(header):hover > ui5-button {
-              display: block !important;
-          }
-
-          ui5-panel::part(header):hover > copy-wal-button {
+          /** Buttons are always visible now: keep avatars on hover */
+          .threadItem:hover > ui5-avatar-group {
               display: block !important;
           }
 

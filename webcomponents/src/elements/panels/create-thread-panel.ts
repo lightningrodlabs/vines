@@ -103,7 +103,9 @@ export class CreateThreadPanel extends DnaElement<ThreadsDnaPerspective, Threads
     }}></ui5-button>              
           </div>          
       </section>
-      <rules-edit id="rulesEdit"></rules-edit>
+      <ui5-panel header-text=${msg("Advanced")} collapsed style="margin-top:15px; border:none;">
+        <rules-edit id="rulesEdit"></rules-edit>
+      </ui5-panel>
       <div slot="footer" class="footer">
         <ui5-button style="margin-top:5px" design="Emphasized" @click=${(_e: any) => this.onCreate()}>
             ${msg("Create")}

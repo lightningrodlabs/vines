@@ -1,4 +1,4 @@
-import {css, html, LitElement, PropertyValues} from "lit";
+import {css, html, LitElement, nothing, PropertyValues} from "lit";
 import {customElement, property, state} from "lit/decorators.js";
 import {
   ActionId,
@@ -59,6 +59,7 @@ import "@ui5/webcomponents/dist/TreeItem.js";
 import "@ui5/webcomponents/dist/TreeItemCustom.js";
 
 import Dialog from "@ui5/webcomponents/dist/Dialog";
+import Panel from "@ui5/webcomponents/dist/Panel";
 import Popover from "@ui5/webcomponents/dist/Popover";
 import Input from "@ui5/webcomponents/dist/Input";
 import Menu from "@ui5/webcomponents/dist/Menu";
@@ -333,6 +334,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** Left & Lister */
   @state() private _canShowLeft = true;
+  /** Side panel widths, remembered across sessions */
+  @state() private _leftWidth: number = Number(localStorage.getItem("vinesLeftWidth")) || 300;
+  @state() private _commentWidth: number = Number(localStorage.getItem("vinesCommentWidth")) || 350;
   @state() private _listerToShow: string | null = "topics-option";
   @state() private _collapseAll: boolean = false;
   @state() private _topicOrderType: string = "custom";
@@ -1062,6 +1066,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     input.valueState = ValueState.None;
     input.value = "";
     rulesEdit.reset();
+    (this.shadowRoot!.getElementById("advancedPanel") as Panel).collapsed = true;
     this.confirmThreadDialogElem.close(false);
     this.createThreadDialogElem.close(false);
     /** Jump to new thread */
@@ -1833,6 +1838,71 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
 
   /**  */
+  /** Drag a panel edge to resize it. The handle is the last child of the panel. */
+  startResize(e: PointerEvent, side: "left" | "comment") {
+    e.preventDefault();
+    const handle = e.currentTarget as HTMLElement;
+    const panel = handle.parentElement!;
+    const rect = panel.getBoundingClientRect();
+    panel.classList.add("resizing");
+    handle.setPointerCapture(e.pointerId);
+    const onMove = (ev: PointerEvent) => {
+      if (side == "left") {
+        this._leftWidth = Math.round(Math.min(600, Math.max(200, ev.clientX - rect.left)));
+      } else {
+        this._commentWidth = Math.round(Math.min(800, Math.max(250, rect.right - ev.clientX)));
+      }
+    };
+    const onUp = () => {
+      handle.removeEventListener("pointermove", onMove);
+      handle.removeEventListener("pointerup", onUp);
+      handle.removeEventListener("pointercancel", onUp);
+      panel.classList.remove("resizing");
+      if (side == "left") {
+        localStorage.setItem("vinesLeftWidth", String(this._leftWidth));
+      } else {
+        localStorage.setItem("vinesCommentWidth", String(this._commentWidth));
+      }
+    };
+    handle.addEventListener("pointermove", onMove);
+    handle.addEventListener("pointerup", onUp);
+    handle.addEventListener("pointercancel", onUp);
+  }
+
+
+  /** Expand or collapse every lister in the side panel */
+  collapseAllListers(collapse: boolean) {
+    this._collapseAll = collapse;
+    for (const id of ["mineLister", "topicsLister", "hisLister"]) {
+      const lister = this.shadowRoot!.getElementById(id) as unknown as ICollapsable;
+      if (lister) {
+        lister.collapseAll(collapse);
+      }
+    }
+  }
+
+
+  /** */
+  async onViewMenu(e: any) {
+    switch (e.detail.item.id) {
+      case "view-topics": this._listerToShow = "topics-option"; break;
+      case "view-mine": this._listerToShow = "mine-option"; break;
+      case "view-tools":
+        /** Get and Cache appletInfo for each known applet */
+        await this.pullLatestAppletInfos();
+        this._listerToShow = "tools-option";
+        break;
+      case "expandAll": this.collapseAllListers(false); break;
+      case "collapseAll": this.collapseAllListers(true); break;
+      case "sort-custom": this._topicOrderType = "custom"; break;
+      case "sort-alpha": this._topicOrderType = "alpha"; break;
+      case "sort-chrono": this._topicOrderType = "chrono"; break;
+      case "toggleHidden": this._canViewArchivedSubjects = !this._canViewArchivedSubjects; break;
+      case "markRead": this.onCommitBtn(e); break;
+    }
+  }
+
+
   async pullLatestAppletInfos() {
     console.log("pullLatestAppletInfos()", !!this.weServices);
     if (this.weServices) {
@@ -2174,7 +2244,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     hisLister = html``;
 
     const toggleLeftBtn = html`
-        <ui5-button icon="menu2" tooltip=${msg("Show side panel")}
+        <ui5-button icon="slim-arrow-right" tooltip=${msg("Show side panel")}
                     class="${this._canShowLeft? "pressed" : ""}                    
                     slot=" startButton"
         style="margin-right:5px; display: ${this._canShowLeft? "none" : ""}"
@@ -2250,126 +2320,50 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     }
 
     /* Custom Segmented buttons */
-    const segBtns = !this.weServices? html`` : html`
-        <div style="display: flex; flex-direction: row; gap:3px; background: #D2D2D2; height: 30px; margin: 3px 10px 3px 10px; border-radius: 5px; padding: 3px;">
-            <div id="topicsBtn" class="listerbtn selected" @click=${(e: any) => {
-                e.preventDefault();
-                e.stopPropagation();
-                this._listerToShow = "topics-option";
-                const topicsBtn = this.shadowRoot!.getElementById("topicsBtn") as HTMLElement;
-                topicsBtn.classList.add("selected");
-                const toolsBtn = this.shadowRoot!.getElementById("toolsBtn") as HTMLElement;
-                toolsBtn.classList.remove("selected");
-                const mineBtn = this.shadowRoot!.getElementById("mineBtn") as HTMLElement;
-                mineBtn.classList.remove("selected");
-                this.requestUpdate();
-            }}>
-                ${msg('Channels')}
-            </div>
-            <div id="toolsBtn" class="listerbtn" 
-                 @click=${ async (e: any) => {
-                    e.preventDefault(); e.stopPropagation();
-                    /** Get and Cache appletInfo for each known applet */
-                    await this.pullLatestAppletInfos();
-                    /** */
-                    this._listerToShow = "tools-option";
-                    const topicsBtn = this.shadowRoot!.getElementById("topicsBtn") as HTMLElement;
-                    topicsBtn.classList.remove("selected");
-                    const toolsBtn = this.shadowRoot!.getElementById("toolsBtn") as HTMLElement;
-                    toolsBtn.classList.add("selected");
-                    const mineBtn = this.shadowRoot!.getElementById("mineBtn") as HTMLElement;
-                    mineBtn.classList.remove("selected");
-                    this.requestUpdate();
-                }}>
-                ${msg('Tools')}
-            </div>
-            <div id="mineBtn" class="listerbtn" 
-                 @click=${(e: any) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    this._listerToShow = "mine-option";
-                    const topicsBtn = this.shadowRoot!.getElementById("topicsBtn") as HTMLElement;
-                    topicsBtn.classList.remove("selected");
-                    const toolsBtn = this.shadowRoot!.getElementById("toolsBtn") as HTMLElement;
-                    toolsBtn.classList.remove("selected");
-                    const mineBtn = this.shadowRoot!.getElementById("mineBtn") as HTMLElement;
-                    mineBtn.classList.add("selected");
-                    this.requestUpdate();
-                }}>
-                ${msg('My')}
-            </div>
-        </div>`;
-
-
     /** Show Cross-view or group-view */
     const topLeft = html`
-        <!-- Action buttons -->
-        <div style="display:flex; flex-direction:row; padding: 0 5px;">
-
-            <div style="display:flex; flex-direction:row;border-bottom: 1px solid #d2d2d2; width:100%; justify-content:space-between; padding-bottom:6px; padding-top:6px">
-                ${this._listerToShow == "topics-option"? html`
-                    <ui5-button icon="add-folder" design="Transparent" style="height:30px;"
-                                tooltip=${msg("Create New Category")}
-                                @click=${(_e: any) => this.createTopicDialogElem.show()}></ui5-button>` : html``}
-                <ui5-button icon="expand-all" design="Transparent" style="height:30px;" tooltip=${msg("Expand All")}
-                            @click=${(_e: any) => {
-                                console.log("<topics-lister> EXPAND ALL")
-                                this._collapseAll = false;
-                                const mineLister = this.shadowRoot!.getElementById("mineLister") as unknown as ICollapsable;
-                                if (mineLister) {
-                                    mineLister.collapseAll(false);
-                                }
-                                const topicsLister = this.shadowRoot!.getElementById("topicsLister") as unknown as ICollapsable;
-                                if (topicsLister) {
-                                    topicsLister.collapseAll(false);
-                                }
-                                const hisLister = this.shadowRoot!.getElementById("hisLister") as unknown as ICollapsable;
-                                if (hisLister) {
-                                    hisLister.collapseAll(false);
-                                }
-
-                            }}></ui5-button>
-                <ui5-button icon="collapse-all" design="Transparent" style="height:30px;" tooltip=${msg("Collapse All")}
-                            @click=${(_e: any) => {
-                                console.log("<topics-lister> Collapse ALL")
-                                this._collapseAll = true;
-                                const mineLister = this.shadowRoot!.getElementById("mineLister") as unknown as ICollapsable;
-                                if (mineLister) {
-                                    mineLister.collapseAll(true);
-                                }
-                                const topicsLister = this.shadowRoot!.getElementById("topicsLister") as unknown as ICollapsable;
-                                if (topicsLister) {
-                                    topicsLister.collapseAll(true);
-                                }
-                                const hisLister = this.shadowRoot!.getElementById("hisLister") as unknown as ICollapsable;
-                                if (hisLister) {
-                                    hisLister.collapseAll(true);
-                                }
-                            }}></ui5-button>
-                <ui5-button icon=${this._topicOrderType == "alpha" ? "time-account" : this._topicOrderType == "chrono" ? "list" : "alphabetical-order"} design="Transparent"
-                            style="height:30px;"
-                            tooltip=${this._topicOrderType == "alpha" ? msg("Sort by creation time") : this._topicOrderType == "chrono"? msg("Use custom ordering") : msg("Sort alphabetically")}
-                            @click=${(_e: any) => {
-                                switch (this._topicOrderType) {
-                                    case "alpha": this._topicOrderType = "chrono"; break;
-                                    case "chrono": this._topicOrderType = "custom"; break;
-                                    case "custom": this._topicOrderType = "alpha"; break;
-                                }
-                            }}
-                ></ui5-button>
-                <ui5-button icon=${this._canViewArchivedSubjects? "hide" : "show"} design="Transparent"
-                            style="height:30px;"
-                            tooltip=${(this._canViewArchivedSubjects? msg("Hide") : msg("Show")) + " " + msg("hidden Categories & Channels")}
-                            @click=${(_e: any) => this._canViewArchivedSubjects = !this._canViewArchivedSubjects}></ui5-button>
-                <ui5-button icon="accept" design="Transparent" style="height:30px;" tooltip=${msg("Mark all as read")}
-                            @click=${this.onCommitBtn}></ui5-button>
-                <ui5-button design="Transparent" tooltip=${msg('Close side panel')}
-                            style="height:30px;"
-                            icon="slim-arrow-left"
-                            @click=${(_e: any) => this._canShowLeft = false}>
-                </ui5-button>
-            </div>
+        <!-- Top bar: places on the left, list actions on the right -->
+        <div id="topBar">
+            <ui5-button icon="slim-arrow-left" design="Transparent" class="top-btn" tooltip=${msg('Close side panel')}
+                        @click=${(_e: any) => this._canShowLeft = false}></ui5-button>
+            <ui5-button icon="favorite-list" design="Transparent" tooltip=${msg("Favorites")}
+                        class="top-btn ${this._mainView == MainViewType.Favorites? "active" : ""}"
+                        @click=${() => this.dispatchEvent(favoritesJumpEvent())}></ui5-button>
+            <ui5-button icon="documents" design="Transparent" tooltip=${msg("Files")}
+                        class="top-btn ${this._mainView == MainViewType.Files? "active" : ""}"
+                        @click=${() => this.dispatchEvent(filesJumpEvent())}></ui5-button>
+            <span style="flex-grow:1"></span>
+            ${this._listerToShow == "topics-option"? html`
+                <ui5-button icon="add" design="Transparent" class="top-btn"
+                            tooltip=${msg("New Category")}
+                            @click=${(_e: any) => this.createTopicDialogElem.show()}></ui5-button>` : html``}
+            <ui5-button id="viewMenuBtn" icon="overflow" design="Transparent" class="top-btn" tooltip=${msg("View options")}
+                        @click=${(_e: any) => {
+                            const menu = this.shadowRoot!.getElementById("viewMenu") as Menu;
+                            const btn = this.shadowRoot!.getElementById("viewMenuBtn") as Button;
+                            menu.showAt(btn);
+                        }}></ui5-button>
         </div>
+        <ui5-menu id="viewMenu" @item-click=${(e: any) => this.onViewMenu(e)}>
+            ${this.weServices? html`
+                <ui5-menu-item id="view-topics" text=${msg("Channels")}
+                               icon=${this._listerToShow == "topics-option"? "accept" : nothing}></ui5-menu-item>
+                <ui5-menu-item id="view-mine" text=${msg("My activity")}
+                               icon=${this._listerToShow == "mine-option"? "accept" : nothing}></ui5-menu-item>
+                <ui5-menu-item id="view-tools" text=${msg("Threads by tool")}
+                               icon=${this._listerToShow == "tools-option"? "accept" : nothing}></ui5-menu-item>` : html``}
+            <ui5-menu-item id="expandAll" icon="expand-all" text=${msg("Expand all")} ?starts-section=${!!this.weServices}></ui5-menu-item>
+            <ui5-menu-item id="collapseAll" icon="collapse-all" text=${msg("Collapse all")}></ui5-menu-item>
+            <ui5-menu-item id="sort-custom" text=${msg("Custom order")} starts-section
+                           icon=${this._topicOrderType == "custom"? "accept" : nothing}></ui5-menu-item>
+            <ui5-menu-item id="sort-alpha" text=${msg("Sort alphabetically")}
+                           icon=${this._topicOrderType == "alpha"? "accept" : nothing}></ui5-menu-item>
+            <ui5-menu-item id="sort-chrono" text=${msg("Sort by creation time")}
+                           icon=${this._topicOrderType == "chrono"? "accept" : nothing}></ui5-menu-item>
+            <ui5-menu-item id="toggleHidden" text=${msg("Show hidden items")} starts-section
+                           icon=${this._canViewArchivedSubjects? "accept" : nothing}></ui5-menu-item>
+            <ui5-menu-item id="markRead" icon="email-read" text=${msg("Mark all as read")} starts-section></ui5-menu-item>
+        </ui5-menu>
     `;
 
     const filteredInbox = this._dvm.threadsZvm.perspective.filteredInbox();
@@ -2398,9 +2392,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
             <!-- Messages -->
             <div style="display: flex; flex-direction: row; gap: 10px;align-items: center; margin-left: 10px; color: grey;margin-top: 30px;">
                 <ui5-icon style="width: 1.2rem; height: 1.2rem" name="paper-plane"></ui5-icon>
-                <span style="width: 1.2rem; height: 1.2rem">${msg("Messages")}</span>
+                <span style="white-space:nowrap">${msg("Direct Messages")}</span>
                 <span style="flex-grow: 1"></span>
-                <ui5-button icon="add" tooltip=${msg("Message a peer")}
+                <ui5-button icon="add" tooltip=${msg("New Direct Message")}
                             design="Transparent"
                             style="color:grey; margin-right: 8px;"
                             @click=${async (e: any) => {
@@ -2425,9 +2419,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
             <!-- Messages -->
             <div style="display: flex; flex-direction: row; gap: 10px;align-items: center; margin-left: 10px; color: grey;">
                 <ui5-icon style="width: 1.2rem; height: 1.2rem" name="paper-plane"></ui5-icon>
-                <span style="width: 1.2rem; height: 1.2rem">${msg("Messages")}</span>
+                <span style="white-space:nowrap">${msg("Direct Messages")}</span>
                 <span style="flex-grow: 1"></span>
-                <ui5-button icon="add" tooltip=${msg("Message a peer")}
+                <ui5-button icon="add" tooltip=${msg("New Direct Message")}
                             design="Transparent"
                             style="color:grey; margin-right: 8px;"
                             @click=${async (e: any) => {
@@ -2444,6 +2438,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     `;
 
     const happJoinInfo = this.happJoinInfo();
+    const myNickname = myProfile.nickname;
 
     /** Render all */
     return html`
@@ -2454,26 +2449,15 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
              @edit-topic-clicked=${this.onEditTopicClicked}
              @merge-topic-clicked=${this.onMergeTopicClicked}>
 
-            <div id="leftSide" class="leftSide" style="display: ${this._canShowLeft? "flex" : "none"};">
+            <div id="leftSide" class="leftSide ${this._canShowLeft? "" : "closed"}"
+                 style="width:${this._leftWidth}px; min-width:${this._leftWidth}px; max-width:${this._leftWidth}px;">
                 ${leftSide}
                 <div style="flex-grow: 1"></div>
-                ${segBtns}
                 <div id="profile-row">
                     <div style="display: flex; flex-direction:row; flex-grow:1; min-width: 0; margin-left:2px">
                         ${avatar}
-                        <div style="display: flex; flex-direction: column; align-items: stretch;padding-top:18px;margin-left:5px;flex-grow:1;min-width: 0;">
-
-                                <!-- <div style="font-size: small">${this.cell.address.agentId.b64}</div> -->
-                        </div>
+                        <div id="myNickname">${myNickname}</div>
                     </div>
-                    <ui5-button icon="documents" design="Transparent" tooltip=${msg("View Files")}
-                                class="bottom-btn" style="${this._mainView == MainViewType.Files? "background: #4684FD; color: white;" : ""}"
-                                @click=${() => this.dispatchEvent(filesJumpEvent())}>
-                    </ui5-button>
-                    <ui5-button icon="favorite-list" design="Transparent" tooltip=${msg("View Favorites")}
-                                class="bottom-btn" style="${this._mainView == MainViewType.Favorites? "background: #4684FD; color: white;" : ""}"
-                                @click=${() => this.dispatchEvent(favoritesJumpEvent())}>
-                    </ui5-button>
                     <ui5-button id="settingsBtn" class="bottom-btn"
                                 design="Transparent" icon="action-settings" tooltip=${msg("Settings")}
                                 @click=${(_e: any) => {
@@ -2625,6 +2609,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                         </div>
                     </ui5-popover>
                 </div>
+                <div class="resize-handle right" @pointerdown=${(e: PointerEvent) => this.startResize(e, "left")}></div>
             </div>
             <div id="mainSide">
                 <div id="topicBar">
@@ -2810,12 +2795,13 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     </div>
                     ${this._canShowComments? html`
                         <!-- .subjectName="${this._selectedCommentThreadSubjectName}" -->
-                        <div id="commentSide">
+                        <div id="commentSide" style="min-width:${this._commentWidth}px; max-width:${this._commentWidth}px;">
                             <comment-thread-view id="comment-view"
                                                  ?busy=${!!this._waitingForBeadCommit}
                                                  .threadHash=${this._selectedCommentThreadHash}
                                                  showInput="true"
                                                  @close=${(_e: any) => this._canShowComments = false}></comment-thread-view>
+                            <div class="resize-handle left" @pointerdown=${(e: PointerEvent) => this.startResize(e, "comment")}></div>
                         </div>` : html``}
                     ${this._canShowSearchResults? html`
                                 <div id="rightSide">
@@ -3131,7 +3117,10 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                             <div id="channelErrorMsg" slot="valueStateMessage">${msg("Minimum 1 character")}</div>
                         </ui5-input>
                     </div>
-                    <rules-edit id="rulesEdit"></rules-edit>
+                    <ui5-panel id="advancedPanel" header-text=${msg("Advanced")} collapsed
+                               style="margin-top:15px; border:none;">
+                        <rules-edit id="rulesEdit"></rules-edit>
+                    </ui5-panel>
                 </section>
                 <div slot="footer" style="display:flex;gap:10px;">
                     <ui5-button id="createThreadDialogButton" style="margin-top:5px" design="Emphasized"
@@ -3443,11 +3432,81 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
               min-width: 300px;
               max-width: 300px;
               position:relative;
+              display: flex;
               flex-direction: column;
+              overflow: hidden;
+              transition: width 0.2s ease, min-width 0.2s ease, max-width 0.2s ease;
+          }
+
+          .leftSide.closed {
+              width: 0 !important;
+              min-width: 0 !important;
+              max-width: 0 !important;
+          }
+
+          .leftSide.resizing {
+              transition: none;
+          }
+
+          @media (prefers-reduced-motion: reduce) {
+              .leftSide { transition: none; }
+          }
+
+          .resize-handle {
+              position: absolute;
+              top: 0;
+              bottom: 0;
+              width: 6px;
+              cursor: col-resize;
+              z-index: 5;
+              touch-action: none;
+              user-select: none;
+          }
+          .resize-handle.right { right: 0; }
+          .resize-handle.left { left: 0; }
+          .resize-handle:hover, .resizing > .resize-handle {
+              background: rgba(70, 132, 253, 0.35);
+          }
+          @media (max-width: 500px) {
+              .resize-handle { display: none; }
           }
   
         #profilePop::part(content) {
           padding: 0px;
+        }
+
+        #topBar {
+          display: flex;
+          flex-direction: row;
+          align-items: center;
+          gap: 0px;
+          padding: 4px 5px 4px 2px;
+          border-bottom: 1px solid #d2d2d2;
+        }
+
+        ui5-button.top-btn {
+          height: 30px;
+          color: #588AD7;
+        }
+
+        #viewMenuBtn::part(icon) {
+          transform: rotate(90deg);
+        }
+
+        ui5-button.top-btn.active {
+          background: #4684FD;
+          color: white;
+        }
+
+        #myNickname {
+          margin-left: 8px;
+          flex-grow: 1;
+          min-width: 0;
+          overflow: hidden;
+          white-space: nowrap;
+          text-overflow: ellipsis;
+          font-weight: 500;
+          color: #333;
         }
 
         #profile-row {
@@ -3527,6 +3586,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         }
 
         #commentSide {
+          position: relative;
           flex-direction: column;
           min-width: 350px;
           max-width: 350px;
@@ -3694,26 +3754,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
         .numberBadge:empty {
           display: none;
-        }
-
-        .listerbtn:hover {
-          cursor: pointer;
-          outline: 2px solid rgba(49, 95, 252, 0.61);
-        }
-
-        .listerbtn {
-          display: grid;
-          place-items: center;
-          flex-grow: 1;
-          border-radius: 10px;
-          padding: 3px 0px 3px 0px;
-          color: #4D4D4D;
-        }
-
-        .listerbtn.selected {
-          background: white;
-          font-weight: bold;
-          box-shadow: 0px 3px 13px -7px #000000, -18px 0px 22px -2px rgba(197, 209, 208, 0);
         }
 
         #primaryTitle {

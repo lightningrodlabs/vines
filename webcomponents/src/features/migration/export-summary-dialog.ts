@@ -83,7 +83,7 @@ export class ExportSummaryDialog extends DnaElement<unknown, ThreadsDvm> {
     switch (typeName) {
       case SpecialSubjectType.Asset: return msg("Comments about Assets"); break;
       case SpecialSubjectType.Applet: return msg("Comments about Tools"); break;
-      case SpecialSubjectType.AgentPubKey: return msg("Messages"); break;
+      case SpecialSubjectType.AgentPubKey: return msg("Direct Messages"); break;
       case SpecialSubjectType.ParticipationProtocol: return msg("Comments about Threads"); break;
       case SpecialSubjectType.SubjectType: return msg("Comments about SubjectTypes"); break;
       //case SpecialSubjectType.SemanticTopic: return msg("Comments about Categories"); break;

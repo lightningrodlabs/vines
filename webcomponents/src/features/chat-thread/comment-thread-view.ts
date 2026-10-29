@@ -423,7 +423,7 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
     //<!-- @load-more=${this.onLoadMore}-->
 
     const subjectType = this.subjectType? this.subjectType : thread.pp.subject.typeName;
-    const subjectName = this.subjectName? this.subjectName : latestThreadName(thread.title, thread.pp, this._dvm.threadsZvm);
+    const subjectName = latestThreadName(thread.title, thread.pp, this._dvm.threadsZvm);
     //const subjectPrefix = determineSubjectPrefix(subjectType as SpecialSubjectType);
 
     // const maybeAppletInfo = this.weServices && thread.pp.subject.appletId != this.weServices.appletIds[0]!? this.weServices.appletInfoCached(new EntryId(thread.pp.subject.appletId)) : undefined;
