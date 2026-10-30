@@ -3719,7 +3719,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           font-size: var(--vines-text-m);
         }
 
-
         .mypanel {
             background-color: var(--vines-surface);
             width: fit-content;
