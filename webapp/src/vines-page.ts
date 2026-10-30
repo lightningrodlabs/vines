@@ -267,7 +267,7 @@ import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm";
 import {FileTableItem} from "@ddd-qc/files/dist/elements/file-table";
 // @ts-ignore
 import {FileButton} from "@ddd-qc/files/dist/elements/file-button";
-import {FilesDvm, FileView, isFileValid, splitFile, SplitObject} from "@ddd-qc/files";
+import {FilesDvm, FilesDvmPerspective, FileView, isFileValid, splitFile, SplitObject} from "@ddd-qc/files";
 //import {StoreDialog} from "@ddd-qc/files/dist/elements/store-dialog";
 import {HAPP_BUILD_MODE} from "@ddd-qc/lit-happ/dist/globals";
 import {msg, str} from "@lit/localize";
@@ -279,7 +279,7 @@ import {GetStrategy} from "@holochain-open-dev/core-types";
 import {APP_VERSION} from "./generated/version";
 import {APK_LINK, happShareCodeContext, isMobile} from "./globals";
 import {ImportFilesData} from "@vines/elements/src/features/migration/import-utils";
-import {commitPrivateFileForDm, FileAlreadyPublicError} from "@vines/elements/src/viewModels/dm-files";
+import {acceptDmDeliveries, commitPrivateFileForDm, FileAlreadyPublicError, resumeDmDeliveries} from "@vines/elements/src/viewModels/dm-files";
 
 setBasePath('/shoelace-assets');
 setDefaultFontLoading(false);
@@ -399,6 +399,11 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** File upload */
   @state() private _splitObj: SplitObject | undefined = undefined;
+
+  /** Set by the files DVM subscription; a change means a delivery signal arrived. */
+  @state() filesPerspective?: FilesDvmPerspective;
+  private _dmAcceptInFlight = new Set<HoloHashB64>();
+  private _dmRetryAt = new Map<HoloHashB64, number>();
   @state() _uploadingFile: boolean = false;
 
 
@@ -493,6 +498,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   override disconnectedCallback() {
     super.disconnectedCallback();
+    this._filesDvm?.unsubscribe(this);
     // @ts-ignore
     this.removeEventListener('popstate', this.onPopState);
     // @ts-ignore
@@ -1089,6 +1095,23 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   }
 
 
+  /** DM files are delivered through the files module; accept what a DM peer sends without the
+   *  files inbox's Accept button, and poke transfers that stalled while one side was offline.
+   *  Only the main view does this: several views of the same cell would each reply. */
+  private async maintainDmDeliveries(): Promise<void> {
+    if (!this._filesDvm || !this._filesDvm.isMainView || !this._dvm) {
+      return;
+    }
+    try {
+      const dmAgents = this._dvm.threadsZvm.perspective.dmAgents;
+      await acceptDmDeliveries(this._filesDvm, dmAgents, this._dmAcceptInFlight);
+      await resumeDmDeliveries(this._filesDvm, dmAgents, this._dvm.allCurrentOthers(), this._dmRetryAt, Date.now());
+    } catch (e: any) {
+      console.warn("maintainDmDeliveries() failed:", e);
+    }
+  }
+
+
   /** DM files go through the files module's private path: committed on this chain, delivered to
    *  the other party only, never published. There is no callback, so wait for the manifest. */
   private async sendPrivateFileMessage(file: File, splitObj: SplitObject, otherAgent: AgentId, ppAh: ActionId, replyToAh?: ActionId): Promise<void> {
@@ -1320,6 +1343,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     }
     /** Need this to get all manifests at startup */
     this._filesDvm.probeAll(GetStrategy.Local);
+    /** Delivery signals (a DM file being sent to us) re-render this element */
+    this._filesDvm.subscribe(this, 'filesPerspective');
     /** */
     this.requestUpdate();
     /** */
@@ -1333,6 +1358,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   protected override async updated(_changedProperties: PropertyValues) {
     //console.log("<vines-page>.updated()");
+    if (_changedProperties.has('filesPerspective') || _changedProperties.has('threadsPerspective')) {
+      /*await*/ this.maintainDmDeliveries();
+    }
     /** ??? */
     try {
       const chatView = this.shadowRoot!.getElementById("chat-view") as LitElement;
@@ -1589,6 +1617,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         .catch((e:any) => console.warn("probeAll() failed", e))
         .finally(() => {
           this._probeRunning = false;
+          /** A peer coming online is what starts a probe; a DM transfer may have waited for it */
+          /*await*/ this.maintainDmDeliveries();
           if (this._probeQueued) {
             this._probeQueued = false;
             this.probeAllSoon();
