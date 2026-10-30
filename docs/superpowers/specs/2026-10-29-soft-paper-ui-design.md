@@ -1,7 +1,7 @@
 # Vines "soft paper" UI refresh
 
 Date: 2026-10-29
-Status: draft, awaiting approval
+Status: implemented 2026-10-30 (plan: docs/superpowers/plans/2026-10-29-soft-paper-ui.md); visual sign-off and Android build pending
 Branch: `hdk-7.0`
 
 ## Intent
