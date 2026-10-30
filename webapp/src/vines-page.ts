@@ -2799,10 +2799,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                    }, bubbles: true, composed: true
                                }));
                            }}>
-                    }}>
                 </peer-list>
+                <div class="dialog-footer" style="margin-top: 10px;">
                 <ui5-button
-                        style="margin-top: 10px; float: right;"
                         @click=${(_e: any) => {
                             const dialog = this.shadowRoot!.getElementById("view-agents-dialog") as Dialog;
                             dialog.open = false
@@ -2810,7 +2809,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     ${msg("Close")}
                 </ui5-button>
                 ${this.networkCaller.isLooping()? html`
-                    <ui5-button style="margin:10px; float:right;"
+                    <ui5-button
                                @click=${() => {
                                     this.dispatchEvent(new CustomEvent<boolean>('loop-network-info', {
                                         detail: false, bubbles: true, composed: true
@@ -2824,7 +2823,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                         ${msg('Stop pinging')}
                     </ui5-button>
                 ` : html`
-                    <ui5-button design="Emphasized" style="margin:10px; float:right;" 
+                    <ui5-button design="Emphasized"
                                 @click=${() => {
                                     this.dispatchEvent(new CustomEvent<boolean>('loop-network-info', {
                                         detail: true, bubbles: true, composed: true
@@ -2837,7 +2836,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     }}>
                         ${msg("Ping peers")}
                     </ui5-button>
-                `}                
+                `}
+            </div>
             </ui5-dialog>
             <!-- View members dialog -->
             <ui5-dialog id="pick-agent-dialog" style="width:600px;" header-text=${msg('Select a peer')}>
