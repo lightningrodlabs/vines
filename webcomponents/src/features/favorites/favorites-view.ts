@@ -11,7 +11,7 @@ import {ThreadsPerspective} from "../../viewModels/threads.perspective";
 /** @ui5/webcomponents(-fiori) */
 import "@ui5/webcomponents/dist/Input.js";
 import "@ui5/webcomponents/dist/Avatar.js"
-import "@ui5/webcomponents-fiori/dist/Bar.js";
+import "@ui5/webcomponents/dist/Bar.js";
 import List from "@ui5/webcomponents/dist/List"
 import "@ui5/webcomponents/dist/List.js"
 
@@ -75,7 +75,7 @@ export class FavoritesView extends DnaElement<unknown, ThreadsDvm> {
     console.log("<favorites-view>.render()", this._dvm.threadsZvm.perspective.favorites);
 
     // if (this._loading) {
-    //   return html `<ui5-busy-indicator delay="0" size="Medium" active style="margin:auto; width:100%; height:100%;"></ui5-busy-indicator>`;
+    //   return html `<ui5-busy-indicator delay="0" size="M" active style="margin:auto; width:100%; height:100%;"></ui5-busy-indicator>`;
     // }
 
     if (this._dvm.threadsZvm.perspective.favorites.length == 0) {

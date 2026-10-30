@@ -131,7 +131,7 @@ export class ChatWal extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     }
     /** No Hash */
     if (!this.hash) {
-      return html`<ui5-busy-indicator delay="0" size="Medium" active style="margin:auto; width:50%; height:50%;"></ui5-busy-indicator>`;
+      return html`<ui5-busy-indicator delay="0" size="M" active style="margin:auto; width:50%; height:50%;"></ui5-busy-indicator>`;
     }
     /** No asset info */
     if (!this._appletInfo || !this._assetLocAndInfo) {

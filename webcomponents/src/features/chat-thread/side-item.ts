@@ -85,7 +85,7 @@ export class SideItem extends DnaElement<unknown, ThreadsDvm> {
     }
     const beadInfo = this._dvm.threadsZvm.perspective.getBaseBeadInfo(this.hash);
     if (!beadInfo) {
-      content = html`<ui5-busy-indicator delay="0" size="Medium" active style="width:100%; height:100%;"></ui5-busy-indicator>`;
+      content = html`<ui5-busy-indicator delay="0" size="M" active style="width:100%; height:100%;"></ui5-busy-indicator>`;
       return [content, undefined, undefined];
     }
     const typedBead = this._dvm.threadsZvm.perspective.getBaseBead(this.hash);
@@ -178,7 +178,7 @@ export class SideItem extends DnaElement<unknown, ThreadsDvm> {
     const prevBeadInfo = this._dvm.threadsZvm.perspective.getBaseBeadInfo(beadInfo.bead.prevBeadAh);
     const prevBead = this._dvm.threadsZvm.perspective.getBaseBead(beadInfo.bead.prevBeadAh);
     if (!prevBeadInfo || !prevBead) {
-      return html`<ui5-busy-indicator delay="0" size="Small" active style="color:#f69e19"></ui5-busy-indicator>`;
+      return html`<ui5-busy-indicator delay="0" size="S" active style="color:#f69e19"></ui5-busy-indicator>`;
     }
     /** */
     return html`

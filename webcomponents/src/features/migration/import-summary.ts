@@ -142,7 +142,7 @@ export class ImportSummary extends LitElement {
                                if (e.target.value.length > 0) {
                                    this.data!.discord!.channels[0]!.name = e.target.value;
                                } else {
-                                   this.data!.discord!.channels[0]!.name = (this.shadowRoot!.getElementById("discord-channel") as Input).placeholder;
+                                   this.data!.discord!.channels[0]!.name = (this.shadowRoot!.getElementById("discord-channel") as Input).placeholder ?? "";
                                }
                            }}>
                 </ui5-input>

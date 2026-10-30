@@ -34,7 +34,7 @@ export function toasty(title: string, jumpEvent?: CustomEvent<JumpEvent>, parent
 
   /** Add to document */
   document.body.append(toastElem);
-  return toastElem.show();
+  toastElem.open = true;
 }
 
 

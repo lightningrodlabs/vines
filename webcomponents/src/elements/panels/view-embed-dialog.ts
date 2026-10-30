@@ -33,7 +33,7 @@ export class ViewEmbedDialog extends LitElement {
     this._name = name ?? "";
     const dialog = this.shadowRoot!.getElementById("view-embed-dialog") as SlDialog;
     //dialog.open = true;
-    dialog.show();
+    dialog.open = true;
     this.requestUpdate();
   }
 

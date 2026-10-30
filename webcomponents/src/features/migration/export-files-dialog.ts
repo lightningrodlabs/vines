@@ -135,7 +135,7 @@ export class ExportFilesDialog extends LitElement {
                                     detail: this._selectedFiles,
                                     bubbles: true, composed: true}));
                                 const dialog = this.shadowRoot!.getElementById("export-dialog") as Dialog;
-                                dialog.close(false);
+                                dialog.open = false;
                             }}>
                     ${msg('Export')}
                 </ui5-button>
@@ -145,14 +145,14 @@ export class ExportFilesDialog extends LitElement {
                                     detail: new Set(),
                                     bubbles: true, composed: true}));
                                 const dialog = this.shadowRoot!.getElementById("export-dialog") as Dialog;
-                                dialog.close(false);
+                                dialog.open = false;
                             }}>
                     ${msg('Export Manifests')}
                 </ui5-button>
                 <ui5-button style="margin-top:5px"
                             @click=${() => {
                                 const dialog = this.shadowRoot!.getElementById("export-dialog") as Dialog;
-                                dialog.close(false);
+                                dialog.open = false;
                             }}>
                     ${msg('Cancel')}
                 </ui5-button>

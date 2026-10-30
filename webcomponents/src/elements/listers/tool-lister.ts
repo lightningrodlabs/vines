@@ -16,8 +16,8 @@ import {sharedStyles} from "../../styles";
 import {ICollapsable} from "./topics-lister";
 
 /** @ui5/webcomponents */
-import "@ui5/webcomponents/dist/StandardListItem.js";
-import "@ui5/webcomponents/dist/CustomListItem.js";
+import "@ui5/webcomponents/dist/ListItemStandard.js";
+import "@ui5/webcomponents/dist/ListItemCustom.js";
 import Select from "@ui5/webcomponents/dist/Select";
 import Panel from "@ui5/webcomponents/dist/Panel";
 
@@ -72,7 +72,7 @@ export class ToolLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> impl
     const select = this.shadowRoot!.getElementById("lister-select") as unknown as Select;
     //console.debug("<tool-lister>.updated() select", this._appletId, select);
     if (!this._appletId && select && select.options.length > 0) {
-      this._appletId = new EntryId(select.options[0]!.id);
+      this._appletId = new EntryId((select.options[0] as HTMLElement).id);
       //console.debug("<tool-lister>.updated() setting appletId", this._appletId.b64);
     }
   }
@@ -227,7 +227,7 @@ export class ToolLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> impl
         /** 'new' badge to display */
         let newBadge = html``;
         if (threadIsNew) {
-          newBadge = html`<ui5-badge color-scheme="3" style="margin-left:3px; color:brown;">${msg("new")}</ui5-badge>`;
+          newBadge = html`<ui5-tag color-scheme="3" style="margin-left:3px; color:brown;">${msg("new")}</ui5-tag>`;
         }
 
         const tmpl = html`
@@ -264,7 +264,7 @@ export class ToolLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> impl
   override render() {
     //console.debug("<tool-lister>.render() appletId", this._appletId, this.selectedThreadHash);
     if (this._loading) {
-      return html`<ui5-busy-indicator delay="0" size="Medium" active style="margin:auto; width:100%; height:100%;"></ui5-busy-indicator>`;
+      return html`<ui5-busy-indicator delay="0" size="M" active style="margin:auto; width:100%; height:100%;"></ui5-busy-indicator>`;
     }
 
     let subjectTypes: EntryIdMap<string> = new EntryIdMap();
@@ -305,7 +305,7 @@ export class ToolLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> impl
       /** 'new' badge to display */
       let newBadge = html``;
       if (topicIsNew) {
-        newBadge = html`<ui5-badge color-scheme="3" style="margin-top:10px; color:brown;">+1</ui5-badge>`;
+        newBadge = html`<ui5-tag color-scheme="3" style="margin-top:10px; color:brown;">+1</ui5-tag>`;
       }
 
       const subjectHasUnreads = unreadSubjects.map(id => id.b64).includes(pathEh.b64);
@@ -355,7 +355,7 @@ export class ToolLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> impl
           <div style="display:flex; flex-direction:row; padding-bottom: 10px;">
             <ui5-select id="lister-select" style="margin:auto"
                       @change=${(e: any) => {
-                      const idB64: string = e.detail.selectedOption.id;
+                      const idB64: string = (e.detail.selectedOption as HTMLElement).id;
                       //console.debug("<tool-lister> change", e.detail.selectedOption, idB64, e);
                       this._appletId = new EntryId(idB64);
                     }}>

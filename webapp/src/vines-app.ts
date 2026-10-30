@@ -470,7 +470,7 @@ export class VinesApp extends HappMultiElement {
     if (this._hasHolochainFailed == undefined) {
       return html`
           <div style="position:fixed; top:50%; width:100%; display:flex; flex-direction:column; gap:20px;">
-              <ui5-busy-indicator delay="0" size="Large" active
+              <ui5-busy-indicator delay="0" size="L" active
                                   style="color:#ff4343"
               ></ui5-busy-indicator>
               <div style="margin:auto; font-size:large">${msg('Connecting to Holochain')}</div>
@@ -495,7 +495,7 @@ export class VinesApp extends HappMultiElement {
     if (!this._loadedLocal) {
       return html`
           <div style="position:fixed; top:50%; width:100%; display:flex; flex-direction:column; gap:20px;">
-          <ui5-busy-indicator delay="0" size="Large" active
+          <ui5-busy-indicator delay="0" size="L" active
                               style="color:#f3bb2c"
           ></ui5-busy-indicator>
               <div style="margin:auto; font-size:large">${msg('Collecting local data')}</div>

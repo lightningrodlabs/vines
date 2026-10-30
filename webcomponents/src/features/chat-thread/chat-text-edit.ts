@@ -64,7 +64,7 @@ export class ChatTextEdit extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
 
     const tm = this._zvm.perspective.getBaseBead(this.hash) as TextBeadMat;
     if (!tm) {
-      return html`<ui5-busy-indicator delay="0" size="Medium" active style="margin:auto; width:50%; height:50%;"></ui5-busy-indicator>`;
+      return html`<ui5-busy-indicator delay="0" size="M" active style="margin:auto; width:50%; height:50%;"></ui5-busy-indicator>`;
     }
     const value = this._zvm.perspective.getLatestEdit(this.hash);
     /** render all */

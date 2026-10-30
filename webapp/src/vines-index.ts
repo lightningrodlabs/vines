@@ -62,7 +62,7 @@ export class VinesIndex extends LitElement {
         if (!globalThis.TS_INIT_DONE) {
           setTimeout(() => this.requestUpdate(), 100);
           return html`
-            <ui5-busy-indicator id="busy" delay="0" size="Large" active 
+            <ui5-busy-indicator id="busy" delay="0" size="L" active 
                                 style=" top: 50%; margin-left:-50px;
                                         left: 50%; position: fixed;
                                         color:#05b92f; "
@@ -73,7 +73,7 @@ export class VinesIndex extends LitElement {
         }
         /** render all */
         return html`
-            <ui5-busy-indicator id="busy" delay="0" size="Large" active 
+            <ui5-busy-indicator id="busy" delay="0" size="L" active 
                                 style=" top: 50%; margin-left:-50px;
                                         left: 50%; position: fixed;
                                         color:#05b92f; "

@@ -16,23 +16,24 @@ import QRCode from 'qrcode'
 
 /** Theme: bundled Inter + the soft paper tokens, applied at document level */
 import "@fontsource-variable/inter";
+import {setDefaultFontLoading} from "@ui5/webcomponents-base/dist/config/Fonts.js";
+import {setTheme} from "@ui5/webcomponents-base/dist/config/Theme.js";
 import {installDocumentTheme} from "@vines/elements";
 
-import "@ddd-qc/path-explorer";
 
 /** @ui5/webcomponents-fiori */
 import "@ui5/webcomponents-fiori/dist/NotificationListItem.js";
-import "@ui5/webcomponents-fiori/dist/NotificationAction.js";
+import "@ui5/webcomponents/dist/MenuSeparator.js";
 /** @ui5/webcomponents */
 import "@ui5/webcomponents/dist/Avatar.js"
 import "@ui5/webcomponents/dist/AvatarGroup.js"
-import "@ui5/webcomponents/dist/Badge.js";
+import "@ui5/webcomponents/dist/Tag.js";
 import "@ui5/webcomponents/dist/BusyIndicator.js";
 import "@ui5/webcomponents/dist/Button.js";
 import "@ui5/webcomponents/dist/Card.js";
 import "@ui5/webcomponents/dist/CardHeader.js";
 import '@ui5/webcomponents/dist/CheckBox.js';
-import "@ui5/webcomponents/dist/CustomListItem.js";
+import "@ui5/webcomponents/dist/ListItemCustom.js";
 import "@ui5/webcomponents/dist/Dialog.js";
 import "@ui5/webcomponents/dist/Icon.js";
 import "@ui5/webcomponents/dist/Label.js";
@@ -53,7 +54,7 @@ import '@ui5/webcomponents/dist/RadioButton.js';
 import "@ui5/webcomponents/dist/Select.js";
 import "@ui5/webcomponents/dist/SegmentedButton.js";
 import "@ui5/webcomponents/dist/SegmentedButtonItem.js";
-import "@ui5/webcomponents/dist/StandardListItem.js";
+import "@ui5/webcomponents/dist/ListItemStandard.js";
 import "@ui5/webcomponents/dist/Switch.js";
 import "@ui5/webcomponents/dist/SuggestionItem.js";
 import "@ui5/webcomponents/dist/Toast.js";
@@ -281,6 +282,8 @@ import {APK_LINK, happShareCodeContext, isMobile} from "./globals";
 import {ImportFilesData} from "@vines/elements/src/features/migration/import-utils";
 
 setBasePath('/shoelace-assets');
+setDefaultFontLoading(false);
+setTheme("sap_horizon");
 installDocumentTheme();
 
 // HACK: For some reason hc-sandbox gives the dna name as the cell name instead of the role name...
@@ -863,7 +866,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       sub.limitations = thread.pp.limitations;
       sub.moderation = thread.pp.moderation;
       sub.requestUpdate();
-      popover.showAt(elem);
+      popover.opener = elem; popover.open = true;
     }
   }
 
@@ -877,13 +880,13 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     const sub = this.shadowRoot!.getElementById("profilePanel") as ProfilePanel;
     sub.hash = e.detail.agentId;
     sub.requestUpdate();
-    popover.showAt(elem);
+    popover.opener = elem; popover.open = true;
   }
 
 
   /** */
   onEditProfile(_e: any) {
-    /*await*/ this.profileDialogElem.show();
+    /*await*/ this.profileDialogElem.open = true;
   }
 
 
@@ -906,27 +909,27 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     console.debug("validateTitle()", inputId);
     /** Must be different from previous */
     if (prev && prev == name) {
-      input.valueState = ValueState.Error;
+      input.valueState = ValueState.Negative;
       childDivs[0]!.innerText = msg("Must be different from current title");
       return;
     }
     /** Must be at least 3 chars for link anchors */
     const minLimit = Math.max(3, this._dvm.dnaProperties.minTopicNameLength);
     if (name.length < minLimit) {
-      input.valueState = ValueState.Error;
+      input.valueState = ValueState.Negative;
       /** Works even though Lit throws an error when inputing a valid title afterwords */
       childDivs[0]!.innerText = msg(str`Minimum ${minLimit} characters`);
       return;
     }
     if (name.length > this._dvm.dnaProperties.maxTopicNameLength) {
-      input.valueState = ValueState.Error;
+      input.valueState = ValueState.Negative;
       childDivs[0]!.innerText = msg(str`Maximum ${this._dvm.dnaProperties.maxTopicNameLength} characters`);
       return;
     }
     const regex = new RegExp(`^["a-zA-Z0-9-_ "]+$`);
     const isValid = regex.test(name);
     if (!isValid) {
-      input.valueState = ValueState.Error;
+      input.valueState = ValueState.Negative;
       childDivs[0]!.innerText = msg("Invalid characters");
       return;
     }
@@ -944,14 +947,14 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       return;
     }
     const topicAh = await this._dvm.threadsZvm.publishSemanticTopic(title);
-    this.createTopicDialogElem.close();
+    this.createTopicDialogElem.open = false;
     /** Started from the first-run panel: carry on into the channel itself,
      *  otherwise the installer is left with a category and no way of knowing a
      *  channel is the next step. */
     if (this._createChannelAfterTopic) {
       this._createChannelAfterTopic = false;
       this._createTopicHash = topicAh;
-      /*await*/ this.createThreadDialogElem.show();
+      /*await*/ this.createThreadDialogElem.open = true;
     }
   }
 
@@ -968,7 +971,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       return;
     }
     await this._dvm.threadsZvm.editSemanticTopic(new ActionId(topicHash), title);
-    this.editTopicDialogElem.close();
+    this.editTopicDialogElem.open = false;
   }
 
 
@@ -984,7 +987,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       return;
     }
     await this._dvm.threadsZvm.editThreadTitle(new ActionId(hash), title);
-    this.editChannelDialogElem.close();
+    this.editChannelDialogElem.open = false;
   }
 
 
@@ -996,7 +999,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     const topics = Array.from(this._dvm.threadsZvm.perspective.semanticTopics.keys());
     if (topics.length == 1) {
       this._createTopicHash = topics[0];
-      /*await*/ this.createThreadDialogElem.show();
+      /*await*/ this.createThreadDialogElem.open = true;
       return;
     }
     if (topics.length > 1) {
@@ -1004,7 +1007,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       return;
     }
     this._createChannelAfterTopic = true;
-    /*await*/ this.createTopicDialogElem.show();
+    /*await*/ this.createTopicDialogElem.open = true;
   }
 
 
@@ -1015,13 +1018,13 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     const input = this.shadowRoot!.getElementById("threadPurposeInput") as Input;
     const purpose = input.value.trim();
     if (purpose.length < 1) {
-      input.valueState = ValueState.Error;
+      input.valueState = ValueState.Negative;
       return;
     }
     const regex = new RegExp(`^["a-zA-Z0-9-_ "]+$`);
     const isValid = regex.test(purpose);
     if (!isValid) {
-      input.valueState = ValueState.Error;
+      input.valueState = ValueState.Negative;
       const errorMsg = this.shadowRoot!.getElementById("channelErrorMsg") as HTMLElement;
       console.log("ValidateTopic() channel", errorMsg);
       errorMsg.textContent = msg("Invalid characters");
@@ -1050,7 +1053,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     }
     /** Display Confirm Dialog */
     this.confirmThreadDialogElem.headerText = msg("Confirm new channel") + ": " + purpose;
-    /*await*/ this.confirmThreadDialogElem.show();
+    /*await*/ this.confirmThreadDialogElem.open = true;
 
   }
 
@@ -1073,8 +1076,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     input.value = "";
     rulesEdit.reset();
     (this.shadowRoot!.getElementById("advancedPanel") as Panel).collapsed = true;
-    this.confirmThreadDialogElem.close(false);
-    this.createThreadDialogElem.close(false);
+    this.confirmThreadDialogElem.open = false;
+    this.createThreadDialogElem.open = false;
     /** Jump to new thread */
     this.dispatchEvent(threadJumpEvent(ppAh));
   }
@@ -1200,7 +1203,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     /** Select Topics */
     const topicsBtn = this.shadowRoot!.getElementById("topics-option") as SegmentedButtonItem;
     if (topicsBtn) {
-      topicsBtn.pressed = true;
+      topicsBtn.selected = true;
     }
 
     /** Fiddle with shadow parts CSS */
@@ -1491,7 +1494,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     } catch (e: any) {
       await this._dvm.profilesZvm.createMyProfile(profile);
     }
-    this.profileDialogElem.close(false);
+    this.profileDialogElem.open = false;
     await delay(100); // Necessary to make sure our new profile is displayed since vines-page is not reactive to ProfilesZome
     this.requestUpdate();
   }
@@ -1760,32 +1763,32 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   closePopups() {
     /** Close any opened popover */
     const popover = this.shadowRoot!.getElementById("notifPopover") as Popover;
-    if (popover.isOpen()) {
-      popover.close();
+    if (popover.open) {
+      popover.open = false;
     }
     const pop = this.shadowRoot!.getElementById("notifSettingsPopover") as Popover;
-    if (pop.isOpen()) {
-      pop.close();
+    if (pop.open) {
+      pop.open = false;
     }
     const searchPopElem = this.shadowRoot!.getElementById("searchPopover") as Popover;
-    if (searchPopElem.isOpen()) {
-      searchPopElem.close();
+    if (searchPopElem.open) {
+      searchPopElem.open = false;
     }
     const profilePopElem = this.shadowRoot!.getElementById("profilePop") as Popover;
-    if (profilePopElem.isOpen()) {
-      profilePopElem.close();
+    if (profilePopElem.open) {
+      profilePopElem.open = false;
     }
     const netPopElem = this.shadowRoot!.getElementById("networkPopover") as Popover;
-    if (netPopElem.isOpen()) {
-      netPopElem.close();
+    if (netPopElem.open) {
+      netPopElem.open = false;
     }
     const sharePopElem = this.shadowRoot!.getElementById("shareNetworkPopover") as Popover;
-    if (sharePopElem.isOpen()) {
-      sharePopElem.close();
+    if (sharePopElem.open) {
+      sharePopElem.open = false;
     }
     const apkPopElem = this.shadowRoot!.getElementById("apkPopover") as Popover;
-    if (apkPopElem.isOpen()) {
-      apkPopElem.close();
+    if (apkPopElem.open) {
+      apkPopElem.open = false;
     }
   }
 
@@ -1941,7 +1944,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
               ${pct >= 0? html`
                     <ui5-progress-indicator .value=${pct} style="width: 50%; margin:auto;"></ui5-progress-indicator>
               ` : html`
-                  <ui5-busy-indicator delay="0" size="Large" active
+                  <ui5-busy-indicator delay="0" size="L" active
                                       style="margin:auto; color:#05b92f"
                   ></ui5-busy-indicator> 
               `}
@@ -2193,7 +2196,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                            .selectedThreadHash=${this._selectedThreadHash}
                            @createThreadClicked=${(e: CustomEvent<ActionId>) => {
                               this._createTopicHash = e.detail;
-                              /*await*/ this.createThreadDialogElem.show();
+                              /*await*/ this.createThreadDialogElem.open = true;
                           }}>
             </topics-lister>
         `;
@@ -2205,7 +2208,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                .selectedThreadHash=${this._selectedThreadHash}
                                @createThreadClicked=${(e: CustomEvent<ActionId>) => {
                                   this._createTopicHash = e.detail;
-                                  /*await*/ this.createThreadDialogElem.show();
+                                  /*await*/ this.createThreadDialogElem.open = true;
                               }}>
             </my-threads-lister>
         `;
@@ -2223,7 +2226,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                          .selectedThreadHash=${this._selectedThreadHash}
                          @createNewDm=${(_e: any) => {
                              const dialog = this.shadowRoot!.getElementById("pick-agent-dialog") as Dialog;
-                             /*await*/ dialog.show();
+                             /*await*/ dialog.open = true;
                          }}
         ></dm-multi-lister>
     ` : html`
@@ -2233,7 +2236,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                    .selectedThreadHash=${this._selectedThreadHash}
                    @createNewDm=${(_e: any) => {
                        const dialog = this.shadowRoot!.getElementById("pick-agent-dialog") as Dialog;
-                       /*await*/ dialog.show();
+                       /*await*/ dialog.open = true;
                    }}
         ></dm-lister>
     `;
@@ -2332,12 +2335,12 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                         @click=${(_e: any) => {
                             const menu = this.shadowRoot!.getElementById("viewMenu") as Menu;
                             const btn = this.shadowRoot!.getElementById("viewMenuBtn") as Button;
-                            menu.showAt(btn);
+                            menu.opener = btn; menu.open = true;
                         }}></ui5-button>
             ${this._listerToShow == "topics-option"? html`
                 <ui5-button icon="add" design="Transparent" class="top-btn"
                             tooltip=${msg("New Category")}
-                            @click=${(_e: any) => this.createTopicDialogElem.show()}></ui5-button>` : html``}
+                            @click=${(_e: any) => this.createTopicDialogElem.open = true}></ui5-button>` : html``}
         </div>
         <ui5-menu id="viewMenu" @item-click=${(e: any) => this.onViewMenu(e)}>
             ${this.weServices? html`
@@ -2347,17 +2350,21 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                icon=${this._listerToShow == "mine-option"? "accept" : nothing}></ui5-menu-item>
                 <ui5-menu-item id="view-tools" text=${msg("Threads by tool")}
                                icon=${this._listerToShow == "tools-option"? "accept" : nothing}></ui5-menu-item>` : html``}
-            <ui5-menu-item id="expandAll" icon="expand-all" text=${msg("Expand all")} ?starts-section=${!!this.weServices}></ui5-menu-item>
+            ${this.weServices? html`<ui5-menu-separator></ui5-menu-separator>` : html``}
+            <ui5-menu-item id="expandAll" icon="expand-all" text=${msg("Expand all")}></ui5-menu-item>
             <ui5-menu-item id="collapseAll" icon="collapse-all" text=${msg("Collapse all")}></ui5-menu-item>
-            <ui5-menu-item id="sort-custom" text=${msg("Custom order")} starts-section
+            <ui5-menu-separator></ui5-menu-separator>
+            <ui5-menu-item id="sort-custom" text=${msg("Custom order")}
                            icon=${this._topicOrderType == "custom"? "accept" : nothing}></ui5-menu-item>
             <ui5-menu-item id="sort-alpha" text=${msg("Sort alphabetically")}
                            icon=${this._topicOrderType == "alpha"? "accept" : nothing}></ui5-menu-item>
             <ui5-menu-item id="sort-chrono" text=${msg("Sort by creation time")}
                            icon=${this._topicOrderType == "chrono"? "accept" : nothing}></ui5-menu-item>
-            <ui5-menu-item id="toggleHidden" text=${msg("Show hidden items")} starts-section
+            <ui5-menu-separator></ui5-menu-separator>
+            <ui5-menu-item id="toggleHidden" text=${msg("Show hidden items")}
                            icon=${this._canViewArchivedSubjects? "accept" : nothing}></ui5-menu-item>
-            <ui5-menu-item id="markRead" icon="email-read" text=${msg("Mark all as read")} starts-section></ui5-menu-item>
+            <ui5-menu-separator></ui5-menu-separator>
+            <ui5-menu-item id="markRead" icon="email-read" text=${msg("Mark all as read")}></ui5-menu-item>
         </ui5-menu>
     `;
 
@@ -2396,7 +2403,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                 e.stopPropagation();
                                 await this.updateComplete;
                                 const dialog = this.shadowRoot!.getElementById("pick-agent-dialog") as Dialog;
-                                dialog.show();
+                                dialog.open = true;
                             }}>
                 </ui5-button>
             </div>
@@ -2423,7 +2430,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                 e.stopPropagation();
                                 await this.updateComplete;
                                 const dialog = this.shadowRoot!.getElementById("pick-agent-dialog") as Dialog;
-                                dialog.show();
+                                dialog.open = true;
                             }}>
                 </ui5-button>
             </div>
@@ -2458,7 +2465,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                 @click=${(_e: any) => {
                                     const settingsMenu = this.shadowRoot!.getElementById("settingsMenu") as Menu;
                                     const settingsBtn = this.shadowRoot!.getElementById("settingsBtn") as Button;
-                                    settingsMenu.showAt(settingsBtn);
+                                    settingsMenu.opener = settingsBtn; settingsMenu.open = true;
                                 }}>
                     </ui5-button>
                     <ui5-menu id="settingsMenu" header-text=${msg("Settings")}
@@ -2468,24 +2475,25 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                         ${globalThis.IS_TAURI
                                 ? html`<ui5-menu-item id="gotoadmin" icon="share" text=${msg("Change group")}></ui5-menu-item>` 
                                 : html`<ui5-menu-item id="shareNetwork" icon="cloud" text=${msg("Share invite code")} ></ui5-menu-item>`}                        
-                        <ui5-menu-item id="peersItem" text=${msg("Online peers")} icon="group"
-                                       starts-section></ui5-menu-item>
+                        <ui5-menu-separator></ui5-menu-separator>
+                        <ui5-menu-item id="peersItem" text=${msg("Online peers")} icon="group"></ui5-menu-item>
                         <ui5-menu-item id="networkHealthItem" text=${msg("Network health")}
                                        icon="electrocardiogram"></ui5-menu-item>
-                        <ui5-menu-item id="exportItem" text=${msg('Export')} icon="save" starts-section></ui5-menu-item>
+                        <ui5-menu-separator></ui5-menu-separator>
+                        <ui5-menu-item id="exportItem" text=${msg('Export')} icon="save"></ui5-menu-item>
                         <ui5-menu-item id="importCommitItem" text=${msg("Import")}
                                        icon="open-folder"></ui5-menu-item>
                         <!-- <ui5-menu-item id="importOnlyItem" text=${msg("Import temporarily")}
                                        icon="open-folder"></ui5-menu-item> -->
                         <ui5-menu-item id="dumpItem" text="Dump Threads logs"></ui5-menu-item>                         
                         ${HAPP_BUILD_MODE == HappBuildModeType.Retail? html`
-                            <ui5-menu-item id="bugItem" text=${msg("Report Bug")} icon="marketing-campaign"
-                                           starts-section></ui5-menu-item>
+                            <ui5-menu-separator></ui5-menu-separator>
+                            <ui5-menu-item id="bugItem" text=${msg("Report Bug")} icon="marketing-campaign"></ui5-menu-item>
                         ` : html`
                             <!-- <ui5-menu-item id="syncItem" text="Probe peers for content"
-                                           icon="download-from-cloud" starts-section></ui5-menu-item> -->
-                            <ui5-menu-item id="exportAllItem" text="Export probeAll" icon="save"
-                                           starts-section></ui5-menu-item>
+                                           icon="download-from-cloud"></ui5-menu-item> -->
+                            <ui5-menu-separator></ui5-menu-separator>
+                            <ui5-menu-item id="exportAllItem" text="Export probeAll" icon="save"></ui5-menu-item>
                             <ui5-menu-item id="eraseItem" text="Erase logs"></ui5-menu-item>
                             <ui5-menu-item id="dumpFilesItem" text="Dump Files logs"></ui5-menu-item>
                             <ui5-menu-item id="dumpNetworkItem" text="Dump Network logs"></ui5-menu-item>
@@ -2495,8 +2503,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
                     <!-- Network Health Panel -->
                     <ui5-popover id="networkPopover"
-                                 @after-open=${() => this.openLiveNetworkView("health")}
-                                 @after-close=${() => this.closeLiveNetworkView("health")}>
+                                 @open=${() => this.openLiveNetworkView("health")}
+                                 @close=${() => this.closeLiveNetworkView("health")}>
                         <div slot="header"
                              style="display:flex; flex-direction:row; width:100%; margin:5px; font-weight: bold;">
                             <abbr title=${this.cell.address.dnaId.b64}>${msg("Network Health")}</abbr>
@@ -2534,8 +2542,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     }
                             <ui5-button design="Emphasized" @click=${() => {
                                 const popover = this.shadowRoot!.getElementById("networkPopover") as Popover;
-                                if (popover.isOpen()) {
-                                    popover.close();
+                                if (popover.open) {
+                                    popover.open = false;
                                 }
                             }}>
                                 ${msg('Close')}
@@ -2581,21 +2589,21 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                             <ui5-button slot="footer" design="Transparent"
                                         @click=${async () => {
                                             const popover0 = this.shadowRoot!.getElementById("shareNetworkPopover") as Popover;
-                                            if (popover0.isOpen()) {
-                                                popover0.close();
+                                            if (popover0.open) {
+                                                popover0.open = false;
                                             }
                                             const popover = this.shadowRoot!.getElementById("apkPopover") as Popover;
                                             const btn = this.shadowRoot!.getElementById("settingsBtn") as HTMLElement;
                                             if (popover && btn) {
-                                                /*await*/ popover.showAt(btn);
+                                                /*await*/ popover.opener = btn; popover.open = true;
                                             }}}>
                                 ${msg('Android App')}
                             </ui5-button>
                             <ui5-button slot="footer" design="Emphasized"
                                         @click=${async () => {
                                             const popover = this.shadowRoot!.getElementById("shareNetworkPopover") as Popover;
-                                            if (popover.isOpen()) {
-                                                popover.close();
+                                            if (popover.open) {
+                                                popover.open = false;
                                             }
                                             await navigator.clipboard.writeText(this.happShareCode());
                                             toasty(msg("Copied share code to clipboard"));
@@ -2647,15 +2655,15 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                                 @click=${() => {
                                                     console.log("notifSettingsBtn.click()");
                                                     const popover = this.shadowRoot!.getElementById("notifSettingsPopover") as Popover;
-                                                    if (popover.isOpen()) {
-                                                        popover.close();
+                                                    if (popover.open) {
+                                                        popover.open = false;
                                                         return;
                                                     }
                                                     const shellbar = this.shadowRoot!.getElementById("topicBar");
                                                     if (!shellbar) {
                                                         console.error("Missing topicBar HTML Element");
                                                     }
-                                                    popover.showAt(shellbar!);
+                                                    popover.opener = shellbar!; popover.open = true;
                                                 }}>
                                     </ui5-button>
 
@@ -2676,12 +2684,12 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                    let searchElem = this.shadowRoot!.getElementById("search-field") as Input;
                                    let searchPopElem = this.shadowRoot!.getElementById("searchPopover") as Popover;
                                    if (searchElem.value == "") {
-                                       searchPopElem.close();
+                                       searchPopElem.open = false;
                                        this._canShowSearchResults = false;
                                        this.requestUpdate(); // important
                                        return;
                                    }
-                                   searchPopElem.showAt(searchElem, true);
+                                   searchPopElem.opener = searchElem; searchPopElem.preventInitialFocus = true; searchPopElem.open = true;
                                    searchPopElem.headerText = `${msg("SEARCH FOR")}: ${searchElem.value}`;
                                }}
                                @keypress=${(e: any) => {
@@ -2691,12 +2699,12 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                    //let searchResultElem = this.shadowRoot!.getElementById("search-result-panel") as Popover;
                                    if (searchElem.value != "") {
                                        if (e.keyCode === 13) {
-                                           searchPopElem.close();
+                                           searchPopElem.open = false;
                                            this._canShowSearchResults = true;
                                            this.requestUpdate(); // important
                                        } else {
-                                           if (!searchPopElem.isOpen()) {
-                                               searchPopElem.showAt(searchElem, true);
+                                           if (!searchPopElem.open) {
+                                               searchPopElem.opener = searchElem; searchPopElem.preventInitialFocus = true; searchPopElem.open = true;
                                            }
                                        }
                                    } else {
@@ -2733,12 +2741,12 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                         @click=${() => {
                                             console.log("inboxButton.click()")
                                             const popover = this.shadowRoot!.getElementById("notifPopover") as Popover;
-                                            if (popover.isOpen()) {
-                                                popover.close();
+                                            if (popover.open) {
+                                                popover.open = false;
                                                 return;
                                             }
                                             const shellbar = this.shadowRoot!.getElementById("topicBar");
-                                            popover.showAt(shellbar!);
+                                            popover.opener = shellbar!; popover.open = true;
                                         }}>
                                 <span class="numberBadge">${filteredInbox.length? filteredInbox.length : ""}</span>
                             </ui5-button>
@@ -2746,28 +2754,28 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     </div>
                 </div>
 
-                <ui5-popover id="searchPopover" header-text="SEARCH FOR: " hide-arrow placement-type="Bottom"
+                <ui5-popover id="searchPopover" header-text="SEARCH FOR: " hide-arrow placement="Bottom"
                              horizontal-align="Stretch">
                     <div class="popover-content">
-                        <ui5-list mode="None" separators="None">
-                            <ui5-li-groupheader class="search-group-header">${msg("Search Options")}
-                            </ui5-li-groupheader>
+                        <ui5-list selection-mode="None" separators="None">
+                          <ui5-li-group class="search-group-header" header-text=${msg("Search Options")}>
                             <ui5-li @click=${(_e: any) => this.addSearch("in:")}><b>in:</b> <i>thread</i></ui5-li>
                             <ui5-li @click=${(_e: any) => this.addSearch("from:")}><b>from:</b> <i>user</i></ui5-li>
                             <ui5-li @click=${(_e: any) => this.addSearch("mentions:")}><b>mentions:</b> <i>user</i>
                             </ui5-li>
                             <ui5-li @click=${(_e: any) => this.addSearch("before:")}><b>before:</b> <i>date</i></ui5-li>
                             <ui5-li @click=${(_e: any) => this.addSearch("after:")}><b>after:</b> <i>date</i></ui5-li>
+                          </ui5-li-group>
                         </ui5-list>
                     </div>
                 </ui5-popover>
 
-                <ui5-popover id="notifPopover" header-text=${msg('Inbox')} placement-type="Bottom" horizontal-align="Right"
+                <ui5-popover id="notifPopover" header-text=${msg('Inbox')} placement="Bottom" horizontal-align="End"
                              hide-arrow style="max-width: 500px">
                     <notification-list></notification-list>
                 </ui5-popover>
 
-                <ui5-popover id="notifSettingsPopover" placement-type="Bottom" horizontal-align="Left" hide-arrow
+                <ui5-popover id="notifSettingsPopover" placement="Bottom" horizontal-align="Start" hide-arrow
                              header-text=${msg("Notification settings for this channel")}>
                     <div style="flex-direction: column; display: flex">
                         <ui5-radio-button id="notifSettingsAll" name="GroupA" text=${msg("All Messages")}
@@ -2813,12 +2821,12 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
             </div>
             <!-- DIALOGS -->
             <ui5-dialog id="wait-dialog">
-                <ui5-busy-indicator delay="0" size="Large" active
+                <ui5-busy-indicator delay="0" size="L" active
                                     style="padding-top:20px; width:100%;"></ui5-busy-indicator>
             </ui5-dialog>
             <ui5-dialog id="view-agents-dialog" style="width:600px;" header-text=${msg('Peers')}
-                        @after-open=${() => this.openLiveNetworkView("peers")}
-                        @after-close=${() => this.closeLiveNetworkView("peers")}>
+                        @open=${() => this.openLiveNetworkView("peers")}
+                        @close=${() => this.closeLiveNetworkView("peers")}>
                 <peer-list id="peer-status-list"
                            @avatar-clicked=${async (e: any) => {
                                e.stopPropagation();
@@ -2837,7 +2845,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                         style="margin-top: 10px; float: right;"
                         @click=${(_e: any) => {
                             const dialog = this.shadowRoot!.getElementById("view-agents-dialog") as Dialog;
-                            dialog.close()
+                            dialog.open = false
                         }}>
                     ${msg("Close")}
                 </ui5-button>
@@ -2877,7 +2885,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                         @avatar-clicked=${async (e: any) => {
                             console.log("@avatar-clicked", e.detail)
                             const dialog = this.shadowRoot!.getElementById("pick-agent-dialog") as Dialog;
-                            dialog.close();
+                            dialog.open = false;
                             const ppAh = await this._dvm.threadsZvm.createDmThread(e.detail, this.weServices);
                             if (this.multi) {
                                 this.dispatchEvent(multiJumpEvent(ppAh, e.detail));
@@ -2890,7 +2898,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                         style="margin-top: 10px; float: right;"
                         @click=${(_e: any) => {
                             const dialog = this.shadowRoot!.getElementById("pick-agent-dialog") as Dialog;
-                            dialog.close()
+                            dialog.open = false
                         }}>
                     ${msg("Cancel")}
                 </ui5-button>
@@ -2925,22 +2933,22 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                 `}
             </ui5-dialog>
             <!-- View Rules Dialog/Popover -->
-            <ui5-popover id="rulesPop" placement-type="Right" hide-arrow allow-target-overlap
+            <ui5-popover id="rulesPop" placement="Right" hide-arrow allow-target-overlap
                          style="min-width: 0px; max-width: 800px;">
                 <rules-view id="rulesPanel"></rules-view>
             </ui5-popover>
             <!-- Profile Dialog/Popover -->
-            <ui5-popover id="profilePop" hide-arrow allow-target-overlap placement-type="Right" style="min-width: 0px;">
+            <ui5-popover id="profilePop" hide-arrow allow-target-overlap placement="Right" style="min-width: 0px;">
                 <profile-panel id="profilePanel"
-                               @edit-profile=${(_e: any) => (this.shadowRoot!.getElementById("profilePop") as Popover).close()}
+                               @edit-profile=${(_e: any) => (this.shadowRoot!.getElementById("profilePop") as Popover).open = false}
                                @vines-input-commit=${(e: CustomEvent<VinesInputEvent>) => {
                                    e.stopPropagation(); /*e.preventDefault();*/
                                    console.log("onInputCommit.ProfilePanel()", e.detail);
                                    if (!e.detail.text) throw Error("Missing text in input event");
                                    /*await*/ this.publishDmFromProfilePanel(e.detail.text);
                                    const profilePopElem = this.shadowRoot!.getElementById("profilePop") as Popover;
-                                   if (profilePopElem.isOpen()) {
-                                       profilePopElem.close();
+                                   if (profilePopElem.open) {
+                                       profilePopElem.open = false;
                                    }
                                }}
                 ></profile-panel>
@@ -2950,7 +2958,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                         allowCancel
                         .profile=${myProfile}
                         .saveProfileLabel=${msg('Edit Profile')}
-                        @cancel-edit-profile=${() => this.profileDialogElem.close(false)}
+                        @cancel-edit-profile=${() => this.profileDialogElem.open = false}
                         @save-profile=${(e: CustomEvent) => this.onSaveProfile(e.detail)}
                 ></vines-edit-profile>
             </ui5-dialog>
@@ -2971,7 +2979,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                           } else {
                             loadImportFile(this._dvm as ThreadsDvm, this.onImportFile);
                           }
-                          this.importDialogElem.close(false);
+                          this.importDialogElem.open = false;
                         }}
                 ></import-panel>
             </ui5-dialog>            
@@ -3040,7 +3048,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     <ui5-button id="createTopicDialogButton"
                                 style="margin-top:5px" design="Emphasized" @click=${this.onCreateTopic}>Create
                     </ui5-button>
-                    <ui5-button style="margin-top:5px" @click=${() => this.createTopicDialogElem.close(false)}>
+                    <ui5-button style="margin-top:5px" @click=${() => this.createTopicDialogElem.open = false}>
                         ${msg("Cancel")}
                     </ui5-button>
                 </div>
@@ -3066,7 +3074,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                 style="margin-top:5px" design="Emphasized" @click=${this.onEditChannel}>
                         ${msg("Save")}
                     </ui5-button>
-                    <ui5-button style="margin-top:5px" @click=${() => this.editChannelDialogElem.close(false)}>
+                    <ui5-button style="margin-top:5px" @click=${() => this.editChannelDialogElem.open = false}>
                         ${msg("Cancel")}
                     </ui5-button>
                 </div>
@@ -3092,7 +3100,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                 style="margin-top:5px" design="Emphasized" @click=${this.onEditTopic}>
                         ${msg("Save")}
                     </ui5-button>
-                    <ui5-button style="margin-top:5px" @click=${() => this.editTopicDialogElem.close(false)}>
+                    <ui5-button style="margin-top:5px" @click=${() => this.editTopicDialogElem.open = false}>
                         ${msg("Cancel")}
                     </ui5-button>
                 </div>
@@ -3122,7 +3130,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                 @click=${async () => await this.onCreateThread()}>
                         ${msg("Create")}
                     </ui5-button>
-                    <ui5-button style="margin-top:5px" @click=${() => this.createThreadDialogElem.close(false)}>
+                    <ui5-button style="margin-top:5px" @click=${() => this.createThreadDialogElem.open = false}>
                         ${msg("Cancel")}
                     </ui5-button>
                 </div>
@@ -3143,7 +3151,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                 @click=${async () => await this.onConfirmedCreateThread()}>
                         ${msg("Confirm")}
                     </ui5-button>
-                    <ui5-button style="margin-top:5px" @click=${() => this.confirmThreadDialogElem.close(false)}>
+                    <ui5-button style="margin-top:5px" @click=${() => this.confirmThreadDialogElem.open = false}>
                         ${msg("Cancel")}
                     </ui5-button>
                 </div>
@@ -3267,29 +3275,29 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       }
     }
     /** */
-    /*await*/ popover.showAt(btn);
+    /*await*/ popover.opener = btn; popover.open = true;
   }
 
   /** */
   async onSettingsMenu(e: any): Promise<void> {
     console.log("item-click", e);
-    /*await*/ this.waitDialogElem.show();
+    /*await*/ this.waitDialogElem.open = true;
     let content = "";
     switch (e.detail.item.id) {
       case "peersItem": {
         await this.updateComplete;
         const dialog = this.shadowRoot!.getElementById("view-agents-dialog") as Dialog;
-        /*await*/ dialog.show();
+        /*await*/ dialog.open = true;
         break;
       }
       case "networkHealthItem": {
         const popover = this.shadowRoot!.getElementById("networkPopover") as Popover;
         const anchor = this.shadowRoot!.getElementById("settingsBtn") as HTMLElement;
-        popover.showAt(anchor);
+        popover.opener = anchor; popover.open = true;
         break;
       }
       case "editProfileItem":
-          /*await*/ this.profileDialogElem.show();
+          /*await*/ this.profileDialogElem.open = true;
         break;
       case "shareNetwork":
         await this.onShareNetwork()
@@ -3302,7 +3310,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         break;
       case "importCommitItem":
         //this.importDvm(true);
-          /*await*/ this.importDialogElem.show();
+          /*await*/ this.importDialogElem.open = true;
         break;
       case "importOnlyItem":
         loadImportFile(this._dvm as ThreadsDvm, this.onImportFile);
@@ -3332,7 +3340,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
             this.dispatchEvent(new CustomEvent('app-selected', {detail: false, bubbles: true, composed: true}));
             break;
     }
-    this.waitDialogElem.close();
+    this.waitDialogElem.open = false;
   }
 
 

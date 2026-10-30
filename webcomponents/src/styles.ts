@@ -120,14 +120,14 @@ export const sharedStyles = css`
 
     /** Lister */
 
-    ui5-badge {
+    ui5-tag {
         min-width: 1.7rem;
         margin-top: 3px;
         background: rgb(183, 183, 183);
         color: rgb(232, 232, 232);
     }
 
-    ui5-badge:hover {
+    ui5-tag:hover {
         cursor: pointer;
     }
 

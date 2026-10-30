@@ -207,7 +207,7 @@ export class ChatThreadMultiView extends DnaMultiElement<ThreadsDvm> {
       return html`<div style="margin:auto; color:red;font-weight: bold;font-size: 3rem">${msg("No peer selected")}</div>`;
     }
     if (!this.dmThreads.length) {
-      return html`<ui5-busy-indicator delay="50" size="Large" active style="width:100%; height:100%; color:olive"></ui5-busy-indicator>`;
+      return html`<ui5-busy-indicator delay="50" size="L" active style="width:100%; height:100%; color:olive"></ui5-busy-indicator>`;
     }
 
     /** Merge trees */
@@ -310,11 +310,11 @@ export class ChatThreadMultiView extends DnaMultiElement<ThreadsDvm> {
      *  above the messages, at the older end. The spinner for a conversation
      *  with nothing to show yet fills the pane instead. */
     const busyHistory = html`
-      <ui5-busy-indicator delay="50" size="Medium" active
+      <ui5-busy-indicator delay="50" size="M" active
                           style="width:100%; margin-bottom:20px; margin-top:20px;"></ui5-busy-indicator>`;
     return html`
       ${this._loading && chatItems.length == 0? html`
-        <ui5-busy-indicator delay="50" size="Large" active
+        <ui5-busy-indicator delay="50" size="L" active
                             style="width:100%; height:100%; margin:auto;"></ui5-busy-indicator>` : html``}
       <div id="content">
         ${maybeHeader}

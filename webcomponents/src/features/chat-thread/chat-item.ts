@@ -213,7 +213,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
   onClickAddEmoji() {
     const popover = this.shadowRoot!.getElementById("emojiPopover") as Popover;
     const btn = this.shadowRoot!.getElementById("buttonsPop") as HTMLElement;
-    popover.showAt(btn);
+    popover.opener = btn; popover.open = true;
   }
 
 
@@ -361,7 +361,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     const baseBeadInfo = this.threadsPerspective.getBaseBeadInfo(this.hash);
     if (!beadInfo || !baseBeadInfo) {
       return html`
-          <ui5-busy-indicator delay="0" size="Medium" active
+          <ui5-busy-indicator delay="0" size="M" active
                               style="margin:auto; width:100%; height:100%;"></ui5-busy-indicator>`;
     }
     const maybeCachedOriginal = this._dvm.threadsZvm.getCachedOriginalAuthor(this.hash);
@@ -496,7 +496,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
                         //console.log("onSettingsMenu()", e);
                         const menu = this.shadowRoot!.getElementById("moreMenu") as Menu;
                         const btn = this.shadowRoot!.getElementById("menu-btn") as Button;
-                        menu.showAt(btn);
+                        menu.opener = btn; menu.open = true;
                     }}></ui5-button>`;
 
     const replyButton = /*this.cell.agentId.b64 == beadInfo.author? html`` :*/
@@ -666,8 +666,8 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
                                           /*await*/ this._dvm.publishEmoji(this.hash, unicode);
                                       }
                                       const popover = this.shadowRoot!.getElementById("emojiPopover") as Popover;
-                                      if (popover.isOpen()) {
-                                          popover.close();
+                                      if (popover.open) {
+                                          popover.open = false;
                                       }
                                   }}></emoji-picker>
                 </ui5-popover>

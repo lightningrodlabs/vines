@@ -220,14 +220,14 @@ export class EditProfile extends LitElement {
   fireSaveProfile() {
     console.log("<edit-profile>.fireSaveProfile()");
     if (!this.nicknameField.value) {
-      this.nicknameField.valueState = ValueState.Error;
+      this.nicknameField.valueState = ValueState.Negative;
       return;
     }
     const nickname = this.nicknameField.value.trim();
     const regex = new RegExp(`^["a-zA-Z0-9-_ "]+$`);
     const isValid = regex.test(nickname);
     if (!isValid) {
-      this.nicknameField.valueState = ValueState.Error;
+      this.nicknameField.valueState = ValueState.Negative;
       const errorMsg = this.shadowRoot!.getElementById("errorMsg") as HTMLElement;
       errorMsg.textContent = msg("Bad characters");
       return;
@@ -303,7 +303,7 @@ export class EditProfile extends LitElement {
                           if (this.nicknameField.value.length > 0) {
                             this.nicknameField.valueState = ValueState.None;
                           } else {
-                            this.nicknameField.valueState = ValueState.Error;
+                            this.nicknameField.valueState = ValueState.Negative;
                           }
                         }}>
                   <div id="errorMsg" slot="valueStateMessage">${msg("Minimum 1 character")}</div>                  

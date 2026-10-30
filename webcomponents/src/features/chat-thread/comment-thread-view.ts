@@ -32,7 +32,7 @@ import {InputBar} from "../../elements/input-bar";
 /** @ui5/webcomponents(-fiori) */
 import "@ui5/webcomponents/dist/Input.js";
 import "@ui5/webcomponents/dist/Avatar.js"
-import "@ui5/webcomponents-fiori/dist/Bar.js";
+import "@ui5/webcomponents/dist/Bar.js";
 import {GetStrategy} from "@holochain-open-dev/core-types";
 import {Bead, ThreadsEntryType} from "../../bindings/threads.types";
 import {toasty} from "../../toast";
@@ -364,7 +364,7 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
       this.loadCommentThread();
       return html`
           ${doodle_bg}
-          <ui5-busy-indicator delay="0" size="Medium" active
+          <ui5-busy-indicator delay="0" size="M" active
                               style="margin:auto; width:100%; height:100%;"></ui5-busy-indicator>
       `;
     }

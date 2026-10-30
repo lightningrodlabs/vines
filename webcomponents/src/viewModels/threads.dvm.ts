@@ -38,7 +38,7 @@ import {Decoder, Encoder} from "@msgpack/msgpack";
 import {AuthorshipZvm} from "./authorship.zvm";
 import {HOLOCHAIN_ID_EXT_CODEC} from "@ddd-qc/cell-proxy";
 import {WeServicesEx} from "@ddd-qc/we-utils";
-import {PathExplorerZvm} from "@ddd-qc/path-explorer";
+import {PathExplorerZvm} from "@ddd-qc/path-explorer/dist/viewModels/path-explorer.zvm.js";
 import {GetStrategy} from "@holochain-open-dev/core-types";
 import {THIS_APPLET_ID} from "../contexts";
 import {countValidReceipts, MAIN_SEMANTIC_TOPIC, MAIN_TOPIC_ID} from "../utils";

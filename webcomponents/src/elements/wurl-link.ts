@@ -173,14 +173,14 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
   /** */
   renderBadLink() {
     return html`
-      <abbr .title=${this.wurl}><ui5-badge design="Set1" color-scheme="2" style="color:#b50202"
+      <abbr .title=${this.wurl}><ui5-tag color-scheme="2" style="color:#b50202"
           @click=${(_e: any) => {
       navigator.clipboard.writeText(this.wurl);
       if (this.weServices) {
         this.weServices.assets.assetToPocket(weaveUrlToWal(this.wurl));
       }
       toasty(msg("Copied Asset link to clipboard"));
-    }}>${msg('Unknown HRL')}</ui5-badge></abbr>
+    }}>${msg('Unknown HRL')}</ui5-tag></abbr>
     `;
   }
 
@@ -207,7 +207,7 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     if (this._toolName == "Files") {
       const manifestEh = new EntryId(dhtId.b64);
       //return html`<file-button .hash=${new EntryId(dhtId.b64)}></file-button>`;
-      return html`<ui5-badge  style="color:#5e5e6b; background: white; border: 1px solid #cbcbcb"
+      return html`<ui5-tag  style="color:#5e5e6b; background: white; border: 1px solid #cbcbcb"
                               @click=${(e: any) => {
         e.stopPropagation();
         e.preventDefault();
@@ -215,7 +215,7 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
       }}>
           ${this._assetName}
           <ui5-icon slot="icon" name="attachment"></ui5-icon>
-      </ui5-badge>`;
+      </ui5-tag>`;
     }
 
     // let colorIdx = 6;
@@ -226,7 +226,7 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     /** render valid link */
     return html`
         <!-- <sl-tooltip content="To ${this._toolName}"> -->
-          <ui5-badge style="color:#2f4dc4d4; background: white; border: 1px solid #225699a3"
+          <ui5-tag style="color:#2f4dc4d4; background: white; border: 1px solid #225699a3"
                      @click=${(e: any) => {
       e.stopPropagation();
       e.preventDefault();
@@ -249,7 +249,7 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     }}>
               ${this._assetName}
               <ui5-icon slot="icon" name="chain-link"></ui5-icon>              
-          </ui5-badge>
+          </ui5-tag>
         <!-- </sl-tooltip> -->
     `;
   }

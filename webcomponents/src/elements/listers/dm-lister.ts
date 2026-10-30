@@ -109,7 +109,7 @@ export class DmLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       /** Render DM thread */
       const maybe = this.threadsPerspective.threads.get(ppAh);
       if (!maybe) {
-        return html`<ui5-busy-indicator delay="0" size="Medium" active style="width:100%; height:100%;"></ui5-busy-indicator>`;
+        return html`<ui5-busy-indicator delay="0" size="M" active style="width:100%; height:100%;"></ui5-busy-indicator>`;
       }
       //console.debug("<dm-lister> this.selectedThreadHash", this.selectedThreadHash, ppAh.short);
       const isSelected = this.selectedThreadHash && this.selectedThreadHash.equals(ppAh);
@@ -123,17 +123,17 @@ export class DmLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       }
 
       /** 'new', 'notif' or 'unread' badge to display */
-      // let badge = html`<ui5-badge>0</ui5-badge>`;
+      // let badge = html`<ui5-tag>0</ui5-tag>`;
       let badge = html`<div style="min-width: 26px"></div>`;
       let notifCount = this._dvm.threadsZvm.perspective.getAllNotificationsForPp(ppAh).length;
       if (threadIsNew) {
-        badge = html`<ui5-badge class="notifBadge">New</ui5-badge>`;
+        badge = html`<ui5-tag class="notifBadge">New</ui5-tag>`;
       } else {
         if (notifCount > 0) {
-          badge = html`<ui5-badge class="notifBadge">${notifCount}</ui5-badge>`;
+          badge = html`<ui5-tag class="notifBadge">${notifCount}</ui5-tag>`;
         } else {
           if (hasNewBeads) {
-            badge = html`<ui5-badge class="unreadBadge">${maybeUnreadThread[1].length}</ui5-badge>`;
+            badge = html`<ui5-tag class="unreadBadge">${maybeUnreadThread[1].length}</ui5-tag>`;
           }
         }
       }

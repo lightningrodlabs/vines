@@ -472,7 +472,7 @@ export class VinesAdmin extends LitElement {
     if (this._initLoading || !!this._loading) {
       return html`
           <div class="centered">
-              <ui5-busy-indicator delay="0" size="Large" active
+              <ui5-busy-indicator delay="0" size="L" active
                                   style="color:#9e9c65"
               ></ui5-busy-indicator>
               <div style="font-size: 18px; color: #131312;">${this._loading}</div>

@@ -29,12 +29,12 @@ export class ImportSummaryDialog extends LitElement {
             <import-summary .data=${this._data}
                             @import-confirmed=${(_e: CustomEvent<ImportConfirmed>) => {
                                 const dialog = this.shadowRoot!.getElementById("import-dialog") as Dialog;
-                                dialog.close(false);
+                                dialog.open = false;
                             }}
                             @import-canceled=${(_e: CustomEvent<boolean>) => {
                               this._data = undefined;
                               const dialog = this.shadowRoot!.getElementById("import-dialog") as Dialog;
-                              dialog.close(false);
+                              dialog.open = false;
                             }}
             ></import-summary>             
         </ui5-dialog>

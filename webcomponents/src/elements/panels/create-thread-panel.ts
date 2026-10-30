@@ -81,7 +81,7 @@ export class CreateThreadPanel extends DnaElement<ThreadsDnaPerspective, Threads
   /** */
   override render() {
     if (this._creating) {
-      return html`<ui5-busy-indicator delay="50" size="Large" active style="width:100%; height:100%; color:olive"></ui5-busy-indicator>`;
+      return html`<ui5-busy-indicator delay="50" size="L" active style="width:100%; height:100%; color:olive"></ui5-busy-indicator>`;
     }
     /** Render all */
     return html`

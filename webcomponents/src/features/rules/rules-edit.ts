@@ -162,7 +162,7 @@ export class RulesEdit extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
   isValid(): boolean {
     /** Check Moderators */
     const combo = this.shadowRoot!.getElementById("modsCombo") as unknown as MultiComboBox;
-    if (combo && combo.valueState === ValueState.Error) {
+    if (combo && combo.valueState === ValueState.Negative) {
       return false;
     }
     /** */
@@ -380,7 +380,7 @@ export class RulesEdit extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
     const combo = this.shadowRoot!.getElementById("modsCombo") as unknown as MultiComboBox;
     const errorMsg = this.shadowRoot!.getElementById("modsErrorMsg") as HTMLElement;
     if (selectedAgents.length <= 0) {
-      combo.valueState = ValueState.Error;
+      combo.valueState = ValueState.Negative;
       errorMsg.textContent = msg("Must have at least one moderator");
     } else {
       combo.valueState = ValueState.None;

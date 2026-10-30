@@ -156,7 +156,7 @@ export class ExportSummaryDialog extends DnaElement<unknown, ThreadsDvm> {
           <!-- Summary -->
           ${this._fetchingAll ? 
                   html`<div style="height: 100px">
-                      <ui5-busy-indicator delay="0" size="Medium" active style="width:100%; height:100%;"></ui5-busy-indicator>
+                      <ui5-busy-indicator delay="0" size="M" active style="width:100%; height:100%;"></ui5-busy-indicator>
                   <!-- ${msg("Fetching all messages...")} -->
                   </div>
             ` : html`
@@ -238,7 +238,7 @@ export class ExportSummaryDialog extends DnaElement<unknown, ThreadsDvm> {
                                 detail: this._selectedChannels,
                                 bubbles: true, composed: true}));
                             const dialog = this.shadowRoot!.getElementById("export-dialog") as Dialog;
-                            dialog.close(false);
+                            dialog.open = false;
                   }}>
                   ${msg('Export')}
               </ui5-button>
@@ -252,7 +252,7 @@ export class ExportSummaryDialog extends DnaElement<unknown, ThreadsDvm> {
               <ui5-button style="margin-top:5px" 
                           @click=${() => {
                             const dialog = this.shadowRoot!.getElementById("export-dialog") as Dialog;
-                            dialog.close(false);
+                            dialog.open = false;
                         }}>
                   ${msg('Cancel')}
               </ui5-button>

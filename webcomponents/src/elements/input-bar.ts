@@ -10,6 +10,7 @@ import {inputBarStyleTemplate, suggestionListTemplate} from "../styles";
 import Input from "@ui5/webcomponents/dist/Input";
 
 import "@ui5/webcomponents/dist/TextArea.js";
+import "@ui5/webcomponents/dist/MenuSeparator.js";
 import TextArea from "@ui5/webcomponents/dist/TextArea.js";
 import List from "@ui5/webcomponents/dist/List.js";
 import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm/dist/bindings/profiles.types";
@@ -252,8 +253,8 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       this.inputElem.value = this._stashedInputValue + nickname + " "
     }
     this.inputElem.focus();
-    if (this.popoverElem.isOpen()) {
-      this.popoverElem.close();
+    if (this.popoverElem.open) {
+      this.popoverElem.open = false;
     }
     this._stashedInputValue = "";
   }
@@ -386,8 +387,8 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** */
   handleKeydown(e: any) {
-    //console.log("<vines-input-bar> keydown", this.threadHash, this.popoverElem && this.popoverElem.isOpen(), e);
-    const isSuggesting = this.popoverElem && this.popoverElem.isOpen();
+    //console.log("<vines-input-bar> keydown", this.threadHash, this.popoverElem && this.popoverElem.open, e);
+    const isSuggesting = this.popoverElem && this.popoverElem.open;
     //console.log("Input keydown keyCode", e.keyCode, isSuggesting, this.inputElem.value);
     if (isSuggesting) {
       this.handleSuggestingKeydown(e);
@@ -477,7 +478,7 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     const me = this._dvm.cell.address.agentId;
 
     /** check & enable suggestion popover */
-    const isSuggesting = this.popoverElem && this.popoverElem.isOpen();
+    const isSuggesting = this.popoverElem && this.popoverElem.open;
 
     const endsWithWhitespace = input.length != input.trimEnd().length;
     const words = this.splitByWordsAndPunctuation(input); //input.trim().split(/\s+/);
@@ -551,7 +552,7 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       });
       /** */
       if (this.popoverElem && !isSuggesting) {
-        this.popoverElem.showAt(this.inputElem as any as HTMLElement);
+        this.popoverElem.opener = this.inputElem as any as HTMLElement; this.popoverElem.open = true;
         this._stashedInputValue = this.inputElem.value;
         if (lastWordIsMention && lastWord.length > 2) {
           //console.log("_cacheInputValue inputElem", this.inputElem.value, lastWord, lastWord.length - 1)
@@ -613,7 +614,7 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                       style="color: ${maybePanel && maybePanel.isRecording? "red" : ""}"
                       @click=${(_e: any) => {
                           const el = this.shadowRoot!.getElementById("micBtn") as HTMLElement;
-                          this.micDialogElem.showAt(el);
+                          this.micDialogElem.opener = el; this.micDialogElem.open = true;
                           //this.micDialogElem.show();
                       }}>
           </ui5-button>
@@ -631,7 +632,7 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                       @click=${(_e: any) => {
                           const settingsMenu = this.shadowRoot!.getElementById("addMenu") as Menu;
                           const settingsBtn = this.shadowRoot!.getElementById("addBtn") as Button;
-                          settingsMenu.showAt(settingsBtn);
+                          settingsMenu.opener = settingsBtn; settingsMenu.open = true;
                       }}>
           </ui5-button>
       `
@@ -653,7 +654,7 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
        busyBar = html`
          <div style="margin-top: -10px;">
            <ui5-bar design="FloatingFooter" style="width 300px; background:#ccc;">
-               <ui5-busy-indicator delay="0" size="Large" active
+               <ui5-busy-indicator delay="0" size="L" active
                                    style="margin:auto; width:100%; height:100%; color:#404455c7;"
                ></ui5-busy-indicator>
            </ui5-bar>
@@ -677,7 +678,7 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     <ui5-textarea id="textMessageInput" mode="SingleSelect"
                                   placeholder=${inputPlaceholder}
                                   growing
-                                  growing-max-lines="10"
+                                  growing-max-rows="10"
                                   rows="1"
                                   .maxlength=${this._limitations.canText!.maxTextLength == 0? DEFAULT_MAX_TEXT_LENGTH : this._limitations.canText!.maxTextLength}
                                   @keydown=${this.handleKeydown}
@@ -693,7 +694,7 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                 @click=${() => this.commitInput()}></ui5-button>
             </ui5-bar>
         </div>
-        <ui5-popover id="pop" hide-arrow allow-target-overlap placement-type="Top" horizontal-align="Stretch"
+        <ui5-popover id="pop" hide-arrow allow-target-overlap placement="Top" horizontal-align="Stretch"
                      initial-focus="textMessageInput">
             <ui5-list id="agent-list">
                 ${agentItems}
@@ -702,20 +703,21 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         <!-- menu -->
         <ui5-menu id="addMenu" header-text=${msg("Add")} @item-click=${(e: any) => this.onAddMenu(e)}>
             <ui5-menu-item id="fileItem" ?disabled=${!this._limitations.canFile} text=${msg("Upload a File")}
-                           icon="attachment" starts-section></ui5-menu-item>
+                           icon="attachment"></ui5-menu-item>
             ${this.weServices? html`
+                <ui5-menu-separator></ui5-menu-separator>
                 <ui5-menu-item id="linkWalItem" ?disabled=${!this._limitations.canText} text=${msg("Insert an Asset Link")}
-                               icon="chain-link" starts-section></ui5-menu-item>
-                <ui5-menu-item id="embedWalItem" ?disabled=${!this._limitations.canWal} text=${msg("Embed an Asset")}
-                               starts-section></ui5-menu-item>
+                               icon="chain-link"></ui5-menu-item>
+                <ui5-menu-separator></ui5-menu-separator>
+                <ui5-menu-item id="embedWalItem" ?disabled=${!this._limitations.canWal} text=${msg("Embed an Asset")}></ui5-menu-item>
             ` : html``}
         </ui5-menu>
         <!-- CreateThreadDialog -->
-        <ui5-popover id="mic-dialog" header-text=${msg("Create Voice Message")} placement-type="Top"
+        <ui5-popover id="mic-dialog" header-text=${msg("Create Voice Message")} placement="Top"
                      @close=${() => console.debug("FIXME: Modal doesnt work properly so can't detect if user clicks outside of popover...")}>
             <audio-panel id="audio-panel"
                          @close=${() => {
-                             this.micDialogElem.close(false);
+                             this.micDialogElem.open = false;
                              this.requestUpdate();
                          }}
                          @rec=${() => {this.requestUpdate();}}
@@ -733,7 +735,7 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                              } else {
                                  this._file = file;
                              }
-                             this.micDialogElem.close(false);
+                             this.micDialogElem.open = false;
                              if (e.detail.canSend) {
                                  this.commitInput();
                              }

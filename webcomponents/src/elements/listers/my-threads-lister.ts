@@ -71,7 +71,7 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
     let threads = myThreads.map((ppAh) => {
       const thread = this.perspective.threads.get(ppAh);
       if (!thread) {
-        return html`<ui5-busy-indicator delay="0" size="Medium" active style="width:100%; height:100%;"></ui5-busy-indicator>`;
+        return html`<ui5-busy-indicator delay="0" size="M" active style="width:100%; height:100%;"></ui5-busy-indicator>`;
       }
       console.log("this.selectedThreadHash", this.selectedThreadHash, ppAh);
       const isThreadHidden = this._zvm.perspective.hiddens[ppAh.b64]? this._zvm.perspective.hiddens[ppAh.b64] : false;
@@ -119,20 +119,20 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
       // }
 
       /** 'new', 'notif' or 'unread' badge to display */
-        //let badge = html`<ui5-badge>0</ui5-badge>`;
+        //let badge = html`<ui5-tag>0</ui5-tag>`;
       let badge = html`<div style="min-width: 26px"></div>`;
       let notifCount = this._zvm.perspective.getAllNotificationsForPp(ppAh).length;
       if (threadIsNew) {
         badge = html`
-              <ui5-badge class="notifBadge">0</ui5-badge>`;
+              <ui5-tag class="notifBadge">0</ui5-tag>`;
       } else {
         if (notifCount > 0) {
           badge = html`
-                <ui5-badge class="notifBadge">${notifCount}</ui5-badge>`;
+                <ui5-tag class="notifBadge">${notifCount}</ui5-tag>`;
         } else {
           if (hasNewBeads) {
             badge = html`
-                  <ui5-badge class="unreadBadge">${maybeUnreadThread[1].length}</ui5-badge>`;
+                  <ui5-tag class="unreadBadge">${maybeUnreadThread[1].length}</ui5-tag>`;
           }
         }
       }
@@ -206,11 +206,11 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
     /** 'new', 'notif' and 'unread' badge to display */
     let subjectBadge = html``;
     if (subjectIsNew) {
-      subjectBadge = html`<ui5-badge class="notifBadge subjectBadge">New</ui5-badge>`;
+      subjectBadge = html`<ui5-tag class="notifBadge subjectBadge">New</ui5-tag>`;
     } else {
       let notifCount = 0; // FIXME: Get real notif count
       if (notifCount > 0) {
-        subjectBadge = html`<ui5-badge class="notifBadge subjectBadge">${notifCount}</ui5-badge>`;
+        subjectBadge = html`<ui5-tag class="notifBadge subjectBadge">${notifCount}</ui5-tag>`;
       } else {
         /** Agregate count of unread beads on all subject's threads */
         let count = 0;
@@ -220,7 +220,7 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
           }
         }
         if (count > 0) {
-          subjectBadge = html`<ui5-badge class="unreadBadge subjectBadge">${count}</ui5-badge>`;
+          subjectBadge = html`<ui5-tag class="unreadBadge subjectBadge">${count}</ui5-tag>`;
         }
       }
     }

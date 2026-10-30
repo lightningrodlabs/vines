@@ -109,7 +109,7 @@ export class HistoryLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> i
     let threads = this.threadStack?.map((ppAh) => {
       const thread = this.perspective.threads.get(ppAh);
       if (!thread) {
-        return html`<ui5-busy-indicator delay="0" size="Medium" active style="width:100%; height:100%;"></ui5-busy-indicator>`;
+        return html`<ui5-busy-indicator delay="0" size="M" active style="width:100%; height:100%;"></ui5-busy-indicator>`;
       }
       //console.log("this.selectedThreadHash", this.selectedThreadHash, ppAh);
       const isSelected = false;
@@ -123,20 +123,20 @@ export class HistoryLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> i
       }
 
       /** 'new', 'notif' or 'unread' badge to display */
-        //let badge = html`<ui5-badge>0</ui5-badge>`;
+        //let badge = html`<ui5-tag>0</ui5-tag>`;
       let badge = html`<div style="min-width: 26px"></div>`;
       let notifCount = this._zvm.perspective.getAllNotificationsForPp(ppAh).length;
       if (threadIsNew) {
         badge = html`
-            <ui5-badge class="notifBadge">${msg("new")}</ui5-badge>`;
+            <ui5-tag class="notifBadge">${msg("new")}</ui5-tag>`;
       } else {
         if (notifCount > 0) {
           badge = html`
-              <ui5-badge class="notifBadge">${notifCount}</ui5-badge>`;
+              <ui5-tag class="notifBadge">${notifCount}</ui5-tag>`;
         } else {
           if (hasNewBeads) {
             badge = html`
-                <ui5-badge class="unreadBadge">${maybeUnreadThread[1].length}</ui5-badge>`;
+                <ui5-tag class="unreadBadge">${maybeUnreadThread[1].length}</ui5-tag>`;
           }
         }
       }

@@ -193,7 +193,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
       return html`<div style="color:#c10a0a">${msg("No File address provided")}</div>`;
     }
     if (this._loading) {
-      return html`<ui5-busy-indicator delay="0" size="Large" active style="min-height: 100px;"></ui5-busy-indicator>`;
+      return html`<ui5-busy-indicator delay="0" size="L" active style="min-height: 100px;"></ui5-busy-indicator>`;
     }
     if (!this._manifest) {
       return html`
@@ -212,7 +212,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
     }
     const entryBead = this._dvm.threadsZvm.perspective.getBaseBead(new ActionId(this.hash)) as EntryBeadMat;
     if (!entryBead) {
-      return html`<ui5-busy-indicator delay="0" size="Medium" active style="color:#f3bb2c"></ui5-busy-indicator>`;
+      return html`<ui5-busy-indicator delay="0" size="M" active style="color:#f3bb2c"></ui5-busy-indicator>`;
     }
     const manifestEh = entryBead.sourceEh;
     const filePprm = this._filesDvm.deliveryZvm.perspective.publicParcels.get(manifestEh);
@@ -221,7 +221,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
       if (this._canRetry) {
         this._canRetry = false;
         /*await*/ this.probeForFileManifest(manifestEh, 1000);
-        return html`<ui5-busy-indicator delay="0" size="Medium" active style="color:#f61933"></ui5-busy-indicator>`;
+        return html`<ui5-busy-indicator delay="0" size="M" active style="color:#f61933"></ui5-busy-indicator>`;
       }
       return html`
         <ui5-list id="fileList" style="max-width: 300px;">

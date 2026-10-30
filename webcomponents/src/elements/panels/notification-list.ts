@@ -1,4 +1,6 @@
 import {html, TemplateResult} from "lit";
+import "@ui5/webcomponents/dist/Menu.js";
+import "@ui5/webcomponents/dist/MenuItem.js";
 import {customElement, property} from "lit/decorators.js";
 import {DnaElement} from "@ddd-qc/lit-happ";
 import {ThreadsPerspective} from "../../viewModels/threads.perspective";
@@ -90,8 +92,9 @@ export class NotificationList extends DnaElement<unknown, ThreadsDvm> {
               ${renderAvatar(this, this._dvm.profilesZvm, author, "XS")}
               <span slot="footnotes">${agentName}</span>
               <span slot="footnotes">${date_str}</span>
-              <ui5-notification-action text="Jump" slot="actions" @click=${(_e: any) => this.dispatchEvent(notification2JumpEvent(notif))}>
-              </ui5-notification-action>
+              <ui5-menu slot="menu" @item-click=${(_e: any) => this.dispatchEvent(notification2JumpEvent(notif))}>
+                <ui5-menu-item text="Jump"></ui5-menu-item>
+              </ui5-menu>
               ${notifBody}
           </ui5-li-notification>
         `;

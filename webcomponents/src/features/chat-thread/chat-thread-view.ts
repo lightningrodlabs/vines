@@ -233,7 +233,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
     const thread = this.threadsPerspective.threads.get(this.threadHash);
     if (!thread) {
       return html`
-          <ui5-busy-indicator delay="50" size="Large" active
+          <ui5-busy-indicator delay="50" size="L" active
                               style="width:100%; height:100%; color:olive"></ui5-busy-indicator>`;
     }
 
@@ -268,12 +268,12 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
      *  above the messages, at the older end. The spinner for a thread with
      *  nothing to show yet fills the pane instead. */
     const busyHistory = html`
-        <ui5-busy-indicator delay="50" size="Medium" active
+        <ui5-busy-indicator delay="50" size="M" active
                             style="width:100%; margin-bottom:20px; margin-top:20px;"></ui5-busy-indicator>`;
     return html`
         <!-- <div>${this._renderCount}</div> -->
         ${this._loading && all.length == 0? html`
-            <ui5-busy-indicator delay="50" size="Large" active
+            <ui5-busy-indicator delay="50" size="L" active
                                 style="width:100%; height:100%; margin:auto;"></ui5-busy-indicator>` : html``}
         <div id="content">
             ${maybeHeader}
