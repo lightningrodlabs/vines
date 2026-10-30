@@ -1976,24 +1976,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                 ${msg("Pick a channel on the left, or create one with +")}
             </div>
         </div>`;
-    /** If there are no threads and the user is the progenitor (and not in cross-group view), show the import panel */
-    console.debug("<vines-page> progenitor", this.progenitor, this.multi)
-    if (!this.multi && this._dvm.threadsZvm.perspective.threads.size == 0 && this.progenitor) {
-      centerSide = html`
-          <div id="emptyPane" style="position: absolute; inset: 0;">
-              ${emptyMark}
-          </div>
-          <div class="mypanel">
-              <import-panel
-                      @import-requested=${(_e: CustomEvent) => {
-                        //const canPublish = e.detail;
-                        loadImportFile(this._dvm as ThreadsDvm, this.onImportFile);
-                      }}
-                      @create-channel-requested=${(_e: CustomEvent) => this.onCreateFirstChannel()}
-              ></import-panel>
-          </div>
-      `;
-    }
+    /** First run for the progenitor (not in cross-group view): offer import or a first channel */
+    const isFirstRun = !this.multi && this._dvm.threadsZvm.perspective.threads.size == 0 && this.progenitor;
     /** Favorites */
     if (this._mainView == MainViewType.Favorites) {
       centerSide = html`<favorites-view></favorites-view>`
@@ -2818,6 +2802,16 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                 </div>
             </div>
             <!-- DIALOGS -->
+            <ui5-dialog id="first-run-dialog" header-text=${msg("Get started")} style="width: 640px; max-width: 95vw;"
+                        .open=${isFirstRun && !this._firstRunDismissed}
+                        @close=${() => this._firstRunDismissed = true}>
+                <import-panel
+                        @import-requested=${(_e: CustomEvent) => {
+                          loadImportFile(this._dvm as ThreadsDvm, this.onImportFile);
+                        }}
+                        @create-channel-requested=${(_e: CustomEvent) => this.onCreateFirstChannel()}
+                ></import-panel>
+            </ui5-dialog>
             <ui5-dialog id="wait-dialog">
                 <ui5-busy-indicator delay="0" size="L" active
                                     style="padding-top:20px; width:100%;"></ui5-busy-indicator>
@@ -2892,8 +2886,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                             }
                         }}>
                 </peer-list>
+                <div class="dialog-footer" style="margin-top: 10px;">
                 <ui5-button
-                        style="margin-top: 10px; float: right;"
                         @click=${(_e: any) => {
                             const dialog = this.shadowRoot!.getElementById("pick-agent-dialog") as Dialog;
                             dialog.open = false
@@ -2901,7 +2895,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     ${msg("Cancel")}
                 </ui5-button>
                 ${this.networkCaller.isLooping()? html`
-                    <ui5-button style="margin:10px; float:right;"
+                    <ui5-button
                                @click=${() => {
                                    this.dispatchEvent(new CustomEvent<boolean>('loop-network-info', {
                                        detail: false, bubbles: true, composed: true
@@ -2915,7 +2909,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                         ${msg('Stop pinging')}
                     </ui5-button>
                 ` : html`
-                    <ui5-button design="Emphasized" style="margin:10px; float:right;" 
+                    <ui5-button design="Emphasized"
                                 @click=${() => {
                                     this.dispatchEvent(new CustomEvent<boolean>('loop-network-info', {
                                         detail: true, bubbles: true, composed: true
@@ -2929,6 +2923,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                         ${msg("Ping peers")}
                     </ui5-button>
                 `}
+            </div>
             </ui5-dialog>
             <!-- View Rules Dialog/Popover -->
             <ui5-popover id="rulesPop" placement="Right" hide-arrow allow-target-overlap
@@ -3156,6 +3151,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   }
 
 
+  /** The first-run dialog stays closed once dismissed; the sidebar offers the same actions */
+  @state() private _firstRunDismissed = false;
   @state() private _file: File | undefined = undefined;
 
   /** */
@@ -3729,15 +3726,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           font-size: var(--vines-text-m);
         }
 
-        .mypanel {
-            background-color: var(--vines-surface);
-            width: fit-content;
-            margin: auto;
-            z-index: 1;
-            padding: 0px 20px 10px 20px;
-            border-radius: var(--vines-radius-l);
-            box-shadow: var(--vines-shadow-pop);
-        }
         .search-group-header {
           text-transform: uppercase;
           padding-top: 0px;

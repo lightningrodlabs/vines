@@ -191,22 +191,21 @@ export class ImportSummary extends LitElement {
         </div>
         `}
       </div>
-      <div class="footer">
-        <div style="flex-grow: 1"></div>
-        <ui5-button style="margin-top:5px" design="Emphasized"
-                    ?disabled=${this._selectedChannels.size === 0 && !this.data!.discord}
-                    @click=${(_e: any) => this.onImport(allSelected, true)}>
-            ${msg('Import')}
+      <div class="dialog-footer footer">
+        <ui5-button style="margin-top:5px" @click=${() => {
+            this.dispatchEvent(new CustomEvent<boolean>('import-canceled', {detail: true, bubbles: true, composed: true}));
+        }}>
+            ${msg('Cancel')}
         </ui5-button>
           <ui5-button style="margin-top:5px"
                       ?disabled=${(this._selectedChannels.size === 0 && !this.data!.discord) || this.data!.discord}
                       @click=${(_e: any) => this.onImport(allSelected, false)}>
               ${msg('Dry-run')}
           </ui5-button>
-        <ui5-button style="margin-top:5px" @click=${() => {
-            this.dispatchEvent(new CustomEvent<boolean>('import-canceled', {detail: true, bubbles: true, composed: true}));
-        }}>
-            ${msg('Cancel')}
+        <ui5-button style="margin-top:5px" design="Emphasized"
+                    ?disabled=${this._selectedChannels.size === 0 && !this.data!.discord}
+                    @click=${(_e: any) => this.onImport(allSelected, true)}>
+            ${msg('Import')}
         </ui5-button>
       </div>
     `;
@@ -308,10 +307,7 @@ export class ImportSummary extends LitElement {
           }
 
           .footer {
-              display: flex;
               flex-shrink: 0;
-              gap: 10px;
-              justify-content: flex-end;
           }
           
           .stat-cards {

@@ -23,7 +23,13 @@ export class ConfirmDialog extends LitElement {
   override render() {
     return html`
         <ui5-dialog id="confirm-dialog" header-text=${this.title}>
-            <div class="footer">
+            <div class="dialog-footer">
+                <ui5-button style="margin-top:5px" @click=${() => {
+      const dialog = this.shadowRoot!.getElementById("confirm-dialog") as Dialog;
+      dialog.open = false;
+    }}>
+                  ${msg('Cancel')}
+                </ui5-button>
                 <ui5-button style="margin-top:5px" design="Emphasized" 
                             @click=${(_e: any) => {
       this.dispatchEvent(new CustomEvent<boolean>('confirmed', {detail: true, bubbles: true, composed: true}));
@@ -31,12 +37,6 @@ export class ConfirmDialog extends LitElement {
       dialog.open = false;
     }}>
                     ${msg('Confirm')}
-                </ui5-button>
-                <ui5-button style="margin-top:5px" @click=${() => {
-      const dialog = this.shadowRoot!.getElementById("confirm-dialog") as Dialog;
-      dialog.open = false;
-    }}>
-                  ${msg('Cancel')}
                 </ui5-button>
             </div>
         </ui5-dialog>
@@ -52,11 +52,6 @@ export class ConfirmDialog extends LitElement {
         :host {
         }
         
-        .footer {
-          display: flex;
-          gap: 10px;
-          justify-content: center;
-        }
       `
     ];
   }

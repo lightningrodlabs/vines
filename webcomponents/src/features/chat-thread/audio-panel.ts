@@ -126,7 +126,7 @@ export class AudioPanel extends LitElement {
     return html`
         ${preview}
         ${recordBtn}
-        <div style="display: flex; flex-direction:row-reverse; gap: 10px; margin-top: 10px;">
+        <div class="dialog-footer" style="margin-top: 10px;">
             <ui5-button style="margin-top:5px" @click=${async (_e: any) => {
       console.log("CANCELED", this._recorder.isRecording);
       if (this._recorder.isRecording) {

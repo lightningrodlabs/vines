@@ -19,20 +19,20 @@ export class ImportPanel extends LitElement {
     private renderQuestion() {
         return html`
             <h3>${msg('Do you want to bring your data from another app?')}</h3>
-            <div style="display:flex; gap:15px; flex-wrap:wrap;">
-                <ui5-button design="Emphasized"
-                            @click=${(e:any) => {
-                                e.stopPropagation(); e.preventDefault();
-                                this._answer = "import";
-                            }}>
-                    ${msg('Yes, import data')}
-                </ui5-button>
+            <div class="dialog-footer" style="flex-wrap:wrap; margin-top:10px;">
                 <ui5-button @click=${(e:any) => {
                                 e.stopPropagation(); e.preventDefault();
                                 this._answer = "channel";
                                 this.dispatchEvent(new CustomEvent('create-channel-requested', {bubbles: true, composed: true}));
                             }}>
                     ${msg('No, create a channel')}
+                </ui5-button>
+                <ui5-button design="Emphasized"
+                            @click=${(e:any) => {
+                                e.stopPropagation(); e.preventDefault();
+                                this._answer = "import";
+                            }}>
+                    ${msg('Yes, import data')}
                 </ui5-button>
             </div>
         `;
@@ -45,19 +45,19 @@ export class ImportPanel extends LitElement {
         return html`
             <h3>${msg('Create your first channel')}</h3>
             <div>${msg('Channels live inside a category. Create one, then add a channel to it — or use the + in the channel list on the left at any time.')}</div>
-            <div style="display:flex; gap:15px; margin-top:10px; flex-wrap:wrap;">
+            <div class="dialog-footer" style="flex-wrap:wrap; margin-top:10px;">
+                <ui5-button @click=${(e:any) => {
+                                e.stopPropagation(); e.preventDefault();
+                                this._answer = "import";
+                            }}>
+                    ${msg('Import data instead')}
+                </ui5-button>
                 <ui5-button design="Emphasized"
                             @click=${(e:any) => {
                                 e.stopPropagation(); e.preventDefault();
                                 this.dispatchEvent(new CustomEvent('create-channel-requested', {bubbles: true, composed: true}));
                             }}>
                     ${msg('Create a channel')}
-                </ui5-button>
-                <ui5-button @click=${(e:any) => {
-                                e.stopPropagation(); e.preventDefault();
-                                this._answer = "import";
-                            }}>
-                    ${msg('Import data instead')}
                 </ui5-button>
             </div>
         `;
