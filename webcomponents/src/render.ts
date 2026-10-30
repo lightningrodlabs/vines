@@ -257,7 +257,7 @@ export function renderWelcomeScreen(parent: LitElement, profilesZvm: ProfilesAlt
           ${doodle_flowers}
       </div>
       <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; flex:1; padding-bottom:10px; margin:auto; min-width:380px;">
-          <h1 style="font-family:arial; color:#5804A8; z-index:1;">
+          <h1 style="font-family:var(--vines-font); color:var(--vines-accent-alt); z-index:1;">
               <img src=${icon} width="32" height="32" style="padding-left: 5px;padding-top: 5px;"/>
               Vines
           </h1>

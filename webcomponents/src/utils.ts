@@ -30,30 +30,6 @@ export function hrl2Id(hrl: Hrl): [DnaId, DhtId] {
   return [new DnaId(hrl[0]), intoDhtId(hrl[1])]
 }
 
-/** */
-export function status2color(status: string): string {
-  switch (status) {
-    case "primary":
-      return "rgb(14, 165, 233)";
-      break;
-    case "neutral":
-      return "rgb(113, 113, 122)";
-      break;
-    case "success":
-      return "rgb(34, 197, 94)";
-      break;
-    case "warning":
-      return "rgb(245, 158, 11)";
-      break;
-    case "danger":
-      return "rgb(239, 68, 68)";
-      break;
-    default:
-      return "rgb(0, 0, 0)";
-      break;
-  }
-}
-
 export function getRandomHexColor(): string {
   // Generate a random integer between 0 and 255 for each color component (R, G, B)
   const r = Math.floor(Math.random() * 256);

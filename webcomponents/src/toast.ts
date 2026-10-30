@@ -1,6 +1,7 @@
 import {html, LitElement, render} from "lit";
 import {JumpEvent} from "./events";
 import Toast from "@ui5/webcomponents/dist/Toast";
+import {palette} from "./theme";
 
 
 /** Emit toast notification */
@@ -15,7 +16,7 @@ export function toasty(title: string, jumpEvent?: CustomEvent<JumpEvent>, parent
 
   /** Create toast element */
   const toastElem: Toast = Object.assign(document.createElement('ui5-toast'), {
-    style: "background:#33A000;",
+    style: `background:${palette.positive};`,
     placement,
     duration,
   }) as unknown as Toast;

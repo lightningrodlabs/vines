@@ -1937,7 +1937,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     <ui5-progress-indicator .value=${pct} style="width: 50%; margin:auto;"></ui5-progress-indicator>
               ` : html`
                   <ui5-busy-indicator delay="0" size="L" active
-                                      style="margin:auto; color:#05b92f"
+                                      style="margin:auto; color: var(--vines-accent-soft)"
                   ></ui5-busy-indicator> 
               `}
           </div>
@@ -2085,9 +2085,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                 style="border:none; padding:0px"
                                 @click=${(_e: any) => {this._currentCommentRequest = undefined;}}></ui5-button>
                 </div>
-                <div class="reply-to-div" style="display: ${this._replyToAh? "flex" : "none"}; background: #6f6f6f2e;">
+                <div class="reply-to-div" style="display: ${this._replyToAh? "flex" : "none"}; background: var(--vines-surface-2);">
                     ${msg("Replying to")}<span
-                        style="font-weight: bold; color:#4270A8; margin-left:3px;">${maybeReplyAuthorName}</span>
+                        style="font-weight: bold; color: var(--vines-accent); margin-left:3px;">${maybeReplyAuthorName}</span>
                     <div style="flex-grow: 1"></div>
                     <ui5-button icon="decline" design="Transparent"
                                 style="border:none; padding:0px"
@@ -2371,7 +2371,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                      div.scrollTop = div.scrollHeight - div.clientHeight;
                  }
              }}>
-            <ui5-icon name="arrow-bottom" style="color: #373535;margin-right: 3px;"></ui5-icon>
+            <ui5-icon name="arrow-bottom" style="color: var(--vines-ink); margin-right: 3px;"></ui5-icon>
             <div>${msg("DMs")}</div>
         </div>`;
 
@@ -2384,13 +2384,13 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         </div>
         <div id="listerGroup" style="display:flex; flex-direction:column; overflow:auto">
             <!-- Messages -->
-            <div style="display: flex; flex-direction: row; gap: 10px;align-items: center; margin-left: 10px; color: grey;margin-top: 30px;">
+            <div style="display: flex; flex-direction: row; gap: 10px;align-items: center; margin-left: 10px; color: var(--vines-ink-muted);margin-top: 30px;">
                 <ui5-icon style="width: 1.2rem; height: 1.2rem" name="paper-plane"></ui5-icon>
                 <span style="white-space:nowrap">${msg("Direct Messages")}</span>
                 <span style="flex-grow: 1"></span>
                 <ui5-button icon="add" tooltip=${msg("New Direct Message")}
                             design="Transparent"
-                            style="color:grey; margin-right: 8px;"
+                            style="color: var(--vines-ink-muted); margin-right: 8px;"
                             @click=${async (e: any) => {
                                 e.stopPropagation();
                                 await this.updateComplete;
@@ -2411,13 +2411,13 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
             ${toolLister}
             ${hisLister}
             <!-- Messages -->
-            <div style="display: flex; flex-direction: row; gap: 10px;align-items: center; margin-left: 10px; color: grey;">
+            <div style="display: flex; flex-direction: row; gap: 10px;align-items: center; margin-left: 10px; color: var(--vines-ink-muted);">
                 <ui5-icon style="width: 1.2rem; height: 1.2rem" name="paper-plane"></ui5-icon>
                 <span style="white-space:nowrap">${msg("Direct Messages")}</span>
                 <span style="flex-grow: 1"></span>
                 <ui5-button icon="add" tooltip=${msg("New Direct Message")}
                             design="Transparent"
-                            style="color:grey; margin-right: 8px;"
+                            style="color: var(--vines-ink-muted); margin-right: 8px;"
                             @click=${async (e: any) => {
                                 e.stopPropagation();
                                 await this.updateComplete;
@@ -2507,7 +2507,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                              style="display:flex; flex-direction:row; gap: 10px; width:100%; margin:5px; margin-right:0px;">
                             <div style="flex-grow: 1;"></div>
                             ${this.statsSource?.fromMoss? html`` : this.networkCaller.isLooping()
-                                    ? html`<ui5-button style="border-color:red; color:red" 
+                                    ? html`<ui5-button style="border-color: var(--vines-negative); color: var(--vines-negative)" 
                                             @click=${() => {
                                                 this.dispatchEvent(new CustomEvent<boolean>('loop-network-info', {
                                                     detail: false, bubbles: true, composed: true
@@ -2662,7 +2662,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                     <copy-wal-button .dnaId=${this.cell.address.dnaId}
                                                      .hash=${this._selectedThreadHash}
                                                      name=${msg("Channel")}
-                                                     style="color: #464646; display: block;"></copy-wal-button>
+                                                     style="color: var(--vines-ink); display: block;"></copy-wal-button>
                                     ${commentButton}
                                     ${deleteChannelButton}
                                 </div>
@@ -2728,7 +2728,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                         }}></ui5-button>
                         <div style="display:flex; flex-direction: row-reverse; align-items: center;">
                             <ui5-button icon="inbox" tooltip=${msg('Inbox')}
-                                        style="color: ${filteredInbox.length? "#33A000" : ""}"
+                                        style="color: ${filteredInbox.length? "var(--vines-accent-soft)" : ""}"
                                         @click=${() => {
                                             console.log("inboxButton.click()")
                                             const popover = this.shadowRoot!.getElementById("notifPopover") as Popover;
@@ -2804,9 +2804,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                             : html``}
                     ${HAPP_BUILD_MODE === HappBuildModeType.Retail? html`` : html`
                         <vines-graph id="debugSide" .threadHash=${this._debugThreadAh}
-                                     style="display:${this._canShowDebug? 'block' : 'none'};background:#f4d8db;"></vines-graph>
+                                     style="display:${this._canShowDebug? 'block' : 'none'};background: var(--vines-surface-tint);"></vines-graph>
                         <!-- <anchor-tree id="debugSide"
-                        style="display:${this._canShowDebug? 'block' : 'none'};background:#f4d8db;"></anchor-tree> -->
+                        style="display:${this._canShowDebug? 'block' : 'none'};background: var(--vines-surface-tint);"></anchor-tree> -->
                     `}
                 </div>
             </div>
@@ -3097,7 +3097,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                 </div>
             </ui5-dialog>
             <!-- CreateThreadDialog -->
-            <ui5-dialog id="create-thread-dialog" header-text=${msg("Create New Channel")} style="background: #f7f7f7;">
+            <ui5-dialog id="create-thread-dialog" header-text=${msg("Create New Channel")}>
                 <section>
                     <div>
                         <ui5-label for="threadPurposeInput">${msg("Title")}:</ui5-label>
@@ -3359,11 +3359,12 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       sharedStyles,
       css`
         :host {
-          /*background: #FBFCFD;*/
           display: block;
           height: 100vh;
           width: 100vw;
-          background: #F6FAFC;
+          background: var(--vines-page-bg);
+          color: var(--vines-ink);
+          font-family: var(--vines-font);
         }
 
         #search-field {
@@ -3400,21 +3401,19 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         }
 
         .reply-info {
-          /*background: #b4c4be;*/
           margin: 0px 10px -9px 10px;
           padding: 5px;
-          border: 1px solid black;
+          border: 1px solid var(--vines-border);
         }
 
         .reply-to-div {
           flex-direction: row;
-          /*background: rgb(208, 208, 208);*/
           margin: 0px 12px -4px;
-          border-radius: 12px;
-          font-size: smaller;
+          border-radius: var(--vines-radius-l);
+          font-size: var(--vines-text-s);
           padding-left: 5px;
           align-items: center;
-          color: #202020;
+          color: var(--vines-ink);
         }
 
         .ui5-select-label-root {
@@ -3475,7 +3474,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           .resize-handle.right { right: 0; }
           .resize-handle.left { left: 0; }
           .resize-handle:hover, .resizing > .resize-handle {
-              background: rgba(70, 132, 253, 0.35);
+              background: color-mix(in srgb, var(--vines-accent) 35%, transparent);
           }
           @media (max-width: 500px) {
               .resize-handle { display: none; }
@@ -3491,17 +3490,17 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           align-items: center;
           gap: 0px;
           padding: 4px 5px 4px 2px;
-          border-bottom: 1px solid #d2d2d2;
+          background: transparent;
         }
 
         ui5-button.top-btn {
           height: 30px;
-          color: #588AD7;
+          color: var(--vines-accent);
         }
 
         ui5-button.top-btn.active {
-          background: #4684FD;
-          color: white;
+          background: var(--vines-accent);
+          color: var(--vines-surface);
         }
 
         #myNickname {
@@ -3512,7 +3511,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           white-space: nowrap;
           text-overflow: ellipsis;
           font-weight: 500;
-          color: #333;
+          color: var(--vines-ink);
         }
 
         #profile-row {
@@ -3521,8 +3520,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           align-items: center;
           margin-bottom: 2px;
           padding-right: 5px;
-          background: rgba(221, 233, 240, 0.68);
-          box-shadow: -1px -18px 14px -2px rgba(0, 0, 0, 0.08);
+          background: transparent;
         }
 
         /* Profile, Files, Favorites and Settings share the row and should read as
@@ -3553,24 +3551,28 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           flex-grow: 1;
           flex-direction: column;
           z-index: 1;
-          /*box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;*/
-          box-shadow: -22px 0px 20px -2px rgba(0, 0, 0, 0.08);
         }
 
         #lowerSide {
-          background: linear-gradient(0deg, #F4F9FC 95%, hsl(0, 0%, 87.1%) 100%);
+          background: transparent;
           display: flex;
           flex-direction: row;
           flex-grow: 1;
           overflow-y: auto;
+          gap: 8px;
+          padding: 0 8px 8px 0;
         }
 
+        /* The message area is a white card on the page gradient */
         #centerSide {
           flex-grow: 1;
           overflow: auto;
           display: flex;
           flex-direction: column;
           position: relative;
+          background: var(--vines-surface);
+          border-radius: var(--vines-radius-l);
+          box-shadow: var(--vines-shadow-card);
         }
 
         presence-panel {
@@ -3579,16 +3581,22 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           right: 40px;
         }
 
+        /* Side panels get the same card treatment as the message area */
+        #favoritesSide, #rightSide, #commentSide {
+          background: var(--vines-surface);
+          border-radius: var(--vines-radius-l);
+          box-shadow: var(--vines-shadow-card);
+          overflow: hidden;
+        }
+
         #favoritesSide {
           flex-direction: column;
           min-width: 350px;
           max-width: 350px;
-          box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
         }
 
         #rightSide {
           width: 500px;
-          box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
         }
 
         #commentSide {
@@ -3596,8 +3604,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           flex-direction: column;
           min-width: 350px;
           max-width: 350px;
-          box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
-
         }
 
         .chatAvatar {
@@ -3616,16 +3622,15 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         #uploadCard {
           margin: auto;
           margin-bottom: 10px;
-          border-radius: 10px;
-          /*margin-left:10px;*/
+          border-radius: var(--vines-radius-m);
           min-width: 350px;
           width: 90%;
           padding: 5px;
           display: flex;
           flex-direction: column;
-          border: 1px solid black;
-          background: beige;
-          box-shadow: rgba(0, 0, 0, 0.25) 0px 14px 28px, rgba(0, 0, 0, 0.22) 0px 10px 10px;
+          border: 1px solid var(--vines-border);
+          background: var(--vines-surface-tint);
+          box-shadow: var(--vines-shadow-pop);
         }
 
         #group-div {
@@ -3634,7 +3639,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           cursor: pointer;
           background: none;
           padding-right: 7px;
-          border-bottom: 1px solid #c6c6c6;
+          border-bottom: 1px solid var(--vines-border);
           margin-bottom: 7px;
         }
 
@@ -3649,12 +3654,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
         #group-div:hover,
         #lister-select:hover {
-          /*background:red;*/
-          /*font-weight: bold;*/
           z-index: 0;
-          /*box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;*/
-          background: rgba(214, 226, 245, 0.8);
-          /*outline: 1px solid darkblue;*/
+          background: var(--vines-sidebar-row-hover);
+          border-radius: var(--vines-radius-s);
         }
 
         .popover-content {
@@ -3679,14 +3681,13 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         }
 
         .mypanel {
-            background-color: white;
+            background-color: var(--vines-surface);
             width: fit-content;
             margin: auto;
             z-index: 1;
             padding: 0px 20px 10px 20px;
-            border-radius: 10px;
-            /*box-shadow: 0px 15px 25px rgba(0, 0, 0, 0.15);*/
-            box-shadow: rgba(0, 0, 0, 0.25) 0px 14px 28px, rgba(0, 0, 0, 0.22) 0px 10px 10px;
+            border-radius: var(--vines-radius-l);
+            box-shadow: var(--vines-shadow-pop);
         }
         .search-group-header {
           text-transform: uppercase;
@@ -3698,35 +3699,33 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         }
 
         #topicBar {
-          background: white;
+          background: transparent;
           padding: 0px 8px 0px 2px;
           margin-left: 5px;
           height: 44px;
-          /*box-shadow: rgba(0, 0, 0, 0.2) 0px 8px 30px 0px;*/
           display: flex;
           flex-direction: row;
-          color: #392D1B;
+          color: var(--vines-ink);
           align-items: center;
           z-index: inherit;
         }
 
         #topicBar ui5-button {
-          color: #464646;
+          color: var(--vines-ink);
           border: none;
         }
 
         #topicBar ui5-button.pressed {
-          /*box-shadow: inset 2px 2px 1px #7b7878, inset 2px 3px 5px rgba(0, 0, 0, 0.3), inset -2px -3px 5px rgba(255, 255, 255, 0.5);*/
-          box-shadow: inset 3px 3px 8px rgba(0, 0, 0, 0.3), inset -3px -3px 8px rgba(255, 255, 255, 0.3);
-
+          background: var(--vines-sidebar-row-selected);
+          box-shadow: var(--vines-shadow-row);
         }
 
         #membersCount:hover {
-          color: black;
+          color: var(--vines-ink);
         }
 
         #topicBar ui5-button:hover {
-          background: #e6e6e6;
+          background: var(--vines-sidebar-row-hover);
         }
 
         #topBarBtnGroup {
@@ -3737,24 +3736,12 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         }
 
         .numberBadge {
-          /*position: absolute;
-          top: 5px;
-          right: 8px;
-          background-color: #33A000;
-          color: white;
-          border-radius: 50%;
-          padding: 2px 5px;
-          font-size: 10px;
-          font-weight: bold;
-          text-align: center;
-          */
-          background: #33A000;
-          color: white;
-          border-radius: 10px;
+          background: var(--vines-accent-soft);
+          color: var(--vines-surface);
+          border-radius: var(--vines-radius-pill);
           padding: 1px 9px;
           font-size: 10px;
           font-weight: bold;
-          /*margin-right: -5px;*/
           z-index: 10;
         }
 
@@ -3781,20 +3768,20 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         #typing-div {
           padding-left: 70px;
           padding-bottom: 5px;
-          font-size: small;
-          color: #5a69b5;
+          font-size: var(--vines-text-s);
+          color: var(--vines-ink-muted);
         }
 
         #dmSign {
           /*width: 50px;*/
           flex-direction: row;
-          border-radius: 20px;
-          background: #8f8f8f;
+          border-radius: var(--vines-radius-pill);
+          background: var(--vines-surface-2);
           position: absolute;
           bottom: 100px;
           left: 90px;
           display: none;
-          box-shadow: rgba(0, 0, 0, 0.25) 0px 6px 8px;
+          box-shadow: var(--vines-shadow-pop);
           padding: 10px;
         }
       `,

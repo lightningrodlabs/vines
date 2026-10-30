@@ -65,7 +65,7 @@ export class VinesIndex extends LitElement {
             <ui5-busy-indicator id="busy" delay="0" size="L" active 
                                 style=" top: 50%; margin-left:-50px;
                                         left: 50%; position: fixed;
-                                        color:#05b92f; "
+                                        color: var(--vines-accent-soft); "
             ></ui5-busy-indicator>`;
         }
         if (globalThis.TAURI_SHOW_ADMIN || !globalThis.HAPP_ID) {
@@ -76,7 +76,7 @@ export class VinesIndex extends LitElement {
             <ui5-busy-indicator id="busy" delay="0" size="L" active 
                                 style=" top: 50%; margin-left:-50px;
                                         left: 50%; position: fixed;
-                                        color:#05b92f; "
+                                        color: var(--vines-accent-soft); "
             ></ui5-busy-indicator>
             <vines-app></vines-app>
         `;
@@ -88,7 +88,7 @@ export class VinesIndex extends LitElement {
       return [
       css`
           :host {
-              background: #fdfdfd;
+              background: var(--vines-surface);
               display: block;
               height: 100vh;
               width: 100%;

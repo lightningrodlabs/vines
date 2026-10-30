@@ -1,33 +1,16 @@
 import {css} from 'lit';
+import {vinesTokens, themeStyles} from './theme';
 
 
-/** Common styles */
-export const sharedStyles = css`
-
-    .not-received {
-        color: rgb(161, 147, 7)
-    }
-
-    blockquote {
-        border-left: 4px solid #d1e15d;
-        padding: 0px 5px 2px 12px;
-        margin: 10px 0px 0px 0px;
-    }
-
-    mark {
-        padding: 0px 2px 0px 2px;
-    }
-
-    code {
-        background: #8080801a;
-        padding: 5px;
-        /*display: block;*/
-    }
-
-    pre > code {
-        display: block;
-    }
-
+/**
+ * Common styles. Carries the theme tokens and element rules so every component
+ * that spreads `sharedStyles` into its `styles` gets them for free. Only
+ * structural rules live here; colors, radii, shadows and fonts are tokens.
+ */
+export const sharedStyles = [
+  vinesTokens,
+  themeStyles,
+  css`
     /* p NEEDED because markdownit() generates <p> */
     p {
         margin: 0px;
@@ -37,27 +20,13 @@ export const sharedStyles = css`
     }
 
     .chatAvatar:hover {
-        border: 1px solid rgba(128, 128, 88, 0.84);
-    }
-
-    .mention {
-        background: #c6ddf594;
-        padding: 0px 3px 0px 2px;
-        text-decoration: none;
-    }
-
-    .linky {
-        color: blue;
-    }
-
-    .linky:hover {
-        text-decoration: underline;
-        cursor: pointer;
+        border: 1px solid var(--vines-accent-soft);
     }
 
     .subjectName {
         font-style: italic;
-        background: #fbfbfb9c;
+        background: var(--vines-surface-2);
+        border-radius: var(--vines-radius-s);
         padding: 4px;
         white-space: nowrap;
         overflow: hidden;
@@ -66,14 +35,14 @@ export const sharedStyles = css`
     }
 
     .sideAgentName {
-        font-family: "72";
-        color: rgb(64, 64, 64);
-        font-weight: bold;
+        font-family: var(--vines-font);
+        color: var(--vines-ink);
+        font-weight: 600;
     }
 
     .sideChatDate {
-        font-size: smaller;
-        color: #6c6c6c;
+        font-size: var(--vines-text-s);
+        color: var(--vines-ink-muted);
     }
 
     .avatarRow {
@@ -84,38 +53,26 @@ export const sharedStyles = css`
     }
 
     .nameColumn {
-        /*padding-top:5px; */
     }
 
     .sideContentRow {
         padding-left: 3px;
         padding-bottom: 10px;
         padding-top: 5px;
-        color: #2f2f2f;
+        color: var(--vines-ink);
     }
 
     .sideItem {
-        background: white;
+        background: var(--vines-surface);
         display: flex;
         flex-direction: column;
         padding: 5px;
-        border-bottom: 1px solid #dbdada;
+        border-bottom: 1px solid var(--vines-border);
     }
 
     .sideItem:hover {
-        background: rgba(255, 255, 255, 0.80);
+        background: var(--vines-row-hover);
         cursor: pointer;
-    }
-
-    .fail {
-        background: #fdd;
-    }
-
-    .timeHr {
-        border: none;
-        border-bottom: 2px dashed #dadada;
-        flex-grow: 1;
-        height: 0px;
     }
 
     /** Lister */
@@ -123,30 +80,31 @@ export const sharedStyles = css`
     ui5-tag {
         min-width: 1.7rem;
         margin-top: 3px;
-        background: rgb(183, 183, 183);
-        color: rgb(232, 232, 232);
+        background: var(--vines-border);
+        color: var(--vines-ink-muted);
+        border: none;
+        border-radius: var(--vines-radius-pill);
     }
 
     ui5-tag:hover {
         cursor: pointer;
     }
 
-
     .unreadBadge {
-        background: #342D1F;
-        color: white;
+        background: var(--vines-accent-soft);
+        color: var(--vines-surface);
         border: none;
     }
 
     .notifBadge {
-        color: #ffffff;
-        background: #359C07;
+        color: var(--vines-surface);
+        background: var(--vines-positive);
         border: none;
     }
 
     .tempBadge {
-        color: #ffffff;
-        background: #a8a187;
+        color: var(--vines-surface);
+        background: var(--vines-warning);
         border: none;
         min-width: 40px;
     }
@@ -158,26 +116,25 @@ export const sharedStyles = css`
     }
 
     .red {
-        border: 1px solid red;
+        border: 1px solid var(--vines-negative);
     }
 
     .threadItem {
         display: flex;
-        /*overflow: hidden;*/
         align-items: center;
         height: 36px;
         cursor: pointer;
-        color: #484848;
-        background: #F6FAFC;
-        border-radius: 5px;
+        color: var(--vines-ink);
+        background: transparent;
+        border-radius: var(--vines-radius-s);
         margin-left: -2px;
         padding-left: 5px;
-        margin-right: 5px;        
-        transition: background 0.2s, border-color 0.2s, opacity 0.2s;        
+        margin-right: 5px;
+        transition: background 0.2s, border-color 0.2s, opacity 0.2s;
     }
 
     .threadItem:hover {
-        background: rgb(222, 232, 255);
+        background: var(--vines-sidebar-row-hover);
     }
 
     .threadItem:hover > ui5-avatar-group {
@@ -188,8 +145,8 @@ export const sharedStyles = css`
         .threadItem > ui5-button {
             display: block !important;
         }
-    } 
-          
+    }
+
     .threadItem:hover > ui5-button {
         display: block !important;
     }
@@ -199,25 +156,19 @@ export const sharedStyles = css`
     }
 
     chat-item:hover {
-        background: #d8e2f6;
+        background: var(--vines-row-hover);
     }
-    
-     .status-badge {
-                    /*position: absolute;*/
-                    width:fit-content; 
-                    display:block;     
-                    margin: auto;
-                    border-radius: 10px;
-                    padding: 2px 6px;
-                    font-size: 10px;
-                    font-weight: bold;
-                    text-align: center;
-                    /*top: 5px;
-                    right: 8px;*/
-                    color: white;
-                    /*border-radius: 10px;
-                    padding: 1px 9px;
-                    font-size: 10px;
-                    font-weight: bold;*/
-                }    
-`;
+
+    .status-badge {
+        width: fit-content;
+        display: block;
+        margin: auto;
+        border-radius: var(--vines-radius-pill);
+        padding: 2px 6px;
+        font-size: 10px;
+        font-weight: bold;
+        text-align: center;
+        color: var(--vines-surface);
+    }
+  `,
+];

@@ -462,7 +462,7 @@ export class VinesApp extends HappMultiElement {
       return html`
           <div style="position:fixed; top:50%; width:100%; display:flex; flex-direction:column; gap:20px;">
               <ui5-busy-indicator delay="0" size="L" active
-                                  style="color:#ff4343"
+                                  style="color: var(--vines-negative)"
               ></ui5-busy-indicator>
               <div style="margin:auto; font-size:large">${msg('Connecting to Holochain')}</div>
           </div>
@@ -487,7 +487,7 @@ export class VinesApp extends HappMultiElement {
       return html`
           <div style="position:fixed; top:50%; width:100%; display:flex; flex-direction:column; gap:20px;">
           <ui5-busy-indicator delay="0" size="L" active
-                              style="color:#f3bb2c"
+                              style="color: var(--vines-warning)"
           ></ui5-busy-indicator>
               <div style="margin:auto; font-size:large">${msg('Collecting local data')}</div>
           </div>              
@@ -654,15 +654,17 @@ export class VinesApp extends HappMultiElement {
     return [
       css`
         :host {
-          background: #F4F9FC;
+          background: var(--vines-page-bg);
           display: block;
           height: 100vh;
           width: 100%;
-          font-family: '72';
+          font-family: var(--vines-font);
+          color: var(--vines-ink);
         }
 
         #profileCard {
-          box-shadow: rgba(0, 0, 0, 0.25) 0px 14px 28px, rgba(0, 0, 0, 0.22) 0px 10px 10px;
+          box-shadow: var(--vines-shadow-pop);
+          border-radius: var(--vines-radius-l);
         }
 
         #profileCard::part(root) {
