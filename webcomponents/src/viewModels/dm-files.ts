@@ -1,4 +1,4 @@
-import {EntryId} from "@ddd-qc/lit-happ";
+import {AgentId, EntryId} from "@ddd-qc/lit-happ";
 import {
   DeliveryNotice,
   DeliveryPerspective,
@@ -6,6 +6,7 @@ import {
   ParcelDescription,
   ParcelManifest,
 } from "@ddd-qc/delivery";
+import {SplitObject} from "@ddd-qc/files";
 
 /**
  * Files in direct messages (DMs).
@@ -90,4 +91,69 @@ function attachNotice(delivery: DeliveryPerspective, manifestEh: EntryId, lookup
     lookup.noticeEh = notice[0];
     lookup.noticeState = notice[2];
   }
+}
+
+
+/** -- Sending -- */
+
+/** The slice of FilesDvm this module uses. FilesDvm satisfies it structurally; tests pass a fake. */
+export interface DmFilesPort {
+  deliveryZvm: {
+    perspective: DeliveryPerspective;
+    acceptDelivery(noticeEh: EntryId): Promise<EntryId>;
+    requestMissingChunks(noticeEh: EntryId): Promise<void>;
+  };
+  startCommitPrivateAndSendFile(file: File, splitObj: SplitObject, recipients: AgentId[], tags: string[]): boolean;
+}
+
+
+/** The file was already shared with the group through the public path; it cannot also be
+ *  sent privately (the files module would try to re-send a public manifest as private). */
+export class FileAlreadyPublicError extends Error {
+  constructor(name: string) {
+    super(`File "${name}" is already shared publicly`);
+  }
+}
+
+
+/** Polls localManifestByData[dataHash] every intervalMs; resolves with the manifest hash,
+ *  rejects after timeoutMs. The files module has no callback for a private commit; the
+ *  manifest's entry pulse on this chain is what marks it done. */
+export function waitForLocalManifest(delivery: DeliveryPerspective, dataHash: string, timeoutMs: number, intervalMs: number): Promise<EntryId> {
+  const deadline = Date.now() + timeoutMs;
+  return new Promise((resolve, reject) => {
+    const check = () => {
+      const pair = delivery.localManifestByData[dataHash];
+      if (pair) {
+        resolve(pair[0]);
+        return;
+      }
+      if (Date.now() >= deadline) {
+        reject(new Error("Timed out waiting for the private manifest"));
+        return;
+      }
+      setTimeout(check, intervalMs);
+    };
+    check();
+  });
+}
+
+
+/** Commits the file privately and sends it to `recipient`; resolves with the private manifest
+ *  hash. Already-private file: the files module re-sends it, and the existing hash is returned.
+ *  Already-public file: rejects with FileAlreadyPublicError without touching the files module.
+ *  Commit refused for any other reason (e.g. already in progress): rejects with Error. */
+export async function commitPrivateFileForDm(filesDvm: DmFilesPort, file: File, splitObj: SplitObject, recipient: AgentId, timeoutMs: number = 120_000): Promise<EntryId> {
+  const existing = filesDvm.deliveryZvm.perspective.localManifestByData[splitObj.dataHash];
+  if (existing && !existing[1]) {
+    throw new FileAlreadyPublicError(file.name);
+  }
+  const started = filesDvm.startCommitPrivateAndSendFile(file, splitObj, [recipient], []);
+  if (!started) {
+    if (existing) {
+      return existing[0];
+    }
+    throw new Error("File commit refused");
+  }
+  return waitForLocalManifest(filesDvm.deliveryZvm.perspective, splitObj.dataHash, timeoutMs, 250);
 }
