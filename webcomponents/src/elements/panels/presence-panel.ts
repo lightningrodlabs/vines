@@ -59,7 +59,7 @@ export class PresenceePanel extends DnaElement<ThreadsDnaPerspective, ThreadsDvm
       let more: TemplateResult<1> = html``;
       if (agents.length > 4) {
         avatars = avatars.slice(0, 4);
-        more = html`<span style="font-size: small; color:grey">+${agents.length - 4} ${msg("more")}</span>`;
+        more = html`<span style="font-size: small; color: var(--vines-ink-muted)">+${agents.length - 4} ${msg("more")}</span>`;
       }
       /** */
       all = html`
@@ -102,11 +102,11 @@ export class PresenceePanel extends DnaElement<ThreadsDnaPerspective, ThreadsDvm
   static override styles = [
     css`
       :host {
-        background: white;
+        background: var(--vines-surface);
         display: flex;
         flex-direction: column;
         border-radius: 10px;
-        box-shadow: 0px 15px 25px rgba(0, 0, 0, 0.15);
+        box-shadow: var(--vines-shadow-pop);
         max-width: 300px;
       }
 
@@ -132,7 +132,7 @@ export class PresenceePanel extends DnaElement<ThreadsDnaPerspective, ThreadsDvm
       #close:hover {
         cursor: pointer;
         /*text-decoration: underline;*/
-        color: rgba(34, 34, 245, 0.98);
+        color: var(--vines-accent);
       }
       
     `]

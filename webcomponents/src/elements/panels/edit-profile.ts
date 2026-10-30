@@ -407,11 +407,11 @@ export class EditProfile extends LitElement {
     }
 
     .placeholder {
-      color: rgba(0, 0, 0, 0.7);
+      color: var(--vines-ink);
     }
 
     .label {
-      color: var(--mdc-text-field-label-ink-color, rgba(0, 0, 0, 0.6));
+      color: var(--vines-ink-muted);
       font-family: var(
               --mdc-typography-caption-font-family,
               var(--mdc-typography-font-family, Roboto, sans-serif)

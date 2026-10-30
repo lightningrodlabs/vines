@@ -153,12 +153,12 @@ export class PeerList extends ZomeElement<ProfilesAltPerspective, ProfilesAltZvm
     if (profilesCount == 0) {
         if (peerCount > 0) {
         return html`
-          <div class="folks" style="color: #7d7d7d">
+          <div class="folks" style="color: var(--vines-ink-muted)">
               ${msg('No registered peers found')}
           </div>`;
         }
       return html`
-          <div class="folks" style="color: #7d7d7d">
+          <div class="folks" style="color: var(--vines-ink-muted)">
               ${msg('No peers found')}
           </div>`;
     }
@@ -205,7 +205,7 @@ export class PeerList extends ZomeElement<ProfilesAltPerspective, ProfilesAltZvm
             //     statusContent.push(html`<div>${status.errors}</div>`);
             // }
             if (status.isDirect) {
-                statusContent.push(html`<div style="max-height:15px; align-content:center; background-color:green; border-radius:8px; color:white; padding:5px; font-size:small">${msg('Connected')}</div>`);
+                statusContent.push(html`<div style="max-height:15px; align-content:center; background-color: var(--vines-positive); border-radius: var(--vines-radius-pill); color: var(--vines-surface); padding:5px; font-size:small">${msg('Connected')}</div>`);
             }
         }
         const elem = html`
@@ -270,7 +270,7 @@ export class PeerList extends ZomeElement<ProfilesAltPerspective, ProfilesAltZvm
     return [
       css`
           .category-title {
-              color: #9f9f9f;
+              color: var(--vines-ink-muted);
               font-size: large;
               padding:5px;
           }          
@@ -288,7 +288,7 @@ export class PeerList extends ZomeElement<ProfilesAltPerspective, ProfilesAltZvm
         }
 
         .folk:hover {
-          background: rgba(202, 230, 250, 0.66);
+          background: var(--vines-row-hover);
         }
 
         .folk > img {

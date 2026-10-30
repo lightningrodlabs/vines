@@ -98,7 +98,6 @@ export class ViewEmbedDialog extends LitElement {
       sharedStyles,
       css`
         :host {
-          /*background: darkgray;*/
         }
         
         embed {

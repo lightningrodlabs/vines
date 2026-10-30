@@ -295,7 +295,7 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
 
             const menuBtn = html`
                 <ui5-button icon="overflow" tooltip=${msg("More")} design="Transparent"
-                            class="menuBtn" style="${isSelected? "color:white;" : ""}"
+                            class="menuBtn" style="${isSelected? "color: var(--vines-ink);" : ""}"
                             @click=${(e: any) => this.openMenu(e, {kind: "Channel", address: ppAh, title: thread.title, hidden: !!isThreadHidden, topic: topicAh})}></ui5-button>`;
 
             /** Create an avatar group */
@@ -313,8 +313,8 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
                        class="threadItem" 
                        style="
                          font-weight:${hasNewBeads && !threadIsNew? "bold" : "normal"}; 
-                         ${threadIsNew || notifCount? "color: #359C07;" : ""}
-                         ${isSelected? "background:#4684FD;color:#444;" : ""}
+                         ${threadIsNew || notifCount? "color: var(--vines-accent-soft);" : ""}
+                         ${isSelected? "background: var(--vines-sidebar-row-selected); box-shadow: var(--vines-shadow-row); color: var(--vines-ink);" : ""}
                        "
                        .draggable=${this.order == "custom"? "true" : ""}
                        @dragstart=${(e: any) => {
@@ -406,10 +406,9 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
 
       //console.log("<topics-lister>.render() threads", threads);
       if (threadElems.length == 0) {
-        //const tBgColor = this._dvm.perspective.myNewestTopic && topicAh.equals(this._dvm.perspective.myNewestTopic)? "#c3f9c5bd" : "#F6FAFC";
-        const tBgColor = "#F6FAFC";
+        const tBgColor = "transparent";
         threadElems = [html`<div class="threadItem" style="cursor: default; display: flex; flex-direction: column; background: ${tBgColor}">
-                   <span style="color:grey;">${msg('No channels found')}</span>
+                   <span style="color: var(--vines-ink-muted);">${msg('No channels found')}</span>
                     <span class="linky" style="text-decoration: underline; font-size: small"
                           @click=${async (e: any) => {
                             e.stopPropagation();
@@ -433,7 +432,7 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
       } else {
         this.collapsed.set(topicAh, false);
       }
-      const bgColor = this._dvm.perspective.myNewestTopic && topicAh.equals(this._dvm.perspective.myNewestTopic)? "background:#c3f9c5bd" : "";
+      const bgColor = this._dvm.perspective.myNewestTopic && topicAh.equals(this._dvm.perspective.myNewestTopic)? "background: var(--vines-surface-tint)" : "";
       return html`
           <ui5-panel id=${topicAh.b64} ?collapsed=${collapsed}
                      style="${bgColor}"
@@ -451,7 +450,7 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
                 ${topicMenuBtn}
                 <ui5-button icon="add" tooltip=${msg("New Channel")}
                             design="Transparent" 
-                            style="color:grey"
+                            style="color: var(--vines-ink-muted)"
                             @click=${async (e: any) => {
                                 e.stopPropagation();
                                 e.preventDefault();
@@ -474,9 +473,9 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
 
     /** Handle empty tree case */
     if (treeItems.length == 0) {
-      treeItems.push(html`<div style="color: grey; margin: 10px auto 20px auto;">${msg('No categories found')}</div>`);
+      treeItems.push(html`<div style="color: var(--vines-ink-muted); margin: 10px auto 20px auto;">${msg('No categories found')}</div>`);
       //if (this._dvm.profilesZvm.perspective.agents.length <= 1) {
-      treeItems.push(html`<div style="color: grey; margin: 10px auto 20px auto;">${msg('(Might not be connected to peers yet)')}</div>`);
+      treeItems.push(html`<div style="color: var(--vines-ink-muted); margin: 10px auto 20px auto;">${msg('(Might not be connected to peers yet)')}</div>`);
       //}
     }
 
@@ -637,7 +636,6 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
       sharedStyles,
       css`
           #container {
-              /*background: #FBFCFD;*/
               /*display: block;*/
               display: flex;
               flex-direction: column;
@@ -667,14 +665,13 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
            *  so the "+" and "⋮" columns line up at every level */
           ui5-panel::part(header) {
               border: none;
-              color: #588AD7;
+              color: var(--vines-ink-muted);
               padding-right: 5px;
           }
 
           ui5-panel::part(header):hover {
-              /*background: rgb(198, 214, 250);*/
               /*font-weight: bold;*/
-              color: #0087ff !important;
+              color: var(--vines-accent) !important;
           }
 
           /** The "⋮" menu only shows while its row or category header is hovered.
@@ -682,7 +679,7 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
           .menuBtn {
               border: none;
               padding: 0px;
-              color: grey;
+              color: var(--vines-ink-muted);
               visibility: hidden;
           }
           .menuBtn::part(icon) {
@@ -717,8 +714,8 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
           }
 
           .threadItem.drag-over {
-              border-color: #4f6ef7;
-              background: #e0e7ff;
+              border-color: var(--vines-accent);
+              background: var(--vines-surface-tint);
           }
           
           /*

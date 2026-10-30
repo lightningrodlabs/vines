@@ -46,10 +46,10 @@ export class PeerStatusBadge extends ZomeElement<ProfilesAltPerspective, Profile
       : 0;
 
     const memberBg = peerCount == 0
-      ? "#bb3314"
+      ? "var(--vines-negative)"
       : peerCount > profilesCount
-        ? "#c355ee"
-        : "#559eee";
+        ? "var(--vines-accent-alt)"
+        : "var(--vines-accent)";
     /** */
     return html`
             <span class="status-badge" style="background:${memberBg}">

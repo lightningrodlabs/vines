@@ -234,19 +234,19 @@ export class NetworkHealthPanel extends LitElement {
               /*overflow: clip;*/
           }
             .orange {
-                color: #FFFFFF;
+                color: var(--vines-surface);
                 font-weight: bold;
                 padding: 0.4rem 0.6rem;
                 border-radius: 0.3rem;
-                background-color: #FA7317
+                background-color: var(--vines-warning)
             }
           
           .blue {
-              color: #FFFFFF;
+              color: var(--vines-surface);
               font-weight: bold;
               padding: 0.4rem 0.6rem;
               border-radius: 0.3rem;
-              background-color: rgba(0, 145, 255, 0.71);
+              background-color: var(--vines-accent);
           }
           
           .double-main-title {
@@ -293,16 +293,16 @@ export class NetworkHealthPanel extends LitElement {
           }
 
           #peer-pie {
-              --shape-color: #51A7E1;
-              --area-color: #000000;
+              --shape-color: var(--vines-accent);
+              --area-color: var(--vines-ink);
               --area-opacity: 0.1;
               width: 100%;
               height: 100%;
           }
 
           #arc-pie {
-              --shape-color: #c52f2f;
-              --area-color: #000000;
+              --shape-color: var(--vines-negative);
+              --area-color: var(--vines-ink);
               --area-opacity: 0.1;
               width: 100%;
               height: 100%;
@@ -315,7 +315,7 @@ export class NetworkHealthPanel extends LitElement {
           }
 
           .line-stats {
-              background: rgb(242, 242, 242);
+              background: var(--vines-surface-2);
               border-radius: 15px;
           }
 
@@ -326,7 +326,7 @@ export class NetworkHealthPanel extends LitElement {
           }
 
           .tc-line-basic {
-              --area-color: #a4c1e6;
+              --area-color: var(--vines-accent-soft);
               --area-opacity: 0.5;
           }
 
@@ -334,8 +334,8 @@ export class NetworkHealthPanel extends LitElement {
               display: flex;
               flex-flow: column nowrap;
               justify-content: flex-start;
-              border: 0.1rem solid #dce1e5;
-              background-color: #FFFFFF;
+              border: 0.1rem solid var(--vines-border);
+              background-color: var(--vines-surface);
           }
 
           .double-line {
@@ -353,8 +353,8 @@ export class NetworkHealthPanel extends LitElement {
               width: 100%;
               height: 100%;
               z-index: 101;
-              --area-color: #FA7317;
-              --shape-color: #FFFFFF;
+              --area-color: var(--vines-warning);
+              --shape-color: var(--vines-surface);
               --area-opacity: 0.8;
               --point-inner-color: var(--area-color);
               --point-border-color: var(--shape-color);
@@ -367,8 +367,8 @@ export class NetworkHealthPanel extends LitElement {
               width: 100%;
               height: 100%;
               z-index: 102;
-              --area-color: rgba(0, 145, 255, 0.71);
-              --shape-color: #FFFFFF;
+              --area-color: var(--vines-accent);
+              --shape-color: var(--vines-surface);
               --area-opacity: 0.8;
               --point-inner-color: var(--area-color);
               --point-border-color: var(--shape-color);

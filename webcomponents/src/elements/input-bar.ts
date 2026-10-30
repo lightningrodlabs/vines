@@ -581,7 +581,7 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     let walElem = html``;
     if (this._wal) {
       walElem = html`
-          <div style="margin-left: 35px; height: 35px; margin-top: 5px; color: #4141cc;">
+          <div style="margin-left: 35px; height: 35px; margin-top: 5px; color: var(--vines-accent);">
               <wurl-link wurl="${weaveUrlFromWal(this._wal)}"></wurl-link>
               <ui5-button class="trash" icon="delete" design="Transparent" tooltip=${msg('Remove attachment')}
                           @click=${(_e: any) => this._wal = undefined}></ui5-button>
@@ -638,9 +638,9 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     if (this.busy) {
        busyBar = html`
          <div style="margin-top: -10px;">
-           <ui5-bar design="FloatingFooter" style="width 300px; background:#ccc;">
+           <ui5-bar design="FloatingFooter" style="width 300px; background: var(--vines-surface-2);">
                <ui5-busy-indicator delay="0" size="L" active
-                                   style="margin:auto; width:100%; height:100%; color:#404455c7;"
+                                   style="margin:auto; width:100%; height:100%; color: var(--vines-ink-muted);"
                ></ui5-busy-indicator>
            </ui5-bar>
          </div>
@@ -790,7 +790,7 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
         #input-bar {
           margin: auto;
-          box-shadow: rgba(0, 0, 0, 0.25) 0px 14px 28px, rgba(0, 0, 0, 0.22) 0px 10px 10px;
+          box-shadow: var(--vines-shadow-pop);
           border-radius: 20px;
         }
 
@@ -805,7 +805,7 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           margin-top: 5px;
           margin-right: 5px;
           padding-top: 5px;
-          color: #4141cc;
+          color: var(--vines-accent);
           display: flex;
           flex-direction: row;
           align-items: center;
@@ -813,15 +813,13 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         }
 
         #pop {
-          /*background: #e3e3e3;*/
-          box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
+          box-shadow: var(--vines-shadow-pop);
         }
 
         #filename-input {
-          /*color: rgba(28, 79, 248, 0.75);*/
           width: auto;
           max-height: 18px;
-          background: #a7636312;
+          background: var(--vines-surface-2);
           border: none;
         }
 
@@ -853,12 +851,12 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         }
 
         .trash {
-          color: #ec4b7a;
+          color: var(--vines-negative);
         }
 
         .trash:hover {
-          background-color: rgba(243, 175, 175, 0.6);
-          border-color: #ec0e0e;
+          background-color: color-mix(in srgb, var(--vines-negative) 15%, transparent);
+          border-color: var(--vines-negative);
         }
 
         ui5-textarea::part(textarea) {

@@ -172,7 +172,7 @@ export class DmLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                    class="threadItem"
                    style="
                      font-weight: ${hasNewBeads && !threadIsNew? "bold" : "normal"}; 
-                     ${isSelected? "background:#4684FD; color:white;" : ""}
+                     ${isSelected? "background: var(--vines-sidebar-row-selected); box-shadow: var(--vines-shadow-row);" : ""}
                      "
                    .draggable=${this.order == "custom"? "true" : ""}
                    @dragstart=${(e: any) => {
@@ -248,7 +248,7 @@ export class DmLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     //console.log("<dm-lister>.render() treeItems", treeItems);
     /** Handle empty tree case */
     if (treeItems.length == 0) {
-      treeItems.push(html`<div style="color: grey; text-align: center; margin-top: 10px; cursor: default">${msg('No messages found')}</div`)
+      treeItems.push(html`<div style="color: var(--vines-ink-muted); text-align: center; margin-top: 10px; cursor: default">${msg('No messages found')}</div`)
     }
     /** render all */
     return html`

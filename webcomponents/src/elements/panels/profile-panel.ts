@@ -56,7 +56,7 @@ export class ProfilePanel extends ZomeElement<ProfilesAltPerspective, ProfilesAl
     this._profile = this.perspective.getProfile(this.hash);
     if (!this._profile) {
       return this.hash.equals(this.cell.address.agentId)? html`
-          <h3 style="margin:10px; color:#cc2525;width:fit-content;">Please Setup Your Profile
+          <h3 style="margin:10px; color: var(--vines-negative);width:fit-content;">Please Setup Your Profile
               <ui5-button design="Transparent" icon="edit" tooltip=${msg("Settings")} style="margin-right: 5px;"
                           @click=${(e: any) => {
                               e.stopPropagation();
@@ -66,7 +66,7 @@ export class ProfilePanel extends ZomeElement<ProfilesAltPerspective, ProfilesAl
                                   composed: true
                               }));
                           }}></ui5-button>
-          </h3>` : html`<h3 style="margin:10px; color:#cc2525;">Missing Profile </h3>`
+          </h3>` : html`<h3 style="margin:10px; color: var(--vines-negative);">Missing Profile </h3>`
     }
     const timestamp = this.perspective.getProfileTs(this.hash)? this.perspective.getProfileTs(this.hash)! : 0;
     const avatar = renderProfileAvatar(this, this.hash, this._profile, "XL");
@@ -89,7 +89,7 @@ export class ProfilePanel extends ZomeElement<ProfilesAltPerspective, ProfilesAl
                             }}></ui5-button>
             ` : html``}
         </div>
-        <div style="display: flex; flex-direction:column; padding:10px; margin:10px; border-radius:15px; background: #c6c6c6d6; color: #111;">
+        <div style="display: flex; flex-direction:column; padding:10px; margin:10px; border-radius: var(--vines-radius-l); background: var(--vines-surface-2); color: var(--vines-ink);">
             ${this._profile.fields["imported"]? html`<h4 style="margin:auto; margin-bottom:10px;">${msg('IMPORTED PROFILE')}</h4>`:html``}
             <div style="display: flex; flex-direction:row; align-items:center;">
                 <h3>${this._profile.nickname}</h3>
@@ -152,7 +152,7 @@ export class ProfilePanel extends ZomeElement<ProfilesAltPerspective, ProfilesAl
       }
 
       ui5-avatar {
-        outline: 1px solid #606060;
+        outline: 1px solid var(--vines-border);
       }
 
     `]

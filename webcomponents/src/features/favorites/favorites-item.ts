@@ -33,7 +33,7 @@ export class FavoritesItem extends LitElement {
                  ${msg("Jump")}
               </ui5-button>
               <ui5-button icon="favorite" tooltip=${msg("Remove from favorites")}
-                          style="color:#FFBF00"
+                          style="color: var(--vines-warning)"
                           @click=${(e: any) => {
       e.stopPropagation();
       e.preventDefault();
@@ -53,18 +53,18 @@ export class FavoritesItem extends LitElement {
       sharedStyles,
       css`
         #main {
-          background: #F6F3ED;
-          border: 2px dashed #b7b7b7;
+          background: var(--vines-surface-2);
+          border: 2px dashed var(--vines-border);
           /*padding-top: 3px;*/
         }
 
         #main:hover {
-          background: #F4F9FC;
+          background: var(--vines-surface);
         }
         
         ui5-button {
           border:none;
-          color: #434343;
+          color: var(--vines-ink);
           font-weight: bold;
         }
       `,

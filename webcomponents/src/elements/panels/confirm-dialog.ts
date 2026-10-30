@@ -50,7 +50,6 @@ export class ConfirmDialog extends LitElement {
       sharedStyles,
       css`
         :host {
-          /*background: darkgray;*/
         }
         
         .footer {

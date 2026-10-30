@@ -131,7 +131,7 @@ export class DmMultiLister extends DnaMultiElement<ThreadsDvm> {
               <div id=${ppAh.b64} class="threadItem"
                    style="
                      font-weight:${hasNewBeads && !threadIsNew? "bold" : "normal"}; 
-                     ${isSelected? "background:#DBDBDB" : ""}
+                     ${isSelected? "background: var(--vines-sidebar-row-selected); box-shadow: var(--vines-shadow-row);" : ""}
                      "
                    @click=${(_e: any) => this.dispatchEvent(multiJumpEvent(ppAh, otherAgent))}>
                   ${badge}
@@ -148,7 +148,7 @@ export class DmMultiLister extends DnaMultiElement<ThreadsDvm> {
 
     /** Handle empty tree case */
     if (allTreeItems.length == 0) {
-      allTreeItems.push(html`<div style="color: grey; text-align: center; margin-top: 10px; cursor: default">${msg('No messages found')}</div`)
+      allTreeItems.push(html`<div style="color: var(--vines-ink-muted); text-align: center; margin-top: 10px; cursor: default">${msg('No messages found')}</div`)
     }
 
     /** render all */

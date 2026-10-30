@@ -158,8 +158,8 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
                 <div id=${ppAh.b64} class="threadItem"
                      style="
                        font-weight:${hasNewBeads && !threadIsNew? "bold" : "normal"}; 
-                       ${threadIsNew || notifCount? "color: #359C07;" : ""}
-                       ${isSelected? "background:#DBDBDB" : ""}
+                       ${threadIsNew || notifCount? "color: var(--vines-accent-soft);" : ""}
+                       ${isSelected? "background: var(--vines-sidebar-row-selected); box-shadow: var(--vines-shadow-row);" : ""}
                        "
                      @click=${(_e: any) => {
                         const jump = threadJumpEvent(ppAh);
@@ -228,8 +228,8 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
     const subjectHasUnreads = unreadSubjects.map((id) => id.b64).includes(subjectId.b64);
 
     if (threads.length == 0) {
-      threads = [html`<div class="threadItem" style="background: #F6FAFC; cursor: default">
-                   <span style="margin-left:28px;margin-right:10px;color:grey">${msg('No channels found')}</span>
+      threads = [html`<div class="threadItem" style="background: transparent; cursor: default">
+                   <span style="margin-left:28px;margin-right:10px;color: var(--vines-ink-muted)">${msg('No channels found')}</span>
               </div>`];
     }
 
@@ -320,7 +320,6 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
       if (!appletId.equals(THIS_APPLET_ID) || (this.weServices && !appletId.equals(this.weServices.appletIds[0]!))) {
         if (!this.weServices || !this.weServices.appletInfoCached(appletId)) {
           console.warn("Can't render threads from other applets without WeServices");
-          //return html`<div style="background: #d9d9d970;padding: 5px;color: #ff0000ba;">${msg('Unknown Tool')}</div>`;
           return html``;
         }
         /** render other appletId threads */
@@ -340,7 +339,7 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
       if (subjectItems.length == 0) {
         subjectItems = [html`
             <div style="display:flex; flex-direction:column; gap:10px; padding:7px;">
-                <div style="color: grey; margin: auto;">${msg('No subjects found')}</div>
+                <div style="color: var(--vines-ink-muted); margin: auto;">${msg('No subjects found')}</div>
             </div>
         `];
       }
@@ -385,7 +384,7 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
         if (hide) hide.style.display = "none";
         if (cmt) cmt.style.display = "none";
       }}>
-              <div slot="header" style="display:flex; flex-direction:row; overflow:hidden; width:100%; height:36px; font-size:18px; color:#663ef7">
+              <div slot="header" style="display:flex; flex-direction:row; overflow:hidden; width:100%; height:36px; font-size:18px; color: var(--vines-accent-alt)">
                   <div style="flex-grow:1; height:18px; margin-top:8px; margin-right:10px; font-weight:${appletHasUnreadComments? "bold" : ""}; text-overflow:ellipsis; overflow:hidden;">${appletName}</div>
                   ${appletCommentBtn}
               </div>
@@ -399,13 +398,13 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
     if (appletSubListers.length == 0) {
       return html`
           <div style="display:flex; flex-direction:column; gap:10px; padding:7px;">
-            <div style="color: grey; margin: auto;">${msg('No channels found')}</div>
+            <div style="color: var(--vines-ink-muted); margin: auto;">${msg('No channels found')}</div>
           </div>
       `;
     }
 
     if (this._loading) {
-      this.style.background = "#ececec";
+      this.style.background = "var(--vines-surface-2)";
     } else {
       this.style.background = "inherit";
     }
@@ -442,18 +441,17 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
 
         ui5-panel::part(header) {
           border: none;
-          color: #588AD7;
+          color: var(--vines-ink-muted);
         }
 
         ui5-panel::part(header):hover {
-          /*background: rgb(198, 214, 250);*/
           /*font-weight: bold;*/
-          color: #0087ff !important;
+          color: var(--vines-accent) !important;
         }
 
         ui5-panel::part(header) > ui5-button {
           border: 1px solid black;
-          background: #33A000;
+          background: var(--vines-accent-soft);
         }
 
         ui5-panel::part(header):hover > ui5-button {

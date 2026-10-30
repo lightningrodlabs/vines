@@ -227,7 +227,7 @@ export class ToolLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> impl
         /** 'new' badge to display */
         let newBadge = html``;
         if (threadIsNew) {
-          newBadge = html`<ui5-tag color-scheme="3" style="margin-left:3px; color:brown;">${msg("new")}</ui5-tag>`;
+          newBadge = html`<ui5-tag color-scheme="3" style="margin-left:3px; color: var(--vines-warning);">${msg("new")}</ui5-tag>`;
         }
 
         const tmpl = html`
@@ -305,7 +305,7 @@ export class ToolLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> impl
       /** 'new' badge to display */
       let newBadge = html``;
       if (topicIsNew) {
-        newBadge = html`<ui5-tag color-scheme="3" style="margin-top:10px; color:brown;">+1</ui5-tag>`;
+        newBadge = html`<ui5-tag color-scheme="3" style="margin-top:10px; color: var(--vines-warning);">+1</ui5-tag>`;
       }
 
       const subjectHasUnreads = unreadSubjects.map(id => id.b64).includes(pathEh.b64);
@@ -345,7 +345,7 @@ export class ToolLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> impl
 
     /** Handle empty tree case */
     if (treeItems.length == 0) {
-      inner = html`<div style="color: grey; margin: auto; padding-bottom:30px;">${msg('No comment threads found for this Tool')}</div>`;
+      inner = html`<div style="color: var(--vines-ink-muted); margin: auto; padding-bottom:30px;">${msg('No comment threads found for this Tool')}</div>`;
     }
 
 
@@ -416,22 +416,21 @@ export class ToolLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> impl
 
           ui5-panel::part(header) {
               border: none;
-              color: #588AD7;
+              color: var(--vines-ink-muted);
           }
 
           ui5-panel::part(header):hover {
-              /*background: rgb(198, 214, 250);*/
               /*font-weight: bold;*/
-              color: #0087ff !important;
+              color: var(--vines-accent) !important;
           }
 
           .selectedItem {
-              background: #0087ff;
-              color: white;
+              background: var(--vines-sidebar-row-selected);
+              color: var(--vines-ink); box-shadow: var(--vines-shadow-row);
           }
           ui5-panel::part(header) > ui5-button {
               border: 1px solid black;
-              background: #33A000;
+              background: var(--vines-accent-soft);
           }
 
           ui5-panel::part(header):hover > ui5-button {

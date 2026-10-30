@@ -136,9 +136,9 @@ export class TimezonePicker extends LitElement {
         select {
           width: 100%;
           padding: 8px 12px;
-          border: 1px solid #ccc;
+          border: 1px solid var(--vines-border);
           border-radius: 4px;
-          background-color: white;
+          background-color: var(--vines-surface);
           font-size: 16px;
           height: 40px;
           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
@@ -147,13 +147,13 @@ export class TimezonePicker extends LitElement {
 
         select:focus {
           outline: none;
-          border-color: #0077cc;
-          box-shadow: 0 0 0 2px rgba(0, 119, 204, 0.2);
+          border-color: var(--vines-accent);
+          box-shadow: 0 0 0 2px color-mix(in srgb, var(--vines-accent) 20%, transparent);
         }
 
         .group-header {
           font-weight: bold;
-          color: #555;
+          color: var(--vines-ink-muted);
         }
       `]
   }
