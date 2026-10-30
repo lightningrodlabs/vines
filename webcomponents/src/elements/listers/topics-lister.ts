@@ -414,12 +414,11 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
                         this.requestUpdate();
                       }}>
             <!-- header -->
-            <div slot="header" style="display:flex; flex-direction:row; overflow:hidden; width:100%;">
+            <div slot="header" class="topicHeader" style="display:flex; flex-direction:row; overflow:hidden; width:100%;">
                 <div style="flex-grow:1; height:18px; margin-top:8px; margin-right:10px; font-weight:${topicHasUnreads? "bold" : ""}; text-overflow:ellipsis; overflow:hidden;">${title}</div>
                 <!-- ${topicBadge} -->
                 ${topicCommentButton}
-                <!-- TODO: test mergeSubject <ui5-button id=${"merge-" + topicAh.b64} icon="edit" tooltip=${msg("Merge")} design="Transparent"
-                            @click=${(_e: any) => this.onClickMerge(topicAh, title)}></ui5-button> -->
+                ${topicMenuBtn}
                 <ui5-button icon="add" tooltip=${msg("New Channel")}
                             design="Transparent" 
                             style="color:grey"
@@ -434,7 +433,6 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
                                 }));
                               }}>
                 </ui5-button>
-                ${topicMenuBtn}
             </div>
             <!-- threads -->              
            ${threadElems}
@@ -630,16 +628,22 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
               color: #0087ff !important;
           }
 
+          /** The "⋮" menu only shows while its row or category header is hovered.
+           *  visibility (not display) so the "+" column does not shift. */
           .menuBtn {
               border: none;
               padding: 0px;
               color: grey;
+              visibility: hidden;
           }
           .menuBtn::part(icon) {
               transform: rotate(90deg);
           }
+          .threadItem:hover > .menuBtn,
+          .topicHeader:hover .menuBtn {
+              visibility: visible;
+          }
 
-          /** Buttons are always visible now: keep avatars on hover */
           .threadItem:hover > ui5-avatar-group {
               display: block !important;
           }

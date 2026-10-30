@@ -6,10 +6,10 @@ import {
     DnaElement, DnaId, EntryId,
     intoAnyId, intoDhtId,
 } from "@ddd-qc/lit-happ";
-import {latestSubjectName} from "../../utils";
+import {commentThreadKindName, isDiscussionSubject, latestSubjectName} from "../../utils";
 import {ThreadsDvm} from "../../viewModels/threads.dvm";
 import {renderAvatar, renderModerators, renderProfileAvatar} from "../../render";
-import {beadJumpEvent, CommentRequest, ShowRulesEvent, SpecialSubjectType} from "../../events";
+import {beadJumpEvent, CommentRequest, ShowRulesEvent, SpecialSubjectType, threadJumpEvent} from "../../events";
 import {msg} from "@lit/localize";
 import {sharedStyles} from "../../styles";
 import {toasty} from "../../toast";
@@ -123,16 +123,23 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
 
     const subjectId = ActionId.from(this._latestSubjectId!);
     const isComment = thread.pp.purpose == "comment";
+    const isDiscussion = isComment && isDiscussionSubject(thread.pp.subject.typeName);
     const subjectName = latestSubjectName(thread.pp, this._dvm.threadsZvm);
-    const copyBtn = html`<copy-wal-button .dnaId=${this.cell.address.dnaId} .hash=${this.threadHash!} .name=${isComment? msg('comment thread') : msg('channel')}></copy-wal-button>`;
+    const copyBtn = html`<copy-wal-button .dnaId=${this.cell.address.dnaId} .hash=${this.threadHash!} .name=${isComment? commentThreadKindName(thread.pp.subject.typeName) : msg('channel')}></copy-wal-button>`;
 
-    /** Title: "<Category> / <channel>" or "Comments on <subject>" */
+    /** Title: "<Category> / <channel>", "<Category or channel> / Discussion" or "Comments on <subject>" */
     let title: TemplateResult<1>;
     if (thread.pp.subject.typeName == SpecialSubjectType.SemanticTopic) {
       title = html`
           <span class="path">${subjectName}</span>
           <span class="sep">/</span>
           <span class="path">${isComment? msg("Discussion") : thread.title}</span>`;
+    } else if (isDiscussion) {
+      const channelAh = new ActionId(thread.pp.subject.address);
+      title = html`
+          <span class="path link" @click=${(_e: any) => this.dispatchEvent(threadJumpEvent(channelAh))}>${subjectName}</span>
+          <span class="sep">/</span>
+          <span class="path">${msg("Discussion")}</span>`;
     } else {
       const subjectBead = this._dvm.threadsZvm.perspective.getBeadInfo(subjectId);
       if (subjectBead) {
@@ -166,7 +173,7 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
     const createdOn = new Date(thread.creationTime / 1000).toLocaleDateString(undefined, {year: "numeric", month: "long", day: "numeric"});
     const origin = html`
         <span>${!isComment? msg("Channel created by")
-            : thread.pp.subject.typeName == SpecialSubjectType.SemanticTopic? msg("Discussion started by")
+            : isDiscussion? msg("Discussion started by")
             : msg("Comment thread started by")}</span>
         ${renderAvatar(this, this._dvm.profilesZvm, thread.author, "XS")}
         <span style="font-weight:bold">${authorName}</span>

@@ -2288,26 +2288,15 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         };
         const commentClickedEvent = {detail: commentRequest,  bubbles: true, composed: true} as CustomEvent<CommentRequest>;
         //console.log("<topics-lister> maybeCommentThread", maybeCommentThread, hasUnreadComments);
-        if (hasUnreadComments) {
-          commentButton = html`
-              <ui5-button icon="comment" tooltip=${msg("View comments")}
-                          design="Negative"
-                          @click="${(_e: any) => this.onCommentingClicked(commentClickedEvent)}"></ui5-button>`;
-        } else {
-          commentButton = maybeCommentThread != null
-            ? html`
-                      <ui5-button icon="comment" tooltip=${msg("View comments")} design="Transparent"
-                                  @click=${(e: any) => {
-                                      e.stopPropagation();
-                                      this.onCommentingClicked(commentClickedEvent)
-                                  }}></ui5-button>`
-            : html`
-                      <ui5-button icon="sys-add" tooltip=${msg("Create comment thread")} design="Transparent"
-                                  @click=${(e: any) => {
-                                      e.stopPropagation();
-                                      this.onCommentingClicked(commentClickedEvent)
-                                  }}></ui5-button>`;
-        }
+        /** One button whether or not the discussion exists yet: opening it creates it */
+        commentButton = html`
+            <ui5-button icon="discussion"
+                        tooltip=${hasUnreadComments? msg("New in channel discussion") : msg("Channel discussion")}
+                        design=${hasUnreadComments? "Negative" : "Transparent"}
+                        @click=${(e: any) => {
+                            e.stopPropagation();
+                            this.onCommentingClicked(commentClickedEvent)
+                        }}></ui5-button>`;
         if (thread.pp.moderation.canDeleteThread && thread.pp.moderation.moderators.length == 1
           && new AgentId(thread.pp.moderation.moderators[0]!).equals(this.cell.address.agentId)) {
           deleteChannelButton = html`
@@ -2333,16 +2322,16 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                         class="top-btn ${this._mainView == MainViewType.Files? "active" : ""}"
                         @click=${() => this.dispatchEvent(filesJumpEvent())}></ui5-button>
             <span style="flex-grow:1"></span>
-            ${this._listerToShow == "topics-option"? html`
-                <ui5-button icon="add" design="Transparent" class="top-btn"
-                            tooltip=${msg("New Category")}
-                            @click=${(_e: any) => this.createTopicDialogElem.show()}></ui5-button>` : html``}
-            <ui5-button id="viewMenuBtn" icon="overflow" design="Transparent" class="top-btn" tooltip=${msg("View options")}
+            <ui5-button id="viewMenuBtn" icon="show" design="Transparent" class="top-btn" tooltip=${msg("View options")}
                         @click=${(_e: any) => {
                             const menu = this.shadowRoot!.getElementById("viewMenu") as Menu;
                             const btn = this.shadowRoot!.getElementById("viewMenuBtn") as Button;
                             menu.showAt(btn);
                         }}></ui5-button>
+            ${this._listerToShow == "topics-option"? html`
+                <ui5-button icon="add" design="Transparent" class="top-btn"
+                            tooltip=${msg("New Category")}
+                            @click=${(_e: any) => this.createTopicDialogElem.show()}></ui5-button>` : html``}
         </div>
         <ui5-menu id="viewMenu" @item-click=${(e: any) => this.onViewMenu(e)}>
             ${this.weServices? html`
@@ -3487,10 +3476,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         ui5-button.top-btn {
           height: 30px;
           color: #588AD7;
-        }
-
-        #viewMenuBtn::part(icon) {
-          transform: rotate(90deg);
         }
 
         ui5-button.top-btn.active {

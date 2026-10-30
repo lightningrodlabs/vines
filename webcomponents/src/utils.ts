@@ -274,12 +274,24 @@ export function latestSubjectName(pp: ParticipationProtocol, threadsZvm: Threads
 }
 
 
-/** Display name of a thread's purpose: comment threads are the "Discussion" of a category, "Comments" on anything else */
+/** Comment threads on a category or a channel are its "Discussion" */
+export function isDiscussionSubject(subjectType: SpecialSubjectType | string): boolean {
+  return subjectType == SpecialSubjectType.SemanticTopic || subjectType == SpecialSubjectType.ParticipationProtocol;
+}
+
+
+/** Display name of a thread's purpose: comment threads are the "Discussion" of a category or channel, "Comments" on anything else */
 export function threadPurposeName(threadTitle: string, subjectType: SpecialSubjectType): string {
   if (threadTitle != "comment") {
     return threadTitle;
   }
-  return subjectType == SpecialSubjectType.SemanticTopic? msg("Discussion") : msg("Comments");
+  return isDiscussionSubject(subjectType)? msg("Discussion") : msg("Comments");
+}
+
+
+/** Lower-case name of a comment thread for inline use, e.g. "Add discussion to Pocket" */
+export function commentThreadKindName(subjectType: SpecialSubjectType | string): string {
+  return isDiscussionSubject(subjectType)? msg("discussion") : msg("comments");
 }
 
 

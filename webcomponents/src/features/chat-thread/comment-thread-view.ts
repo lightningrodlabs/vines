@@ -10,7 +10,7 @@ import {intoHrl, WeServicesEx} from "@ddd-qc/we-utils";
 
 import {ThreadsDnaPerspective, ThreadsDvm} from "../../viewModels/threads.dvm";
 import {ThreadsPerspective} from "../../viewModels/threads.perspective";
-import {latestThreadName} from "../../utils";
+import {commentThreadKindName, latestThreadName} from "../../utils";
 
 import "../../elements/input-bar";
 /** Side-effect import: the asset view renders one, and nothing else in this
@@ -547,7 +547,7 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
                  wrapped onto a line of their own, which in the asset view is a
                  whole row of chrome above the first message. -->
             <div id="titleActions">
-                <copy-wal-button .dnaId=${this.cell.address.dnaId} .hash=${this.threadHash!} name=${msg("comment thread")}></copy-wal-button>
+                <copy-wal-button .dnaId=${this.cell.address.dnaId} .hash=${this.threadHash!} .name=${commentThreadKindName(thread.pp.subject.typeName)}></copy-wal-button>
                 <ui5-button design="Transparent" tooltip=${msg('Go to Bottom')}
                             icon="pull-down"
                             @click=${(_e: any) => this._keeper.follow()}>
