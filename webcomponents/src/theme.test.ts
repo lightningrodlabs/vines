@@ -51,8 +51,7 @@ test("frameworkTokenMap covers every UI5 font family parameter", () => {
   const text = frameworkTokenMap.cssText.replace(/\s+/g, " ");
   for (const p of ["--sapFontBoldFamily", "--sapFontSemiboldFamily", "--sapFontSemiboldDuplexFamily",
                    "--sapFontHeaderFamily", "--sapFontLightFamily", "--sapFontBlackFamily",
-                   "--sapButton_FontFamily", "--sapButton_Emphasized_FontFamily",
-                   "--_ui5_switch_text_with_label_font_family"]) {
+                   "--sapButton_FontFamily", "--sapButton_Emphasized_FontFamily"]) {
     assert.ok(text.includes(`${p}: var(--vines-font)`), `missing ${p}`);
   }
   assert.ok(text.includes("--sapContent_MonospaceFontFamily: var(--vines-font-mono)"));
@@ -76,17 +75,24 @@ test("frameworkTokenMap neutralises Horizon's blue hover, selected and field sty
   assert.ok(text.includes("--sapField_Hover_Shadow: none"));
 });
 
-test("frameworkTokenMap gives popups the spec radius and shadow", () => {
+test("frameworkTokenMap gives popups the spec shadow", () => {
   const text = frameworkTokenMap.cssText.replace(/\s+/g, " ");
-  assert.ok(text.includes("--_ui5_popup_border_radius: var(--vines-radius-l)"));
   for (const p of ["--sapContent_Shadow0", "--sapContent_Shadow1", "--sapContent_Shadow2", "--sapContent_Shadow3"]) {
     assert.ok(text.includes(`${p}: var(--vines-shadow-pop)`), `missing ${p}`);
   }
 });
 
-test("frameworkTokenMap rounds the field focus ring to the field corner", () => {
-  const text = frameworkTokenMap.cssText.replace(/\s+/g, " ");
-  assert.ok(text.includes("--_ui5_input_focus_border_radius: calc(var(--vines-radius-m) - var(--sapField_BorderWidth))"));
+/* UI5 injects its private `--_ui5_*` parameters as a `:host {}` rule inside each component's
+   shadow root. A document-level declaration never outranks that, so these overrides must be
+   rules on the element in the outer tree, which themeStyles supplies. */
+test("themeStyles sets UI5 private parameters on the elements, not on the document", () => {
+  assert.ok(!frameworkTokenMap.cssText.includes("--_ui5_"), "no private UI5 parameter on html:root");
+  const text = themeStyles.cssText.replace(/\s+/g, " ");
+  assert.match(text, /ui5-input[^{]*\{[^}]*--_ui5_input_focus_border_radius: var\(--_ui5_input_border_radius\)/);
+  assert.match(text, /ui5-textarea[^{]*\{[^}]*--_ui5_textarea_focus_border_radius: var\(--sapField_BorderCornerRadius\)/);
+  assert.match(text, /ui5-dialog[^{]*\{[^}]*--_ui5_popup_border_radius: var\(--vines-radius-l\)/);
+  assert.match(text, /ui5-popover[^{]*\{[^}]*--_ui5_popup_border_radius: var\(--vines-radius-l\)/);
+  assert.match(text, /ui5-switch[^{]*\{[^}]*--_ui5_switch_text_with_label_font_family: var\(--vines-font\)/);
 });
 
 test("themeStyles has no raw colors", () => {

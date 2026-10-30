@@ -3368,6 +3368,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         /* Same height as the ui5-buttons beside it (2.25rem); pill-shaped, with the
            focus ring following the pill */
         #search-field {
+          border: 1px solid var(--vines-border);
           --sapField_PlaceholderTextColor: var(--vines-ink-muted);
           --sapField_Background: var(--vines-surface);
           --sapField_Hover_Background: var(--vines-surface);

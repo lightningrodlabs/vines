@@ -1,4 +1,5 @@
 import {html, css, LitElement} from 'lit';
+import {sharedStyles} from "../../styles";
 import {property, state, customElement} from 'lit/decorators.js';
 import {localized, msg} from '@lit/localize';
 
@@ -357,17 +358,7 @@ export class EditProfile extends LitElement {
 
 
   /** */
-  static override styles = [css`
-
-    /* Same rule as .dialog-footer in styles.ts: buttons right-justified, default last */
-    .dialog-footer {
-      display: flex;
-      flex-direction: row;
-      align-items: center;
-      justify-content: flex-end;
-      gap: 10px;
-      width: 100%;
-    }
+  static override styles = [sharedStyles, css`
 
     sl-radio {
       font-size: larger;

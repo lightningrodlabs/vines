@@ -100,7 +100,6 @@ export const frameworkTokenMap: CSSResult = css`
     --sapFontBlackFamily: var(--vines-font);
     --sapButton_FontFamily: var(--vines-font);
     --sapButton_Emphasized_FontFamily: var(--vines-font);
-    --_ui5_switch_text_with_label_font_family: var(--vines-font);
     --sapContent_MonospaceFontFamily: var(--vines-font-mono);
     --sapFontSize: var(--vines-text-m);
     --sapBrandColor: var(--vines-accent);
@@ -173,10 +172,7 @@ export const frameworkTokenMap: CSSResult = css`
     --sapField_Hover_BackgroundStyle: none;
     --sapField_Shadow: none;
     --sapField_Hover_Shadow: none;
-    /* the focus ring sits just inside the 1px field border; Horizon draws it at .25rem */
-    --_ui5_input_focus_border_radius: calc(var(--vines-radius-m) - var(--sapField_BorderWidth));
-    /* popups: spec radius and shadow */
-    --_ui5_popup_border_radius: var(--vines-radius-l);
+    /* popups: spec shadow (the radius is a private parameter, see themeStyles) */
     --sapContent_Shadow0: var(--vines-shadow-pop);
     --sapContent_Shadow1: var(--vines-shadow-pop);
     --sapContent_Shadow2: var(--vines-shadow-pop);
@@ -244,6 +240,27 @@ export const themeStyles: CSSResult = css`
   * {
     scrollbar-width: thin;
     scrollbar-color: var(--vines-border) transparent;
+  }
+
+  /* UI5's private \`--_ui5_*\` parameters are injected as a \`:host {}\` rule inside each
+     component's shadow root, so a document-level value never reaches them. A rule on the
+     element from the outer tree does outrank \`:host\`, which is why these live here and are
+     part of sharedStyles and of the document sheet. */
+  ui5-input, ui5-multi-input, ui5-combobox, ui5-multi-combobox, ui5-date-picker, ui5-step-input {
+    /* the focus ring follows the field's corner; Horizon draws it at .25rem */
+    --_ui5_input_focus_border_radius: var(--_ui5_input_border_radius);
+  }
+
+  ui5-textarea {
+    --_ui5_textarea_focus_border_radius: var(--sapField_BorderCornerRadius);
+  }
+
+  ui5-dialog, ui5-popover, ui5-responsive-popover, ui5-menu {
+    --_ui5_popup_border_radius: var(--vines-radius-l);
+  }
+
+  ui5-switch {
+    --_ui5_switch_text_with_label_font_family: var(--vines-font);
   }
 
   a, .linky {
