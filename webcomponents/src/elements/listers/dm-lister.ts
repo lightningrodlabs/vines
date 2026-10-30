@@ -1,5 +1,5 @@
 import {css, html, TemplateResult} from "lit";
-import {tooltipOnlyWhenClipped} from "../../utils";
+import {tooltipOnlyWhenClipped, reorderAnimated} from "../../utils";
 import {customElement, property, state} from "lit/decorators.js";
 import "@ui5/webcomponents/dist/Icon.js";
 import "@ui5/webcomponents-icons/dist/slim-arrow-right.js";
@@ -221,11 +221,15 @@ export class DmLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                            const dim = first!.children[0]!.getBoundingClientRect();
                            const isBeforeFirst = e.clientY < dim.top + dim.height / 2;
 
-                           if (isBeforeFirst) {
-                               container.shadowRoot!.insertBefore(this._dragged, first);
-                           } else {
-                               container.shadowRoot!.insertBefore(this._dragged, isAfterTarget ? target.nextSibling : target);
-                           }
+                           /** The rows live inside the section panel */
+                           const list = first!.parentElement!;
+                           reorderAnimated(this.shadowRoot!, 'sl-tooltip', () => {
+                               if (isBeforeFirst) {
+                                   list.insertBefore(this._dragged, first);
+                               } else {
+                                   list.insertBefore(this._dragged, isAfterTarget ? target.nextSibling : target);
+                               }
+                           });
                        }
                    }}
                    @drop=${(e: any) => {
@@ -233,7 +237,7 @@ export class DmLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                        const dmAgent = e.dataTransfer!.getData('dm');
                        if (dmAgent) {
                            const container = this as HTMLElement;
-                           const order = Array.from(container.shadowRoot!.children)
+                           const order = Array.from(container.shadowRoot!.querySelectorAll('sl-tooltip'))
                                    .map(el => (el.children[0]! as any).agent)
                                    .filter(id => id !== '');
                            console.log("DM ORDER", order);

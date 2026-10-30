@@ -576,3 +576,36 @@ export function tooltipOnlyWhenClipped(e: Event): void {
   const title = tip.querySelector<HTMLElement>(".rowTitle");
   tip.disabled = !title || title.scrollWidth <= title.clientWidth;
 }
+
+
+/**
+ * The drag-and-drop listers move rows with insertBefore, which makes the other rows jump into
+ * place. This runs the move and lets every displaced element glide from its old place to its
+ * new one instead (FLIP, 140ms). An element inside another that also moved (a row in a panel
+ * that shifted) animates only its own share of the displacement.
+ */
+export function reorderAnimated(scope: ParentNode, selector: string, mutate: () => void): void {
+  const before = new Map<HTMLElement, number>();
+  for (const el of Array.from(scope.querySelectorAll<HTMLElement>(selector))) {
+    before.set(el, el.getBoundingClientRect().top);
+  }
+  mutate();
+  const delta = new Map<HTMLElement, number>();
+  for (const el of Array.from(scope.querySelectorAll<HTMLElement>(selector))) {
+    const was = before.get(el);
+    if (was !== undefined) {
+      delta.set(el, was - el.getBoundingClientRect().top);
+    }
+  }
+  for (const [el, dy] of delta) {
+    let own = dy;
+    for (let p = el.parentElement; p; p = p.parentElement) {
+      if (delta.has(p)) {
+        own -= delta.get(p)!;
+        break;
+      }
+    }
+    if (Math.abs(own) < 1) continue;
+    el.animate([{transform: `translateY(${own}px)`}, {transform: "none"}], {duration: 140, easing: "ease-out"});
+  }
+}

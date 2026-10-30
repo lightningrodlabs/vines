@@ -8,7 +8,7 @@ import {ThreadsPerspective} from "../../viewModels/threads.perspective";
 import {msg} from "@lit/localize";
 import {CommentRequest, EditTopicRequest, HideEvent, SpecialSubjectType, threadJumpEvent} from "../../events";
 import {sharedStyles} from "../../styles";
-import {latestThreadName, tooltipOnlyWhenClipped} from "../../utils";
+import {latestThreadName, tooltipOnlyWhenClipped, reorderAnimated} from "../../utils";
 import {toasty} from "../../toast";
 import {renderAvatar, renderAvatarGroup} from "../../render";
 import {ThreadsDnaPerspective, ThreadsDvm} from "../../viewModels/threads.dvm";
@@ -524,7 +524,8 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
               const {top, height} = target.getBoundingClientRect();
               const isAfterTarget = e.clientY > top + height / 2;
               const container = this.shadowRoot!.getElementById('container')! as HTMLElement;
-              container.insertBefore(this._dragged, isAfterTarget ? target.nextSibling : target);
+              reorderAnimated(this.shadowRoot!, 'ui5-panel, sl-tooltip', () =>
+                container.insertBefore(this._dragged, isAfterTarget ? target.nextSibling : target));
               return;
             }
              if (e.dataTransfer!.types.includes('thread')) {
@@ -541,18 +542,19 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
                  if (first && first !== this._dragged) {
                    const dim = first.getBoundingClientRect();
                    if (e.clientY < dim.top + dim.height / 2) {
-                     panel.insertBefore(this._dragged, first);
+                     reorderAnimated(this.shadowRoot!, 'ui5-panel, sl-tooltip', () => panel.insertBefore(this._dragged, first));
                      return;
                    }
                  }
                  if (panel.lastElementChild !== this._dragged) {
-                   panel.appendChild(this._dragged);
+                   reorderAnimated(this.shadowRoot!, 'ui5-panel, sl-tooltip', () => panel.appendChild(this._dragged));
                  }
                  return;
                }
                const {top, height} = target.getBoundingClientRect();
                const isAfterTarget = e.clientY > top + height / 2;
-               panel.insertBefore(this._dragged, isAfterTarget ? target.nextSibling : target);
+               reorderAnimated(this.shadowRoot!, 'ui5-panel, sl-tooltip', () =>
+                 panel.insertBefore(this._dragged, isAfterTarget ? target.nextSibling : target));
              }
          }}
          @drop=${(e: any) => {
