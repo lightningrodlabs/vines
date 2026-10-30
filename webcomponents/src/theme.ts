@@ -173,6 +173,8 @@ export const frameworkTokenMap: CSSResult = css`
     --sapField_Hover_BackgroundStyle: none;
     --sapField_Shadow: none;
     --sapField_Hover_Shadow: none;
+    /* the focus ring sits just inside the 1px field border; Horizon draws it at .25rem */
+    --_ui5_input_focus_border_radius: calc(var(--vines-radius-m) - var(--sapField_BorderWidth));
     /* popups: spec radius and shadow */
     --_ui5_popup_border_radius: var(--vines-radius-l);
     --sapContent_Shadow0: var(--vines-shadow-pop);

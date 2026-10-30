@@ -106,16 +106,16 @@ export class CreateThreadPanel extends DnaElement<ThreadsDnaPerspective, Threads
       <ui5-panel header-text=${msg("Advanced")} collapsed style="margin-top:15px; border:none;">
         <rules-edit id="rulesEdit"></rules-edit>
       </ui5-panel>
-      <div slot="footer" class="footer">
-        <ui5-button style="margin-top:5px" design="Emphasized" @click=${(_e: any) => this.onCreate()}>
-            ${msg("Create")}
-        </ui5-button>
-        <ui5-button style="margin-top:5px" @click=${(_e: any) => this.dispatchEvent(new CustomEvent('cancel', {
+      <div slot="footer" class="dialog-footer footer">
+        <ui5-button @click=${(_e: any) => this.dispatchEvent(new CustomEvent('cancel', {
       detail: null,
       bubbles: true,
       composed: true
     }))}>
             ${msg("Cancel")}
+        </ui5-button>
+        <ui5-button design="Emphasized" @click=${(_e: any) => this.onCreate()}>
+            ${msg("Create")}
         </ui5-button>
       </div>
     `;
@@ -136,9 +136,6 @@ export class CreateThreadPanel extends DnaElement<ThreadsDnaPerspective, Threads
         }
         
         .footer {
-          display: flex;
-          gap: 5px;
-          margin-left: 10px;
           margin-top: 10px;
         }
       `

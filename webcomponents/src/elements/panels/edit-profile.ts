@@ -338,22 +338,19 @@ export class EditProfile extends LitElement {
           <timezone-picker id="timezonePicker"></timezone-picker>
       </div>
       
-      <div slot="footer" style="display:flex; margin-top: 10px;">
-        <ui5-button style="flex:1; margin-right:6px; margin-top:15px;"
-                  design="Emphasized"
-                  ?disabled=${!this.shouldSaveButtonBeEnabled()}
-                  @click=${() => this.fireSaveProfile()}>
-          ${msg("Save Profile")}
-        </ui5-button>          
+      <div slot="footer" class="dialog-footer" style="margin-top: 25px;">
         ${this.allowCancel
               ? html`
-                      <ui5-button
-                        style="flex:1; margin-top:15px;"
-                        @click=${() => this.fireCancel()}>
+                      <ui5-button @click=${() => this.fireCancel()}>
                           ${msg("Cancel")}
                       </ui5-button>
               ` : html``
             }
+        <ui5-button design="Emphasized"
+                  ?disabled=${!this.shouldSaveButtonBeEnabled()}
+                  @click=${() => this.fireSaveProfile()}>
+          ${msg("Save Profile")}
+        </ui5-button>
       </div>
     `;
   }
@@ -361,6 +358,16 @@ export class EditProfile extends LitElement {
 
   /** */
   static override styles = [css`
+
+    /* Same rule as .dialog-footer in styles.ts: buttons right-justified, default last */
+    .dialog-footer {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+      width: 100%;
+    }
 
     sl-radio {
       font-size: larger;

@@ -77,6 +77,17 @@ export const sharedStyles = [
 
     /** Lister */
 
+    /* Dialog footers: buttons right-justified, the default action last. The UI5 footer
+       root centers its slot, so the div takes the full width and aligns to the end. */
+    .dialog-footer {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 10px;
+        width: 100%;
+    }
+
     /* ui5-tag (2.x) paints background, border, text and radius on its root part */
     ui5-tag {
         min-width: 1.7rem;

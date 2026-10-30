@@ -84,6 +84,11 @@ test("frameworkTokenMap gives popups the spec radius and shadow", () => {
   }
 });
 
+test("frameworkTokenMap rounds the field focus ring to the field corner", () => {
+  const text = frameworkTokenMap.cssText.replace(/\s+/g, " ");
+  assert.ok(text.includes("--_ui5_input_focus_border_radius: calc(var(--vines-radius-m) - var(--sapField_BorderWidth))"));
+});
+
 test("themeStyles has no raw colors", () => {
   assert.doesNotMatch(themeStyles.cssText, /#[0-9a-fA-F]{3,8}\b/);
 });

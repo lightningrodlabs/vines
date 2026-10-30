@@ -126,18 +126,13 @@ export class ExportFilesDialog extends LitElement {
               </div>              
           </div>
             <!-- Footer -->
-            <div slot="footer" class="footer">
-                <div style="flex-grow: 1"></div>
-                <ui5-button style="margin-top:5px" design="Emphasized"
-                            ?disabled=${this._selectedFiles.size === 0}
-                            @click=${(_e: any) => {                               
-                                this.dispatchEvent(new CustomEvent<any>('export-confirmed', {
-                                    detail: this._selectedFiles,
-                                    bubbles: true, composed: true}));
+            <div slot="footer" class="dialog-footer footer">
+                <ui5-button style="margin-top:5px"
+                            @click=${() => {
                                 const dialog = this.shadowRoot!.getElementById("export-dialog") as Dialog;
                                 dialog.open = false;
                             }}>
-                    ${msg('Export')}
+                    ${msg('Cancel')}
                 </ui5-button>
                 <ui5-button style="margin-top:5px"
                             @click=${() => {
@@ -149,12 +144,16 @@ export class ExportFilesDialog extends LitElement {
                             }}>
                     ${msg('Export Manifests')}
                 </ui5-button>
-                <ui5-button style="margin-top:5px"
-                            @click=${() => {
+                <ui5-button style="margin-top:5px" design="Emphasized"
+                            ?disabled=${this._selectedFiles.size === 0}
+                            @click=${(_e: any) => {                               
+                                this.dispatchEvent(new CustomEvent<any>('export-confirmed', {
+                                    detail: this._selectedFiles,
+                                    bubbles: true, composed: true}));
                                 const dialog = this.shadowRoot!.getElementById("export-dialog") as Dialog;
                                 dialog.open = false;
                             }}>
-                    ${msg('Cancel')}
+                    ${msg('Export')}
                 </ui5-button>
             </div>
             
@@ -252,10 +251,7 @@ export class ExportFilesDialog extends LitElement {
           }
 
           .footer {
-              display: flex;
               flex-shrink: 0;
-              gap: 10px;
-              justify-content: flex-end;
               padding: 4px;
           }
       `];

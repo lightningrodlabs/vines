@@ -78,27 +78,34 @@ export class CopyWalButton extends LitElement {
           display: inline-flex;
         }
 
+        /* Sized and styled like a transparent icon ui5-button (2.25rem box, 1rem icon) so
+           it reads as one set with the buttons beside it */
         .logo {
-          width: 26px;
-          height: 26px;
-          background-color: var(--vines-ink);
-          margin: 5px;
+          width: 1.125rem;
+          height: 1.125rem;
+          background-color: currentColor;
           -webkit-mask: url(add-to-pocket.svg) no-repeat center / contain;
           mask: url(add-to-pocket.svg) no-repeat center / contain;
         }
 
         .add-to-pocket {
           display: flex;
-          border-radius: 5px;
+          align-items: center;
+          justify-content: center;
+          width: 2.25rem;
+          height: 2.25rem;
+          border-radius: var(--sapButton_BorderCornerRadius, var(--vines-radius-s));
+          color: var(--vines-ink);
           cursor: pointer;
+        }
+
+        .add-to-pocket:hover {
+          background: var(--vines-row-hover);
         }
 
         .add-to-pocket:active {
           background: var(--vines-accent);
-        }
-
-        .add-to-pocket:hover {
-          outline: 1px solid var(--vines-accent);
+          color: var(--vines-surface);
         }
 
         .add-to-pocket img {

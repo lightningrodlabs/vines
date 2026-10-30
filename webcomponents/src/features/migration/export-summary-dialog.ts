@@ -226,8 +226,21 @@ export class ExportSummaryDialog extends DnaElement<unknown, ThreadsDvm> {
           </div>
          </div>
          <!-- Footer -->
-         <div slot="footer" class="footer">
-              <div style="flex-grow: 1"></div>
+         <div slot="footer" class="dialog-footer footer">
+              <ui5-button style="margin-top:5px" 
+                          @click=${() => {
+                            const dialog = this.shadowRoot!.getElementById("export-dialog") as Dialog;
+                            dialog.open = false;
+                        }}>
+                  ${msg('Cancel')}
+              </ui5-button>
+             <ui5-button style="margin-top:5px" 
+                         @click=${() => {
+                           this.dispatchEvent(new CustomEvent<boolean>('export-files', {
+                               detail: true, bubbles: true, composed: true}));
+                        }}>
+               ${msg('Export Files')}
+             </ui5-button>
               <ui5-button style="margin-top:5px" design="Emphasized"
                           ?disabled=${this._selectedChannels.size === 0}
                           @click=${(_e: any) => {
@@ -241,20 +254,6 @@ export class ExportSummaryDialog extends DnaElement<unknown, ThreadsDvm> {
                             dialog.open = false;
                   }}>
                   ${msg('Export')}
-              </ui5-button>
-             <ui5-button style="margin-top:5px" 
-                         @click=${() => {
-                           this.dispatchEvent(new CustomEvent<boolean>('export-files', {
-                               detail: true, bubbles: true, composed: true}));
-                        }}>
-               ${msg('Export Files')}
-             </ui5-button>
-              <ui5-button style="margin-top:5px" 
-                          @click=${() => {
-                            const dialog = this.shadowRoot!.getElementById("export-dialog") as Dialog;
-                            dialog.open = false;
-                        }}>
-                  ${msg('Cancel')}
               </ui5-button>
           </div>
         </ui5-dialog>
@@ -290,10 +289,7 @@ export class ExportSummaryDialog extends DnaElement<unknown, ThreadsDvm> {
           }
           
           .footer {
-              display: flex;
               flex-shrink: 0;
-              gap: 10px;
-              justify-content: flex-end;
               padding: 4px;
           }
 

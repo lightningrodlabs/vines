@@ -2642,7 +2642,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                                     }}></ui5-button>` : html``}
 
                                     <ui5-button id="notifSettingsBtn"
-                                                icon="bell"
+                                                icon="bell" design="Transparent"
                                                 tooltip=${msg('Notifications Settings')}
                                                 @click=${() => {
                                                     console.log("notifSettingsBtn.click()");
@@ -2739,7 +2739,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                             const shellbar = this.shadowRoot!.getElementById("topicBar");
                                             popover.opener = shellbar!; popover.open = true;
                                         }}>
-                                <span class="numberBadge">${filteredInbox.length? filteredInbox.length : ""}</span>
+                                ${filteredInbox.length? html`<span class="numberBadge">${filteredInbox.length}</span>` : html``}
                             </ui5-button>
                         </div>
                     </div>
@@ -3035,12 +3035,12 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                         </ui5-input>
                     </div>
                 </section>
-                <div slot="footer">
-                    <ui5-button id="createTopicDialogButton"
-                                style="margin-top:5px" design="Emphasized" @click=${this.onCreateTopic}>Create
-                    </ui5-button>
-                    <ui5-button style="margin-top:5px" @click=${() => this.createTopicDialogElem.open = false}>
+                <div slot="footer" class="dialog-footer">
+                    <ui5-button @click=${() => this.createTopicDialogElem.open = false}>
                         ${msg("Cancel")}
+                    </ui5-button>
+                    <ui5-button id="createTopicDialogButton" design="Emphasized" @click=${this.onCreateTopic}>
+                        ${msg("Create")}
                     </ui5-button>
                 </div>
             </ui5-dialog>
@@ -3060,13 +3060,12 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                         </ui5-input>
                     </div>
                 </section>
-                <div slot="footer">
-                    <ui5-button id="createChannelDialogButton"
-                                style="margin-top:5px" design="Emphasized" @click=${this.onEditChannel}>
-                        ${msg("Save")}
-                    </ui5-button>
-                    <ui5-button style="margin-top:5px" @click=${() => this.editChannelDialogElem.open = false}>
+                <div slot="footer" class="dialog-footer">
+                    <ui5-button @click=${() => this.editChannelDialogElem.open = false}>
                         ${msg("Cancel")}
+                    </ui5-button>
+                    <ui5-button id="createChannelDialogButton" design="Emphasized" @click=${this.onEditChannel}>
+                        ${msg("Save")}
                     </ui5-button>
                 </div>
             </ui5-dialog>
@@ -3086,13 +3085,12 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                         </ui5-input>
                     </div>
                 </section>
-                <div slot="footer">
-                    <ui5-button id="createTopicDialogButton"
-                                style="margin-top:5px" design="Emphasized" @click=${this.onEditTopic}>
-                        ${msg("Save")}
-                    </ui5-button>
-                    <ui5-button style="margin-top:5px" @click=${() => this.editTopicDialogElem.open = false}>
+                <div slot="footer" class="dialog-footer">
+                    <ui5-button @click=${() => this.editTopicDialogElem.open = false}>
                         ${msg("Cancel")}
+                    </ui5-button>
+                    <ui5-button id="editTopicDialogButton" design="Emphasized" @click=${this.onEditTopic}>
+                        ${msg("Save")}
                     </ui5-button>
                 </div>
             </ui5-dialog>
@@ -3116,13 +3114,13 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                         <rules-edit id="rulesEdit"></rules-edit>
                     </ui5-panel>
                 </section>
-                <div slot="footer" style="display:flex;gap:10px;">
-                    <ui5-button id="createThreadDialogButton" style="margin-top:5px" design="Emphasized"
+                <div slot="footer" class="dialog-footer">
+                    <ui5-button @click=${() => this.createThreadDialogElem.open = false}>
+                        ${msg("Cancel")}
+                    </ui5-button>
+                    <ui5-button id="createThreadDialogButton" design="Emphasized"
                                 @click=${async () => await this.onCreateThread()}>
                         ${msg("Create")}
-                    </ui5-button>
-                    <ui5-button style="margin-top:5px" @click=${() => this.createThreadDialogElem.open = false}>
-                        ${msg("Cancel")}
                     </ui5-button>
                 </div>
             </ui5-dialog>
@@ -3137,13 +3135,13 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                         </div>
                     </div>
                 </section>
-                <div slot="footer" style="display:flex;gap:10px;">
-                    <ui5-button id="confirmThreadDialogButton" style="margin-top:5px" design="Emphasized"
+                <div slot="footer" class="dialog-footer">
+                    <ui5-button @click=${() => this.confirmThreadDialogElem.open = false}>
+                        ${msg("Cancel")}
+                    </ui5-button>
+                    <ui5-button id="confirmThreadDialogButton" design="Emphasized"
                                 @click=${async () => await this.onConfirmedCreateThread()}>
                         ${msg("Confirm")}
-                    </ui5-button>
-                    <ui5-button style="margin-top:5px" @click=${() => this.confirmThreadDialogElem.open = false}>
-                        ${msg("Cancel")}
                     </ui5-button>
                 </div>
             </ui5-dialog>
@@ -3367,15 +3365,18 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           font-family: var(--vines-font);
         }
 
+        /* Same height as the ui5-buttons beside it (2.25rem); pill-shaped, with the
+           focus ring following the pill */
         #search-field {
-          height: 32px;
           --sapField_PlaceholderTextColor: var(--vines-ink-muted);
+          --sapField_Background: var(--vines-surface);
+          --sapField_Hover_Background: var(--vines-surface);
+          --_ui5_input_border_radius: var(--vines-radius-pill);
+          --_ui5_input_focus_border_radius: var(--vines-radius-pill);
         }
 
         #search-field::part(root) {
           background: var(--vines-surface);
-          border: 1px solid var(--vines-border);
-          border-radius: var(--vines-radius-pill);
           color: var(--vines-ink-muted);
         }
 
@@ -3421,10 +3422,12 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           font-weight: bold;
         }
 
+        /* 8px gutter on the left edge; the cards in #lowerSide carry the other three */
         #mainDiv {
           display: flex;
           flex-direction: row;
           height: inherit;
+          padding-left: 8px;
         }
 
           /* Mobile */
@@ -3484,12 +3487,15 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           padding: 0px;
         }
 
+        /* Same height as #topicBar so the lister and the message card start on one line */
         #topBar {
           display: flex;
           flex-direction: row;
           align-items: center;
           gap: 0px;
-          padding: 4px 5px 4px 2px;
+          height: 44px;
+          box-sizing: border-box;
+          padding: 0 5px 0 2px;
           background: transparent;
         }
 
@@ -3560,7 +3566,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           flex-grow: 1;
           overflow-y: auto;
           gap: 8px;
-          padding: 0 8px 8px 0;
+          padding: 0 8px 8px 8px;
         }
 
         /* The message area is a white card on the page gradient */
@@ -3700,8 +3706,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
         #topicBar {
           background: transparent;
-          padding: 0px 8px 0px 2px;
-          margin-left: 5px;
+          padding: 0px 8px;
           height: 44px;
           display: flex;
           flex-direction: row;
@@ -3743,10 +3748,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           font-size: 10px;
           font-weight: bold;
           z-index: 10;
-        }
-
-        .numberBadge:empty {
-          display: none;
         }
 
         #primaryTitle {
