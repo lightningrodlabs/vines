@@ -304,6 +304,13 @@ export interface UpdatePpTitleInput {
 }
 
 /**  */
+export interface MovePpInput {
+  ppAh: ActionArray
+  from: AnyLinkableArray
+  to: AnyLinkableArray
+}
+
+/**  */
 export interface ProbePpsInput {
   lh: AnyLinkableArray
   strategy: GetStrategy
@@ -332,11 +339,6 @@ export interface FindSubjectsInput {
   appletId: string
   subjectType: string
   strategy: GetStrategy
-}
-
-export interface MergeSubjectInput {
-  subjectSource: AnyLinkableArray
-  subjectTarget: AnyLinkableArray
 }
 
 export enum BaseBeadKindType {

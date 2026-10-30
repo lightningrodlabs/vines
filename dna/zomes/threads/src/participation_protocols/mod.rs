@@ -1,5 +1,6 @@
 mod probe_pps_from_subject;
 mod publish_participation_protocol;
+mod move_participation_protocol;
 mod pp_title;
 mod rules;
 mod delete_participation_protocol;

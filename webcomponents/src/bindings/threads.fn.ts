@@ -69,6 +69,7 @@ export const threadsFunctionNames: FunctionName[] = [
 	"fetch_pp",
 	"get_pp_title",
 	"update_pp_title",
+	"move_participation_protocol",
 	"probe_pps_from_subject_hash",
 	"publish_participation_protocol",
 	"flag_bead",

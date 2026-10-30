@@ -341,19 +341,6 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         this._perspective.storeSubject(subject);
     }
 
-    /** Merge to MAIN_TOPIC */
-    async mergeToMainTopic(source: ActionId): Promise<void> {
-        console.log("threadsZvm.mergeToMainTopic()", source.b64);
-        await this.mergeSubject(source, MAIN_TOPIC_ID);
-    }
-
-    /** Merge */
-    async mergeSubject(source: ActionId, target: ActionId): Promise<void> {
-        console.log("threadsZvm.mergeSubject()", source.b64, target.b64);
-        // TODO: Enable if mergeSubject zfn added to DNA
-        // await this.zomeProxy.mergeSubject({subjectSource: source.hash, subjectTarget: target.hash});
-    }
-
     /** Get all Subjects from the RootAnchor */
     async pullAllSubjects(strategy: GetStrategy): Promise<void> {
         const subjects = await this.zomeProxy.pullAllSubjects(strategy);
@@ -924,6 +911,29 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         const [pp_ah, ts] = await this.zomeProxy.publishParticipationProtocol(pp);
         /** */
         return [ts, new ActionId(pp_ah)];
+    }
+
+
+    /** File a thread under another category. Applied locally first so the drop is instant,
+     *  undone if the zome refuses (not author, not moderator). */
+    async moveThread(ppAh: ActionId, toTopicAh: ActionId): Promise<void> {
+        const current = this._perspective.getThreadSubject(ppAh);
+        if (!current) {
+            throw Error("Thread is not filed under any subject");
+        }
+        if (current.b64 == toTopicAh.b64) {
+            return;
+        }
+        const now = Date.now() * 1000;
+        this._perspective.fileThread(ppAh, toTopicAh, now);
+        this.notifySubscribers();
+        try {
+            await this.zomeProxy.moveParticipationProtocol({ppAh: ppAh.hash, from: current.hash, to: toTopicAh.hash});
+        } catch (e) {
+            this._perspective.fileThread(ppAh, current, now + 1);
+            this.notifySubscribers();
+            throw e;
+        }
     }
 
 
@@ -1934,6 +1944,16 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
                         this._perspective.unstoreFavorite(targetAh);
                     }
                 }
+            }
+                break;
+            case ThreadsLinkType.Threads: {
+                /** Where a thread is filed. Only creates matter: a probe never returns the
+                 *  deleted link of a moved thread, and the newest link wins in fileThread().
+                 *  DM threads are reached through Dm links, their agent base is skipped. */
+                if (StateChangeType.Create != pulse.state || pulse.base.hashType == HoloHashType.Agent) {
+                    return;
+                }
+                this._perspective.fileThread(new ActionId(pulse.target.b64), intoAnyId(pulse.base.b64), pulse.timestamp);
             }
                 break;
             case ThreadsLinkType.TitleFix: {

@@ -6,6 +6,7 @@ import {msg} from "@lit/localize";
 import {CommentRequest, EditTopicRequest, HideEvent, SpecialSubjectType, threadJumpEvent} from "../../events";
 import {sharedStyles} from "../../styles";
 import {latestThreadName} from "../../utils";
+import {toasty} from "../../toast";
 import {renderAvatar, renderAvatarGroup} from "../../render";
 import {ThreadsDnaPerspective, ThreadsDvm} from "../../viewModels/threads.dvm";
 import Menu from "@ui5/webcomponents/dist/Menu";
@@ -20,6 +21,8 @@ interface MenuTarget {
   hidden: boolean;
   isAuthor?: boolean;
   commentThread?: ActionId | null;
+  /** Channel only: the category it is listed under */
+  topic?: ActionId;
 }
 
 
@@ -51,6 +54,8 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
   // onlineLoaded!: boolean;
 
   private _dragged: any;
+  /** A cross-category drop, run once dragend has repainted the list */
+  private _pendingMove?: [ActionId, ActionId];
 
   @state() private _menuTarget?: MenuTarget;
 
@@ -117,7 +122,12 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
     if (!target) {
       return;
     }
-    switch (e.detail.item.id) {
+    const itemId: string = e.detail.item.id;
+    if (itemId.startsWith("move-")) {
+      /*await*/ this.moveChannel(target.address, new ActionId(itemId.slice("move-".length)));
+      return;
+    }
+    switch (itemId) {
       case "hide":
       case "show":
         this.dispatchEvent(new CustomEvent<HideEvent>('archive', {
@@ -145,12 +155,32 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
       ? html`<ui5-menu-item id="show" icon="show" text=${msg("Show")}></ui5-menu-item>`
       : html`<ui5-menu-item id="hide" icon="hide" text=${msg("Hide")}></ui5-menu-item>`;
     if (target.kind == "Channel") {
-      return hideItem;
+      /** Every other visible category is a destination */
+      const destinations = Array.from(this.threadsPerspective.semanticTopics.entries())
+        .filter(([topicAh, _]) => !target.topic || !topicAh.equals(target.topic))
+        .filter(([topicAh, _]) => this.showArchivedTopics || !this.threadsPerspective.hiddens[topicAh.b64]);
+      const moveItems = destinations.map(([topicAh, [title, _author]]) =>
+        html`<ui5-menu-item id=${"move-" + topicAh.b64} text=${title}></ui5-menu-item>`);
+      return html`
+        ${moveItems.length? html`<ui5-menu-item icon="move" text=${msg("Move to category")}>${moveItems}</ui5-menu-item>` : html``}
+        ${hideItem}`;
     }
     return html`
       ${target.isAuthor? html`<ui5-menu-item id="editTitle" icon="edit" text=${msg("Edit Title")}></ui5-menu-item>` : html``}
       <ui5-menu-item id="comments" icon="discussion" text=${msg("Category discussion")}></ui5-menu-item>
       ${hideItem}`;
+  }
+
+
+  /** File a channel under another category; the ZVM shows it there at once and puts it back
+   *  if the zome refuses */
+  async moveChannel(ppAh: ActionId, toTopicAh: ActionId) {
+    try {
+      await this._dvm.threadsZvm.moveThread(ppAh, toTopicAh);
+    } catch (e: any) {
+      console.warn("<topics-lister>.moveChannel() failed", e);
+      toasty(msg("Could not move channel") + ": " + (e?.message ?? e));
+    }
   }
 
 
@@ -266,7 +296,7 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
             const menuBtn = html`
                 <ui5-button icon="overflow" tooltip=${msg("More")} design="Transparent"
                             class="menuBtn" style="${isSelected? "color:white;" : ""}"
-                            @click=${(e: any) => this.openMenu(e, {kind: "Channel", address: ppAh, title: thread.title, hidden: !!isThreadHidden})}></ui5-button>`;
+                            @click=${(e: any) => this.openMenu(e, {kind: "Channel", address: ppAh, title: thread.title, hidden: !!isThreadHidden, topic: topicAh})}></ui5-button>`;
 
             /** Create an avatar group */
             const agents: AgentId[] = this._dvm.allCurrentOthers(undefined, ppAh);
@@ -467,6 +497,13 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
              /** Force clear and repaint */
              render(nothing, this.shadowRoot!);
              this.requestUpdate();
+             /** Only now change the perspective: a re-render while a row still sits where the
+              *  drag left it would fight the repaint above */
+             const move = this._pendingMove;
+             this._pendingMove = undefined;
+             if (move) {
+               /*await*/ this.moveChannel(move[0], move[1]);
+             }
          }}
          @dragover=${(e: any) => {
             e.preventDefault();
@@ -484,29 +521,29 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
              if (e.dataTransfer!.types.includes('thread')) {
                e.dataTransfer!.dropEffect = 'move';
                (e.currentTarget as HTMLElement).classList.add('drag-over');
-
+               /** Any category panel takes the row. A row under the pointer sets the position;
+                *  the header or empty space means first when above the first row, else last. */
+               const panel = e.target.closest('ui5-panel') as HTMLElement | null;
+               if (!panel) return;
                const target = e.target.closest('sl-tooltip');
-               if (!target || target === this._dragged) return;
-
-               const topicB64 = this._dragged.children[0]!.topic;
-                 
-               const container = this.shadowRoot!.getElementById(topicB64)! as HTMLElement;
-               if (container.id != this._dragged.children[0]!.topic) return;
-
+               if (target === this._dragged) return;
+               if (!target) {
+                 const first = panel.querySelector<HTMLElement>('sl-tooltip');
+                 if (first && first !== this._dragged) {
+                   const dim = first.getBoundingClientRect();
+                   if (e.clientY < dim.top + dim.height / 2) {
+                     panel.insertBefore(this._dragged, first);
+                     return;
+                   }
+                 }
+                 if (panel.lastElementChild !== this._dragged) {
+                   panel.appendChild(this._dragged);
+                 }
+                 return;
+               }
                const {top, height} = target.getBoundingClientRect();
                const isAfterTarget = e.clientY > top + height / 2;
-
-               const first = container.querySelector<HTMLElement>('sl-tooltip');
-               const dim = first!.children[0]!.getBoundingClientRect();
-               const isBeforeFirst = e.clientY < dim.top + dim.height / 2;
-
-               //console.log("thread dragover", container.id, topicB64);
-               //console.log("thread dragover target", isAfterTarget, isBeforeFirst, this._dragged, target, container);
-               if (isBeforeFirst) {
-                   container.insertBefore(this._dragged, first);
-               } else {
-                 container.insertBefore(this._dragged, isAfterTarget ? target.nextSibling : target);
-               }
+               panel.insertBefore(this._dragged, isAfterTarget ? target.nextSibling : target);
              }
          }}
          @drop=${(e: any) => {
@@ -520,15 +557,23 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
               return;
             }
             const thread = e.dataTransfer!.getData('thread');
-            if (thread) {
-              const container = this.shadowRoot!.getElementById(this._dragged.children[0]!.topic)! as HTMLElement;
-              if (container.id != this._dragged.children[0]!.topic) return;
-              const order = Array.from(container.children)
-                .map(el => el.children[0]!.id)
-                .filter(id => id !== '');
-              const deduped = [...new Set(order)];
-              //console.log("THREAD ORDER", this._dragged.children[0]!.topic, deduped);
-              localStorage.setItem("vinesThreadOrder-" + this._dragged.children[0]!.topic, JSON.stringify(deduped));
+            if (thread && this._dragged) {
+              /** The row sits where it was dropped: that panel's order is saved as shown, and
+               *  when it is another category, the source order loses the row and the channel
+               *  is moved. */
+              const panel = this._dragged.parentElement as HTMLElement;
+              const fromTopic: string = this._dragged.children[0]!.topic;
+              const toTopic = panel.id;
+              const orderOf = (p: HTMLElement) => [...new Set(
+                Array.from(p.children).map((el) => el.children[0]?.id ?? '').filter((id) => id !== ''))];
+              localStorage.setItem("vinesThreadOrder-" + toTopic, JSON.stringify(orderOf(panel)));
+              if (toTopic != fromTopic) {
+                const source = this.shadowRoot!.getElementById(fromTopic) as HTMLElement | null;
+                if (source) {
+                  localStorage.setItem("vinesThreadOrder-" + fromTopic, JSON.stringify(orderOf(source)));
+                }
+                this._pendingMove = [new ActionId(thread), new ActionId(toTopic)];
+              }
             }
          }}>
         ${treeItems}

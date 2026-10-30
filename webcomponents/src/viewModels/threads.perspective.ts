@@ -180,6 +180,9 @@ export class ThreadsPerspective {
 
   /** Store threads for queried/probed subjects: SubjectHash -> ProtocolAh */
   threadsPerSubject: AnyIdMap<ActionId[]> = new AnyIdMap();
+  /** Which subject each thread is filed under and the time of the "Threads" link that put it
+   *  there. The link decides, not the entry's subject: a moved thread keeps its entry. */
+  threadFiling: ActionIdMap<[AnyId, Timestamp]> = new ActionIdMap();
   /** PathEntryHash -> [DnaId, SubjectHash][] */
   subjectsPerType: EntryIdMap<[DnaId, AnyId][]> = new EntryIdMap();
   ///* name string -> ppAh */
@@ -591,13 +594,20 @@ export class ThreadsPerspective {
     return all;
   }
 
-  /** */
+  /** Only threads whose entry is known: a link can arrive before the thread it points to */
   getSubjectVersionThreads(subjectId: AnyId): ActionId[] {
     //console.log("getSubjectVersionThreads() delete known:", this.deletedThreads.size, this.deletedThreads);
     const maybe = this.threadsPerSubject.get(subjectId.b64);
     if (!maybe) return [];
-    const filtered = maybe.filter((ppAh) => !this.deletedThreads.has(ppAh.b64));
+    const filtered = maybe.filter((ppAh) => this.threads.has(ppAh) && !this.deletedThreads.has(ppAh.b64));
     return filtered;
+  }
+
+
+  /** Subject a thread is currently filed under */
+  getThreadSubject(ppAh: ActionId): AnyId | undefined {
+    const filing = this.threadFiling.get(ppAh);
+    return filing? filing[0] : undefined;
   }
 
 
@@ -636,7 +646,8 @@ export class ThreadsPerspective {
     let newSubjects: AnyIdMap<Timestamp> = new AnyIdMap();
     for (const [origSubjectHash, oldestNewThreadTs] of oldestNewThreadBySubject.entries()) {
       const subjectHash = this.getOrigSubject(intoAnyId(origSubjectHash)).b64;
-      const threads = this.threadsPerSubject.get(subjectHash)? this.threadsPerSubject.get(subjectHash)! : [];
+      /** Known threads only: a "Threads" link can be filed before its thread is fetched */
+      const threads = (this.threadsPerSubject.get(subjectHash) ?? []).filter((ppAh) => this.threads.has(ppAh));
       const pairs: [ActionId, Timestamp][] = threads.map((ppAh) => {
         const thread = this.threads.get(ppAh);
         if (!thread) {
@@ -1154,11 +1165,8 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
         //console.debug(`storeThread() newThreads "${ppAh.short}"`);
         this.newThreads.set(ppAh, subjectAddr);
       }
-      /** threadsPerSubject */
-      if (!this.threadsPerSubject.get(subjectAddr.b64)) {
-        this.threadsPerSubject.set(subjectAddr.b64, []);
-      }
-      this.threadsPerSubject.get(subjectAddr.b64)!.push(ppAh);
+      /** File under the entry's subject until a "Threads" link says otherwise */
+      this.fileThread(ppAh, subjectAddr, 0);
 
       /** All Subjects */
       this.storeSubject(pp.subject);
@@ -1169,6 +1177,33 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
     //console.log("storePp()", ppMat.subjectHash, ppAh)
     /** Done */
     return pp;
+  }
+
+
+  /** File a thread under a subject, as of a "Threads" link created at `linkTs`.
+   *  The newest link wins, so a move seen through a stale local cache cannot undo one seen
+   *  from the network. Returns false when an equal or newer filing already exists. */
+  fileThread(ppAh: ActionId, subjectId: AnyId, linkTs: Timestamp): boolean {
+    const current = this.threadFiling.get(ppAh);
+    if (current) {
+      if (current[1] > linkTs) {
+        return false;
+      }
+      if (current[0].b64 == subjectId.b64) {
+        this.threadFiling.set(ppAh, [subjectId, linkTs]);
+        return false;
+      }
+      const previous = this.threadsPerSubject.get(current[0].b64);
+      if (previous) {
+        this.threadsPerSubject.set(current[0].b64, previous.filter((ah) => !ah.equals(ppAh)));
+      }
+    }
+    this.threadFiling.set(ppAh, [subjectId, linkTs]);
+    if (!this.threadsPerSubject.get(subjectId.b64)) {
+      this.threadsPerSubject.set(subjectId.b64, []);
+    }
+    this.threadsPerSubject.get(subjectId.b64)!.push(ppAh);
+    return true;
   }
 
 
@@ -1369,6 +1404,7 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
     /** this.threads */
     this.threads.clear();
     this.threadsPerSubject.clear();
+    this.threadFiling.clear();
     this.dmAgents.clear();
     for (const [ppAhB64, ppMat, title, creationTime, _maybeOtherAgent] of Object.values(snapshot.pps)) {
       const ppAh = new ActionId(ppAhB64);
