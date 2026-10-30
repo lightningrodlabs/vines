@@ -111,7 +111,7 @@ export class RulesView extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
                 <div class="field-value badge-container">
                     ${fileRules.allowedFileTypes.length > 0
                             ? fileRules.allowedFileTypes.map(fileType => html`
-                                <ui5-tag class="tag-muted">
+                                <ui5-tag hide-state-icon class="tag-muted">
                                     ${(handledMimeTypes as any)[fileType]}
                                 </ui5-tag>`)
                             : html`
@@ -148,7 +148,7 @@ export class RulesView extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
                 <div class="field-value badge-container">
                     ${textRules.bannedWords.length > 0
                             ? textRules.bannedWords.map(word => html`
-                                <ui5-tag color-scheme="negative">${word}</ui5-tag>`)
+                                <ui5-tag hide-state-icon color-scheme="negative">${word}</ui5-tag>`)
                             : html`
                                 <ui5-icon name="accept" class="icon-true"></ui5-icon>${msg('No banned words')}`}
                 </div>

@@ -227,7 +227,7 @@ export class ToolLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> impl
         /** 'new' badge to display */
         let newBadge = html``;
         if (threadIsNew) {
-          newBadge = html`<ui5-tag class="tag-warning" style="margin-left:3px;">${msg("new")}</ui5-tag>`;
+          newBadge = html`<ui5-tag hide-state-icon class="tag-warning" style="margin-left:3px;">${msg("new")}</ui5-tag>`;
         }
 
         const tmpl = html`
@@ -305,7 +305,7 @@ export class ToolLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> impl
       /** 'new' badge to display */
       let newBadge = html``;
       if (topicIsNew) {
-        newBadge = html`<ui5-tag class="tag-warning" style="margin-top:10px;">+1</ui5-tag>`;
+        newBadge = html`<ui5-tag hide-state-icon class="tag-warning" style="margin-top:10px;">+1</ui5-tag>`;
       }
 
       const subjectHasUnreads = unreadSubjects.map(id => id.b64).includes(pathEh.b64);

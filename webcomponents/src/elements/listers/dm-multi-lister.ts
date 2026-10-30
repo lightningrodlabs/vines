@@ -86,20 +86,20 @@ export class DmMultiLister extends DnaMultiElement<ThreadsDvm> {
         /** Determine badge & buttons */
 
         /** 'new', 'notif' or 'unread' badge to display */
-          // let badge = html`<ui5-tag>0</ui5-tag>`;
+          // let badge = html`<ui5-tag hide-state-icon>0</ui5-tag>`;
         let badge = html`<div style="min-width: 26px"></div>`;
         let notifCount = dvm.threadsZvm.perspective.getAllNotificationsForPp(ppAh).length;
         if (threadIsNew) {
           badge = html`
-            <ui5-tag class="notifBadge">New</ui5-tag>`;
+            <ui5-tag hide-state-icon class="notifBadge">New</ui5-tag>`;
         } else {
           if (notifCount > 0) {
             badge = html`
-              <ui5-tag class="notifBadge">${notifCount}</ui5-tag>`;
+              <ui5-tag hide-state-icon class="notifBadge">${notifCount}</ui5-tag>`;
           } else {
             if (hasNewBeads) {
               badge = html`
-                <ui5-tag class="unreadBadge">${maybeUnreadThread[1].length}</ui5-tag>`;
+                <ui5-tag hide-state-icon class="unreadBadge">${maybeUnreadThread[1].length}</ui5-tag>`;
             }
           }
         }
