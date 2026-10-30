@@ -211,7 +211,7 @@ export class DmLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                            
                            const container = this as HTMLElement;
                             
-                           const {top, height} = target.getBoundingClientRect();
+                           const {top, height} = target.children[0]!.getBoundingClientRect();
                            const isAfterTarget = e.clientY > top + height / 2;
 
                            const first = container.shadowRoot!.querySelector<HTMLElement>('sl-tooltip');
