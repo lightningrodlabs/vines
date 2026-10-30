@@ -80,7 +80,7 @@ export class SideItem extends DnaElement<unknown, ThreadsDvm> {
   renderContent(): [TemplateResult<1>, AgentId | undefined, string | undefined] {
     let content = html``;
     if (!this.hash) {
-      content = html`<span style="color:red">missing hash</span>`;
+      content = html`<span style="color: var(--vines-negative)">missing hash</span>`;
       return [content, undefined, undefined];
     }
     const beadInfo = this._dvm.threadsZvm.perspective.getBaseBeadInfo(this.hash);
@@ -106,7 +106,7 @@ export class SideItem extends DnaElement<unknown, ThreadsDvm> {
         }
         break;
       case ThreadsEntryType.AnyBead:
-        content = html`<div style="color:red;">${msg('WeaveServices not available')}</div>`;
+        content = html`<div style="color: var(--vines-negative);">${msg('WeaveServices not available')}</div>`;
         const anyBead = typedBead as AnyBeadMat;
         if (anyBead.typeInfo === "wal" && this.weServices) {
           const wal = weaveUrlToWal(anyBead.value);
@@ -116,7 +116,7 @@ export class SideItem extends DnaElement<unknown, ThreadsDvm> {
           if (!maybeInfo) {
             content = html`
               <div .id=${id} 
-                   style="color:#8a0cb7; cursor:pointer; overflow: auto; display: flex; flex-direction: row; gap:5px"
+                   style="color: var(--vines-accent-alt); cursor:pointer; overflow: auto; display: flex; flex-direction: row; gap:5px"
                    @click=${async (e: any) => {
                       e.stopPropagation();
                       await this.weServices?.assets.assetInfo(wal);
@@ -128,7 +128,7 @@ export class SideItem extends DnaElement<unknown, ThreadsDvm> {
           `;
           } else {
             content = html`
-              <div .id=${id} style="color:#8a0cb7; cursor:pointer; overflow: auto;"
+              <div .id=${id} style="color: var(--vines-accent-alt); cursor:pointer; overflow: auto;"
                    @click=${(_e: any) => this.weServices?.openAsset(wal)}>
                   ${maybeInfo.assetInfo.name}
               </div>
@@ -178,7 +178,7 @@ export class SideItem extends DnaElement<unknown, ThreadsDvm> {
     const prevBeadInfo = this._dvm.threadsZvm.perspective.getBaseBeadInfo(beadInfo.bead.prevBeadAh);
     const prevBead = this._dvm.threadsZvm.perspective.getBaseBead(beadInfo.bead.prevBeadAh);
     if (!prevBeadInfo || !prevBead) {
-      return html`<ui5-busy-indicator delay="0" size="S" active style="color:#f69e19"></ui5-busy-indicator>`;
+      return html`<ui5-busy-indicator delay="0" size="S" active style="color: var(--vines-warning)"></ui5-busy-indicator>`;
     }
     /** */
     return html`
@@ -205,7 +205,7 @@ export class SideItem extends DnaElement<unknown, ThreadsDvm> {
     const agentName = maybeProfile? maybeProfile.nickname : "unknown";
     /* render item */
     return html`
-    <div class="sideItem" style="${this.new? "border: 1px solid #F64F4F;" : ""}"
+    <div class="sideItem" style="${this.new? "border: 1px solid var(--vines-negative);" : ""}"
          @click=${(e: any) => {
             console.log("sideItem clicked", this.hash);
             e.stopPropagation();
@@ -240,20 +240,19 @@ export class SideItem extends DnaElement<unknown, ThreadsDvm> {
       sharedStyles,
       css`
         .chatAvatar {
-          outline: rgb(152, 155, 153) solid 1px;
+          outline: var(--vines-border) solid 1px;
         }
         .reply {
-          /*box-shadow: rgba(0, 0, 0, 0.25) 0px 14px 28px, rgba(0, 0, 0, 0.22) 0px 10px 10px;*/
-          color: gray;
+          color: var(--vines-ink-muted);
           padding: 5px 0px 5px 10px;
         }
         
         .reply:hover {
-          background: #def9de;
+          background: var(--vines-surface-tint);
         }
           
           .file-link {
-              color:#1067d7; cursor:pointer; overflow: auto;
+              color: var(--vines-link); cursor:pointer; overflow: auto;
           }
           
           .file-link:hover {

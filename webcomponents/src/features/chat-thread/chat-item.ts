@@ -302,7 +302,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
 
     const topVineRow: TemplateResult<1> = hasFarPrev? html`
         <div class="topRow"
-             style="display: flex; flex-direction: row; gap: 5px; font-size: small; align-items: center; color: #2c6ea8; ">
+             style="display: flex; flex-direction: row; gap: 5px; font-size: small; align-items: center; color: var(--vines-accent); ">
             <div class="vineColumn" style="display: flex; flex-direction: column;">
                 <div class="topVine" style="flex-grow:1;">
                     <div style="flex-grow:1;"></div>
@@ -441,7 +441,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
                       @click="${(_e: any) => this.onClickComment(maybeCommentThread, beadAsSubjectName, baseBeadInfo.beadType, "side")}">
           </ui5-button>`;
       const isUnread = this.threadsPerspective.unreads.has(maybeCommentThread);
-      const commentLinkColor = isUnread? "#33A000" : "#2C74FF";
+      const commentLinkColor = isUnread? "var(--vines-accent-soft)" : "var(--vines-accent-alt)";
       const thread = this.threadsPerspective.threads.get(maybeCommentThread)!;
       const threadAvatar = renderAvatar(this, this._dvm.profilesZvm, thread.author, "XS");
       if (thread.beadLinksTree.length > 0) {
@@ -555,7 +555,6 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     //const alwaysVisible = isNew? "always-visible" : "";
     //               <ui5-icon class="pb-icon ${alwaysVisible}" name="validate"></ui5-icon>
     //               <ui5-icon class="pb-icon ${alwaysVisible}" name="sys-enter"></ui5-icon>
-    //               <ui5-icon class="pb-icon" ${alwaysVisible} name="sys-enter" style="color:#ff0000b8;"></ui5-icon>
 
 
     /** start unvalidated */
@@ -581,7 +580,6 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     if (validatedBy == ValidatedBy.Network) {
       // TODO: Holochain doesnt check if enough validation receipts have been received, so for now
       // we dont display any difference with ValidatedBy.Peer
-      // style="color:green;
       msgStateIcon = html`
           <sl-tooltip hoist content=${msg("Message validated by the network")}>
               <sl-icon class="pb-icon ${visible}" name="patch-check"></sl-icon>
@@ -727,7 +725,6 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
 
   /** */
   static override get styles() {
-    //const VINE_COLOR = "rgb(108, 176, 70)";
     return [
       sharedStyles,
       css`
@@ -750,9 +747,9 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
         #buttonsPop {
           padding: 1px 2px 1px 2px;
           border-radius: 8px;
-          border: 1px solid #29538a;
+          border: 1px solid var(--vines-border);
           display: none;
-          background: rgba(255, 255, 255, 0.95);
+          background: var(--vines-surface);
           position: absolute;
           top: -14px;
           right: 5px;
@@ -762,7 +759,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
         #agentName {
           font-family: "72";
           font-weight: bold;
-          color: rgba(38, 38, 38, 0.9);
+          color: var(--vines-ink);
         }
 
         #bottomLeft {
@@ -794,23 +791,22 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
         }
 
         #prevBeadName:hover {
-          color: black;
+          color: var(--vines-ink);
           cursor: pointer;
         }
 
         .vine {
           flex-grow: 1;
-          border-left: 2px solid rgba(227, 227, 227, 0.49); /*#939393;*/
+          border-left: 2px solid var(--vines-border);
         }
 
         .replyVine {
-          border-top: 2px solid rgba(185, 185, 185, 0.41); /*#939393;*/
+          border-top: 2px solid var(--vines-border);
           border-top-left-radius: 10px;
         }
 
         .bordered {
-          /*border-left: 2px solid #939393;*/
-          border-bottom: 2px solid rgba(185, 185, 185, 0.41); /*#939393;*/
+          border-bottom: 2px solid var(--vines-border);
           border-bottom-left-radius: 10px;
         }
 
@@ -825,7 +821,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
         }
 
         .flagged {
-          color: grey;
+          color: var(--vines-ink-muted);
           font-style: italic;
         }
 
@@ -835,7 +831,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
           left: 0;
           width: 100%;
           height: 100%;
-          background-color: rgba(205, 222, 205, 0.33);
+          background-color: color-mix(in srgb, var(--vines-surface-tint) 60%, transparent);
           /*z-index: 50;*/
         }
 
@@ -845,7 +841,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
           left: 0;
           width: 100%;
           height: 100%;
-          background-color: rgba(222, 222, 222, 0.33);
+          background-color: var(--vines-row-hover);
           /*z-index: 50;*/
         }
 
@@ -860,20 +856,18 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
 
         .chatAvatar {
           margin: 2px 0px 0px 2px;
-          /*box-shadow: rgba(25, 74, 3, 0.98) 1px 1px 1px 1px;*/
-          /*outline: #4a7b57 solid 2px;*/
         }
 
         .replyAvatar {
           margin: 0px -7px 0px -5px;
           transform: scale(0.6);
-          outline: #4a7b57 solid 1px;
+          outline: var(--vines-accent) solid 1px;
         }
 
         .chatDate {
           margin: 0px 0px 3px 10px;
           font-size: 12px;
-          color: gray;
+          color: var(--vines-ink-muted);
         }
 
         .thread-link {
@@ -883,7 +877,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
         }
 
         .linky {
-          color: blue;
+          color: var(--vines-link);
         }
 
         .linky:hover {
@@ -895,7 +889,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
           padding-left: 10px;
           left: 5px;
           font-size: 0px !important;
-          color: grey;
+          color: var(--vines-ink-muted);
           padding-top: 1px;
         }
 
@@ -905,7 +899,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
 
         .pb-icon {
           margin-left: 12px;
-          color: grey;
+          color: var(--vines-ink-muted);
           font-size: 0px;            
         }
 

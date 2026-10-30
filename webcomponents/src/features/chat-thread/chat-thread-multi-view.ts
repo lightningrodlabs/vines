@@ -140,9 +140,9 @@ export class ChatThreadMultiView extends DnaMultiElement<ThreadsDvm> {
     }
     /** Set background according to load state */
     if (this._loading) {
-      this.style.background = "#ececec";
+      this.style.background = "var(--vines-surface-2)";
     } else {
-      this.style.background = "#FBFCFD";
+      this.style.background = "var(--vines-surface)";
     }
   }
 
@@ -204,10 +204,10 @@ export class ChatThreadMultiView extends DnaMultiElement<ThreadsDvm> {
     //console.log("<chat-thread-multi-view>.render()", this._loading, this._dvms.size, this.dmThreads.length, this.agent, this.beadAh);
     /** */
     if (this.agent === undefined) {
-      return html`<div style="margin:auto; color:red;font-weight: bold;font-size: 3rem">${msg("No peer selected")}</div>`;
+      return html`<div style="margin:auto; color: var(--vines-negative);font-weight: bold;font-size: 3rem">${msg("No peer selected")}</div>`;
     }
     if (!this.dmThreads.length) {
-      return html`<ui5-busy-indicator delay="50" size="L" active style="width:100%; height:100%; color:olive"></ui5-busy-indicator>`;
+      return html`<ui5-busy-indicator delay="50" size="L" active style="width:100%; height:100%; color: var(--vines-accent-soft)"></ui5-busy-indicator>`;
     }
 
     /** Merge trees */
@@ -268,7 +268,6 @@ export class ChatThreadMultiView extends DnaMultiElement<ThreadsDvm> {
         //   hr = html`
         //       <div style="display: flex; flex-direction: row">
         //           <div style="border-top: 2px solid red; flex-grow: 1; height: 0px"></div>
-        //           <div style="width: fit-content;background: red;color:white;font-size:small;padding:2px; font-weight:bold;">${beadDateStr}</div>
         //       </div>
         //   `;
         // }
@@ -283,7 +282,7 @@ export class ChatThreadMultiView extends DnaMultiElement<ThreadsDvm> {
           timeHr = html`
             <div style="display: flex; flex-direction: row">
                 <hr class="timeHr"/>
-                <div style="font-size:small; color: #3e3d3dcc;padding-left: 3px; padding-right:3px;">
+                <div style="font-size:small; color: var(--vines-ink-muted);padding-left: 3px; padding-right:3px;">
                     ${day}
                 </div>
                 <hr class="timeHr" />
@@ -294,7 +293,7 @@ export class ChatThreadMultiView extends DnaMultiElement<ThreadsDvm> {
         let chatItem = html`
             <cell-context .cell=${this._dvms.get(dnaIdMap.get(blm.beadAh)!)!.cell}>
               <chat-item id=${blm.beadAh.b64} .hash=${blm.beadAh} .prevBeadAh=${prevBeadAh}
-                         style="${this.beadAh && blm.beadAh.equals(this.beadAh)? "background:#c4f2b07a" : ""}">
+                         style="${this.beadAh && blm.beadAh.equals(this.beadAh)? "background: var(--vines-surface-tint)" : ""}">
               </chat-item>
             </cell-context>
         `;
@@ -350,7 +349,7 @@ export class ChatThreadMultiView extends DnaMultiElement<ThreadsDvm> {
           flex-direction: column;
           /*gap:15px;*/
           height: inherit;
-          background: #FBFCFD;
+          background: var(--vines-surface);
           font-family: '72-Light';
         }
 

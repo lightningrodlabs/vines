@@ -81,26 +81,24 @@ export class CopyWalButton extends LitElement {
         .logo {
           width: 26px;
           height: 26px;
-          background-color: #464646;
+          background-color: var(--vines-ink);
           margin: 5px;
           -webkit-mask: url(add-to-pocket.svg) no-repeat center / contain;
           mask: url(add-to-pocket.svg) no-repeat center / contain;
         }
 
         .add-to-pocket {
-          /*background: #2eb2d7;*/
           display: flex;
           border-radius: 5px;
           cursor: pointer;
         }
 
         .add-to-pocket:active {
-          background: blue;
+          background: var(--vines-accent);
         }
 
         .add-to-pocket:hover {
-          outline: 1px solid rgb(78, 149, 222);
-          /*background: rgb(125 206 249 / 16%);*/
+          outline: 1px solid var(--vines-accent);
         }
 
         .add-to-pocket img {

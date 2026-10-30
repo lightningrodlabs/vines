@@ -219,7 +219,6 @@ export class ChatWal extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
           min-width: 350px;
           border-radius: 10px;
           margin: 10px 5px 10px 5px;
-          /*box-shadow: rgba(0, 0, 0, 0.25) 0px 14px 28px, rgba(0, 0, 0, 0.22) 0px 10px 10px;*/
         }
 
         /* wal-embed fills its host box (:host and .container are both height:100%)
@@ -248,7 +247,7 @@ export class ChatWal extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
           height: 10px;
           margin-top: 2px;
           border-radius: 0 0 3px 3px;
-          background: repeating-linear-gradient(90deg, #b6c2dd 0 6px, transparent 6px 12px);
+          background: repeating-linear-gradient(90deg, var(--vines-border) 0 6px, transparent 6px 12px);
           background-position: center;
           background-size: auto 2px;
           background-repeat: repeat-x;
@@ -257,7 +256,7 @@ export class ChatWal extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
         }
 
         #resizeHandle:hover {
-          background-image: repeating-linear-gradient(90deg, #8595bf 0 6px, transparent 6px 12px);
+          background-image: repeating-linear-gradient(90deg, var(--vines-ink-muted) 0 6px, transparent 6px 12px);
         }
 
         #fileLi {

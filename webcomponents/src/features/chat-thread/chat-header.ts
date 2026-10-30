@@ -252,16 +252,16 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
           margin: 8px 0px 4px 0px;
           font-size: 1.4em;
           font-weight: 600;
-          color: #2b3340;
+          color: var(--vines-ink);
         }
         h2 > ui5-button, h2 > copy-wal-button {
-          color: #8a8f98;
+          color: var(--vines-ink-muted);
           flex-shrink: 0;
         }
         .kind-icon {
           width: 1.2em;
           height: 1.2em;
-          color: #8a8f98;
+          color: var(--vines-ink-muted);
         }
         .path {
           white-space: nowrap;
@@ -269,7 +269,7 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
           text-overflow: ellipsis;
         }
         .sep {
-          color: #a0a4ab;
+          color: var(--vines-ink-muted);
           font-weight: 400;
         }
         .quote {
@@ -278,7 +278,7 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
           max-width: 50%;
         }
         .muted {
-          color: #8a8f98;
+          color: var(--vines-ink-muted);
           font-weight: 400;
         }
 
@@ -295,7 +295,7 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
         .subtext {
           display: flex;
           gap: 5px;
-          color: #505459;
+          color: var(--vines-ink);
           /*margin-left:10px;*/
           margin-bottom:5px;
           align-items: center;

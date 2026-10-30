@@ -190,7 +190,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
     this._renderCount += 1;
 
     if (!this.hash) {
-      return html`<div style="color:#c10a0a">${msg("No File address provided")}</div>`;
+      return html`<div style="color: var(--vines-negative)">${msg("No File address provided")}</div>`;
     }
     if (this._loading) {
       return html`<ui5-busy-indicator delay="0" size="L" active style="min-height: 100px;"></ui5-busy-indicator>`;
@@ -212,7 +212,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
     }
     const entryBead = this._dvm.threadsZvm.perspective.getBaseBead(new ActionId(this.hash)) as EntryBeadMat;
     if (!entryBead) {
-      return html`<ui5-busy-indicator delay="0" size="M" active style="color:#f3bb2c"></ui5-busy-indicator>`;
+      return html`<ui5-busy-indicator delay="0" size="M" active style="color: var(--vines-warning)"></ui5-busy-indicator>`;
     }
     const manifestEh = entryBead.sourceEh;
     const filePprm = this._filesDvm.deliveryZvm.perspective.publicParcels.get(manifestEh);
@@ -221,7 +221,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
       if (this._canRetry) {
         this._canRetry = false;
         /*await*/ this.probeForFileManifest(manifestEh, 1000);
-        return html`<ui5-busy-indicator delay="0" size="M" active style="color:#f61933"></ui5-busy-indicator>`;
+        return html`<ui5-busy-indicator delay="0" size="M" active style="color: var(--vines-negative)"></ui5-busy-indicator>`;
       }
       return html`
         <ui5-list id="fileList" style="max-width: 300px;">
@@ -357,7 +357,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
           min-width: 350px;
           max-width: 600px;
           border-radius: 10px;
-          box-shadow: rgba(0, 0, 0, 0.25) 0px 4px 8px, rgba(0, 0, 0, 0.22) 0px 8px 5px;
+          box-shadow: var(--vines-shadow-pop);
           /*margin: 10px 5px 10px 5px;*/
           margin-bottom: 10px;
         }
@@ -383,7 +383,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
           align-items: center;
           gap: 4px;
           font-size: small;
-          color: #5e5e6b;
+          color: var(--vines-ink-muted);
         }
         .embedded-file-name {
           flex: 1;
@@ -394,7 +394,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
         }
 
         .preview {
-          background: #ffffff;
+          background: var(--vines-surface);
           min-height: 40px;
           min-width: 40px;
           max-height: 400px;
@@ -402,8 +402,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
           /*width:100%;*/
           /*max-width: 440px;*/
           /*overflow: auto;*/
-          /*outline: rgb(172, 172, 172) solid 1px;*/
-          box-shadow: rgba(0, 0, 0, 0.25) 0px 4px 3px, rgba(0, 0, 0, 0.22) 0px 4px 6px;
+          box-shadow: var(--vines-shadow-card);
 
         }
 
@@ -429,7 +428,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
           min-height: 250px !important;
           max-height: 100vh !important;
           white-space: pre;
-          box-shadow: rgba(0, 0, 0, 0.15) 0px 3px 3px 0px inset;
+          box-shadow: inset 0 3px 3px 0 color-mix(in srgb, var(--vines-ink) 15%, transparent);
         }
 
       `,];

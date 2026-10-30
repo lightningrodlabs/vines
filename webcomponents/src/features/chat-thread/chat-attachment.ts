@@ -121,7 +121,7 @@ export class ChatAttachment extends LitElement {
     //console.log("<chat-attachment>.render()", this._att);
 
     if (!this.attachment) {
-      return html`<div style="color:#c10a0a">${msg("No Attachment provided")}</div>`;
+      return html`<div style="color: var(--vines-negative)">${msg("No Attachment provided")}</div>`;
     }
 
     /** Default file type render (or any big file) */
@@ -214,7 +214,7 @@ export class ChatAttachment extends LitElement {
           min-width: 350px;
           max-width: 600px;
           border-radius: 10px;
-          box-shadow: rgba(0, 0, 0, 0.25) 0px 4px 8px, rgba(0, 0, 0, 0.22) 0px 8px 5px;
+          box-shadow: var(--vines-shadow-pop);
           /*margin: 10px 5px 10px 5px;*/
           margin-bottom: 10px;
         }
@@ -231,7 +231,7 @@ export class ChatAttachment extends LitElement {
 
 
         .preview {
-          background: #ffffff;
+          background: var(--vines-surface);
           min-height: 40px;
           min-width: 40px;
           max-height: 400px;
@@ -239,8 +239,7 @@ export class ChatAttachment extends LitElement {
           /*width:100%;*/
           /*max-width: 440px;*/
           /*overflow: auto;*/
-          /*outline: rgb(172, 172, 172) solid 1px;*/
-          box-shadow: rgba(0, 0, 0, 0.25) 0px 4px 3px, rgba(0, 0, 0, 0.22) 0px 4px 6px;
+          box-shadow: var(--vines-shadow-card);
 
         }
 
@@ -266,7 +265,7 @@ export class ChatAttachment extends LitElement {
           min-height: 250px !important;
           max-height: 100vh !important;
           white-space: pre;
-          box-shadow: rgba(0, 0, 0, 0.15) 0px 3px 3px 0px inset;
+          box-shadow: inset 0 3px 3px 0 color-mix(in srgb, var(--vines-ink) 15%, transparent);
         }
 
       `,];

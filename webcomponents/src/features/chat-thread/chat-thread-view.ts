@@ -166,7 +166,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
     }
     /** Set background according to load state */
     if (this._loading) {
-      this.style.background = "#ececec";
+      this.style.background = "var(--vines-surface-2)";
     } else {
       this.style.background = "inherit";
     }
@@ -228,13 +228,13 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
     /** */
     if (this.threadHash === undefined) {
       return html`
-          <div style="margin:auto; color:red;font-weight: bold;font-size: 3rem">${msg("No channel selected")}</div>`;
+          <div style="margin:auto; color: var(--vines-negative);font-weight: bold;font-size: 3rem">${msg("No channel selected")}</div>`;
     }
     const thread = this.threadsPerspective.threads.get(this.threadHash);
     if (!thread) {
       return html`
           <ui5-busy-indicator delay="50" size="L" active
-                              style="width:100%; height:100%; color:olive"></ui5-busy-indicator>`;
+                              style="width:100%; height:100%; color: var(--vines-accent-soft)"></ui5-busy-indicator>`;
     }
 
     /** chat-header */
@@ -287,8 +287,8 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
                     /** NEW */
                     hr = html`
                         <div style="display: flex; flex-direction: row; align-items: center; margin-right: 5px;">
-                            <div style="border-top: 2px dotted #33A000; flex-grow: 1; height: 0px"></div>
-                            <div style="width: fit-content; background: #33A000; color:white; font-size:small; border-radius:3px; padding: 2px 10px 2px 10px; margin-left: 3px; font-weight:bold;">
+                            <div style="border-top: 2px dotted var(--vines-accent-soft); flex-grow: 1; height: 0px"></div>
+                            <div style="width: fit-content; background: var(--vines-accent-soft); color: var(--vines-surface); font-size:small; border-radius: var(--vines-radius-pill); padding: 2px 10px 2px 10px; margin-left: 3px; font-weight:bold;">
                                 ${newStr}
                             </div>
                         </div>
@@ -304,12 +304,12 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
                     if (hr) {
                         hr = html`
                             <div style="display:flex; flex-direction:row; margin-bottom:2px;">
-                                <hr class="timeHr" style="border-bottom: 2px dotted #33A000;"/>
-                                <div style="font-size:14px; color:#33A000; padding-left:3px; padding-right:3px;">
+                                <hr class="timeHr" style="border-bottom: 2px dotted var(--vines-accent-soft);"/>
+                                <div style="font-size:14px; color: var(--vines-accent-soft); padding-left:3px; padding-right:3px;">
                                     ${day}
                                 </div>
-                                <hr class="timeHr" style="border-bottom: 2px dotted #33A000;"/>
-                                <div style="width: fit-content; background: #33A000; color:white; font-size:small; border-radius:3px; padding: 2px 10px 2px 10px; margin-left: 3px; font-weight:bold;">
+                                <hr class="timeHr" style="border-bottom: 2px dotted var(--vines-accent-soft);"/>
+                                <div style="width: fit-content; background: var(--vines-accent-soft); color: var(--vines-surface); font-size:small; border-radius: var(--vines-radius-pill); padding: 2px 10px 2px 10px; margin-left: 3px; font-weight:bold;">
                                     ${newStr}
                                 </div>
                             </div>
@@ -319,7 +319,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
                         hr = html`
                             <div style="display:flex; flex-direction:row; margin-bottom:2px;">
                                 <hr class="timeHr"/>
-                                <div style="font-size:14px; color:#868686; padding-left:3px; padding-right:3px;">
+                                <div style="font-size:14px; color: var(--vines-ink-muted); padding-left:3px; padding-right:3px;">
                                     ${day}
                                 </div>
                                 <hr class="timeHr"/>
@@ -331,7 +331,7 @@ export class ChatThreadView extends DnaElement<unknown, ThreadsDvm> {
                 const chatItem = html`
                     <chat-item id=${blm.beadAh.b64} .hash=${blm.beadAh} .prevBeadAh=${prevBeadAh} .canEdit=${false}
                                tabindex="-1"
-                               style="${this.beadAh && blm.beadAh.equals(this.beadAh)? "background:#c4f2b07a" : ""}">
+                               style="${this.beadAh && blm.beadAh.equals(this.beadAh)? "background: var(--vines-surface-tint)" : ""}">
                     </chat-item>`;
                 prevBeadAh = blm.beadAh;
                 /** Render chatItem */

@@ -173,7 +173,7 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
   /** */
   renderBadLink() {
     return html`
-      <abbr .title=${this.wurl}><ui5-tag color-scheme="2" style="color:#b50202"
+      <abbr .title=${this.wurl}><ui5-tag color-scheme="2" style="color: var(--vines-negative)"
           @click=${(_e: any) => {
       navigator.clipboard.writeText(this.wurl);
       if (this.weServices) {
@@ -207,7 +207,7 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     if (this._toolName == "Files") {
       const manifestEh = new EntryId(dhtId.b64);
       //return html`<file-button .hash=${new EntryId(dhtId.b64)}></file-button>`;
-      return html`<ui5-tag  style="color:#5e5e6b; background: white; border: 1px solid #cbcbcb"
+      return html`<ui5-tag  style="color: var(--vines-ink-muted); background: var(--vines-surface); border: 1px solid var(--vines-border)"
                               @click=${(e: any) => {
         e.stopPropagation();
         e.preventDefault();
@@ -226,7 +226,7 @@ export class WurlLink extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
     /** render valid link */
     return html`
         <!-- <sl-tooltip content="To ${this._toolName}"> -->
-          <ui5-tag style="color:#2f4dc4d4; background: white; border: 1px solid #225699a3"
+          <ui5-tag style="color: var(--vines-accent); background: var(--vines-surface); border: 1px solid var(--vines-accent-soft)"
                      @click=${(e: any) => {
       e.stopPropagation();
       e.preventDefault();

@@ -101,7 +101,7 @@ export class AudioPanel extends LitElement {
               <source .src=${this._maybeBlobUrl} type=${MIC_MIME_TYPE}>
               ${msg("Your browser does not support the audio element.")}
           </audio>
-          <span style="color:grey;font-size: small;">(${formatFileSize(this._maybeBlob!.size)})</span>
+          <span style="color: var(--vines-ink-muted);font-size: small;">(${formatFileSize(this._maybeBlob!.size)})</span>
       `;
     }
 

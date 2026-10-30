@@ -346,7 +346,7 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
     if (!this.threadHash) {
       return html`
           ${doodle_bg}
-          <div style="position: relative;z-index: 1;margin: auto;font-size: 1.5rem;color: #04040470;">
+          <div style="position: relative;z-index: 1;margin: auto;font-size: 1.5rem;color: var(--vines-ink-muted);">
               ${msg('No comment thread selected')}
           </div>
       `;
@@ -356,7 +356,7 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
     if (!thread) {
       return html`
           ${doodle_bg}
-          <div style="color:#c10a0a; margin:auto; width:50%; height:50%;">Comment thread not found</div>
+          <div style="color: var(--vines-negative); margin:auto; width:50%; height:50%;">Comment thread not found</div>
       `;
     }
     /** Still loading */
@@ -413,7 +413,7 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
     /** Different UI if no message found for thread */
     if (beads.length == 0) {
       commentItems = [html`
-          <div style="font-weight: bold; color: #1e1e1ecc;">
+          <div style="font-weight: bold; color: var(--vines-ink);">
               ${this.showInput && !this.assetview? msg("Add first message:") : msg("No messages found in thread")}
           </div>`]
     }
@@ -573,7 +573,7 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
             </div>
         </div>
         <div class="reply-to-div" style="display: ${this._replyToAh? "flex" : "none"};">
-            ${msg("Replying to")}<span style="font-weight: bold; color:#4270A8; margin-left:3px;">${replyToAuthorName}</span>
+            ${msg("Replying to")}<span style="font-weight: bold; color: var(--vines-accent); margin-left:3px;">${replyToAuthorName}</span>
             <div style="flex-grow: 1"></div>
             <ui5-button icon="decline" design="Transparent" style="border:none; padding:0px"
                         @click=${(_e: any) => {this._replyToAh = undefined;}}></ui5-button>
@@ -607,7 +607,7 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
               align-items: center;
               gap: 2px;
               margin: 10px;
-              color: #021133;
+              color: var(--vines-ink);
           }
 
           /* The name takes the slack so the buttons sit at the right edge. */
@@ -631,7 +631,7 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
           }
           
         ui5-avatar:hover {
-          outline: 1px solid #62c547;
+          outline: 1px solid var(--vines-accent-soft);
         }
 
         #list {
@@ -642,13 +642,13 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
 
         .reply-to-div {
           flex-direction: row;
-          background: #6f6f6f2e;
+          background: var(--vines-surface-2);
           margin: 0px 12px -4px;
           border-radius: 12px;
           font-size: smaller;
           padding-left: 5px;
           align-items: center;
-          color: #202020;
+          color: var(--vines-ink);
         }
 
         vines-input-bar {

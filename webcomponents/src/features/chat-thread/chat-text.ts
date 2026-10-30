@@ -31,7 +31,7 @@ export class ChatText extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
   override render() {
     //console.debug("<chat-text>.render()", this.hash);
     if (!this.hash) {
-      return html`<div style="color:red">${msg("No message found")}</div>`;
+      return html`<div style="color: var(--vines-negative)">${msg("No message found")}</div>`;
     }
 
     const tm = this._zvm.perspective.getBaseBead(this.hash) as TextBeadMat;
@@ -79,7 +79,7 @@ export class ChatText extends ZomeElement<ThreadsPerspective, ThreadsZvm> {
           margin: 0px;
         } 
         .edited { 
-          color:grey;
+          color: var(--vines-ink-muted);
           font-size:10px;
         }
         .edited:hover {
