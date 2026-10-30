@@ -22,6 +22,7 @@ import {ThreadsPerspective} from "../../viewModels/threads.perspective";
 import {Profile} from "@ddd-qc/profiles-dvm/dist/bindings/profiles.types";
 import {GetStrategy} from "@holochain-open-dev/core-types";
 import {ParcelDescription} from "@ddd-qc/delivery";
+import {lookupParcel} from "../../viewModels/dm-files";
 
 
 /**
@@ -141,16 +142,7 @@ export class SideItem extends DnaElement<unknown, ThreadsDvm> {
         const entryBead = typedBead as EntryBeadMat;
         //console.log("<side-item> entryBead", entryBead, entryBead.sourceEh.b64);
         const manifestEh = entryBead.sourceEh;
-        const maybePprm = this._filesDvm.deliveryZvm.perspective.publicParcels.get(manifestEh);
-        let desc: ParcelDescription | undefined = undefined;
-        if (maybePprm) {
-          desc = maybePprm.description;
-        } else {
-          const tuple = this._filesDvm.deliveryZvm.perspective.localPublicManifests.get(manifestEh);
-          if(tuple) {
-            desc = tuple[0].description
-          }
-        }
+        const desc: ParcelDescription | undefined = lookupParcel(this._filesDvm.deliveryZvm.perspective, manifestEh)?.description;
         if (desc) {
           content = html`<div class="file-link"
                               @click=${(e:any) => {

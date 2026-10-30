@@ -18,6 +18,7 @@ import {SpecialSubjectType} from "./events";
 import {toasty} from "./toast";
 import {msg, str} from "@lit/localize";
 import {DeliveryProperties} from "@ddd-qc/delivery";
+import {lookupParcel} from "./viewModels/dm-files";
 
 
 /** MAIN TOPIC is hardcoded */
@@ -468,11 +469,11 @@ export function determineBeadName(beadType: BeadType, typedBead: TypedBeadMat, f
         return "<unknown file>";
       }
       const fileBead = typedBead as EntryBeadMat;
-      const pprm = filesDvm.deliveryZvm.perspective.publicParcels.get(fileBead.sourceEh);
-      if (!pprm) {
+      const lookup = lookupParcel(filesDvm.deliveryZvm.perspective, fileBead.sourceEh);
+      if (!lookup) {
         return "<file>";
       }
-      return pprm.description.name;
+      return lookup.description.name;
       break;
     /** AnyBead: assetInfo.name */
     case ThreadsEntryType.AnyBead:

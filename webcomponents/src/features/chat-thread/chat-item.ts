@@ -13,6 +13,7 @@ import {filesContext, weClientContext} from "../../contexts";
 import {intoHrl, WeServicesEx} from "@ddd-qc/we-utils";
 import {Hrl, weaveUrlToWAL} from "@theweave/api";
 import {FilesDvm} from "@ddd-qc/files";
+import {isParcelReady, lookupParcel} from "../../viewModels/dm-files";
 
 import Menu from "@ui5/webcomponents/dist/Menu";
 import Button from "@ui5/webcomponents/dist/Button";
@@ -250,7 +251,12 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
         }
         if (beadInfo.beadType == ThreadsEntryType.EntryBead) {
           const entryBead = this.threadsPerspective.getBaseBead(this.hash) as EntryBeadMat;
-          this._filesDvm.downloadFile(entryBead.sourceEh);
+          const lookup = lookupParcel(this._filesDvm.deliveryZvm.perspective, entryBead.sourceEh);
+          if (lookup && !isParcelReady(lookup)) {
+            toasty(msg("File not received yet"));
+          } else {
+            this._filesDvm.downloadFile(entryBead.sourceEh);
+          }
         }
         if (beadInfo.beadType == ThreadsEntryType.AnyBead) {
           const anyBead = this.threadsPerspective.getBaseBead(this.hash) as AnyBeadMat;
@@ -411,8 +417,11 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     }
     if (baseBeadInfo.beadType == ThreadsEntryType.EntryBead) {
       item = html`<chat-file class="${itemClass}" .hash=${this.hash.b64}></chat-file>`;
+      /** A private file still on its way cannot be downloaded yet */
+      const fileLookup = lookupParcel(this._filesDvm.deliveryZvm.perspective, (typed as EntryBeadMat).sourceEh);
+      const canDownload = !!fileLookup && isParcelReady(fileLookup);
       downloadItem = html`
-          <ui5-menu-item id="downloadItem" icon="download" text=${msg("Download File")}></ui5-menu-item>`;
+          <ui5-menu-item id="downloadItem" icon="download" text=${msg("Download File")} ?disabled=${!canDownload}></ui5-menu-item>`;
     }
     if (baseBeadInfo.beadType == ThreadsEntryType.AnyBead) {
       item = html`

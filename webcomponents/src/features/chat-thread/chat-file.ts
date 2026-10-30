@@ -7,7 +7,8 @@ import {consume} from "@lit/context";
 import {filesContext} from "../../contexts";
 import {FilesDvm, FileType, kind2mime, kind2Type, prettyFileSize} from "@ddd-qc/files";
 import {type2ui5Icon} from "../../utils";
-import {ParcelManifest} from "@ddd-qc/delivery";
+import {DeliveryPerspective, NoticeState, ParcelManifest} from "@ddd-qc/delivery";
+import {isParcelReady, lookupParcel, ParcelLookup, retryDmDelivery} from "../../viewModels/dm-files";
 import {msg} from "@lit/localize";
 import {toasty} from "../../toast";
 import {sharedStyles} from "../../styles";
@@ -42,16 +43,44 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
 
   @state() private _loading = true;
   @state() private _manifest?: ParcelManifest;
+  /** Set by the delivery subscription; a change may mean a DM file finished arriving. */
+  @state() deliveryPerspective?: DeliveryPerspective;
   private _file: File | null = null;
   private _maybeBlobUrl: string | undefined = undefined;
   private _canRetry = true;
+  private _subscribed = false;
+  /** The last render showed the "arriving" placeholder for a private file. */
+  private _wasPending = false;
 
 
   /** -- Methods -- */
 
   /** */
+  override disconnectedCallback() {
+    super.disconnectedCallback();
+    if (this._subscribed) {
+      this._filesDvm.deliveryZvm.unsubscribe(this);
+      this._subscribed = false;
+    }
+  }
+
+
+  /** */
   protected override willUpdate(changedProperties: PropertyValues<this>) {
     super.willUpdate(changedProperties);
+    /** A DM file arrives after its message; the delivery perspective says when */
+    if (this._filesDvm && !this._subscribed) {
+      this._subscribed = true;
+      this._filesDvm.deliveryZvm.subscribe(this, 'deliveryPerspective');
+    }
+    if (changedProperties.has("deliveryPerspective") && this._wasPending) {
+      const entryBead = this._dvm.threadsZvm.perspective.getBaseBead(new ActionId(this.hash)) as EntryBeadMat;
+      const lookup = entryBead ? lookupParcel(this._filesDvm.deliveryZvm.perspective, entryBead.sourceEh) : undefined;
+      if (lookup && isParcelReady(lookup)) {
+        this._wasPending = false;
+        /* await */ this.loadFileData(this._filesDvm.dnaProperties.maxChunkSize);
+      }
+    }
     /** Load file when hash changed */
     // @ts-ignore: _dvm for first update
     if (changedProperties.has("hash") || changedProperties.has("_dvm") /*|| !this._manifest*/) {
@@ -63,11 +92,11 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
         return;
       }
       const file = this._filesDvm.perspective.fileCache.get(entryBead.sourceEh);
-      const tuple = this._filesDvm.deliveryZvm.perspective.localPublicManifests.get(entryBead.sourceEh);
-      if (file && tuple) {
-        console.debug!("LOADED FILE FROM CACHE", tuple[0].description.name, this.hash);
+      const manifest = lookupParcel(this._filesDvm.deliveryZvm.perspective, entryBead.sourceEh)?.manifest;
+      if (file && manifest) {
+        console.debug!("LOADED FILE FROM CACHE", manifest.description.name, this.hash);
         this._file = file;
-        this._manifest = tuple[0];
+        this._manifest = manifest;
         this.loadBlob();
       } else {
           //if (!this._loading) {
@@ -111,6 +140,14 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
     }
     try {
       const manifestEh = entryBead.sourceEh;
+      /** A private file still arriving has nothing to load yet; render() shows where it stands */
+      const lookup = lookupParcel(this._filesDvm.deliveryZvm.perspective, manifestEh);
+      if (lookup && !isParcelReady(lookup)) {
+        this._loading = false;
+        this._file = null;
+        this._manifest = undefined;
+        return;
+      }
       this._manifest = await this._filesDvm.filesZvm.zomeProxy.getFileInfoFromLocal(manifestEh.hash); // TODO: GetStrategy
       console.debug("<chat-file>.loadFile() manifestEh", manifestEh, this.hash, !!this._manifest);
       if (!this._manifest || this._manifest.description.size > maxSize) {
@@ -174,13 +211,37 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
     if (delayMs) {
       await delay(delayMs);
     }
-    const fileTuple = this._filesDvm.deliveryZvm.perspective.publicParcels.get(manifestEh);
-    if (fileTuple) {
+    const lookup = lookupParcel(this._filesDvm.deliveryZvm.perspective, manifestEh);
+    if (lookup && !isParcelReady(lookup)) {
+      await retryDmDelivery(this._filesDvm, lookup);
+    } else if (lookup) {
       await this.loadFileData(this._filesDvm.dnaProperties.maxChunkSize);
     } else {
       await catchThrottled(this._filesDvm.deliveryZvm.probeDht(GetStrategy.Local)); // FIXME figure out best GetStrategy to use here
     }
     this.requestUpdate();
+  }
+
+
+  /** What the recipient of a private file sees while it is not here yet */
+  private renderPending(lookup: ParcelLookup) {
+    let stateLabel = msg("Not received");
+    switch (lookup.noticeState) {
+      case NoticeState.Unreplied: stateLabel = msg("Waiting to accept"); break;
+      case NoticeState.Accepted: stateLabel = msg("Waiting for sender"); break;
+      case NoticeState.PartiallyReceived: stateLabel = msg("Receiving…"); break;
+      default: break;
+    }
+    return html`
+        <ui5-list id="fileList" style="max-width: 300px;">
+          <ui5-li id="fileLi" icon="download" description=${prettyFileSize(lookup.description.size) + " · " + stateLabel}
+                  @click=${async (e: any) => {
+                    e.stopPropagation(); e.preventDefault();
+                    await retryDmDelivery(this._filesDvm, lookup);
+                  }}>
+              ${lookup.description.name}
+          </ui5-li>
+        </ui5-list>`;
   }
 
 
@@ -195,6 +256,13 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
     if (this._loading) {
       return html`<ui5-busy-indicator delay="0" size="L" active style="min-height: 100px;"></ui5-busy-indicator>`;
     }
+    const entryBead = this._dvm.threadsZvm.perspective.getBaseBead(new ActionId(this.hash)) as EntryBeadMat;
+    const lookup = entryBead ? lookupParcel(this._filesDvm.deliveryZvm.perspective, entryBead.sourceEh) : undefined;
+    if (lookup && !isParcelReady(lookup)) {
+      this._wasPending = true;
+      return this.renderPending(lookup);
+    }
+    this._wasPending = false;
     if (!this._manifest) {
       return html`
           <ui5-list id="fileList" style="max-width: 300px;">
@@ -210,13 +278,11 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
               </ui5-li>
           </ui5-list>`;
     }
-    const entryBead = this._dvm.threadsZvm.perspective.getBaseBead(new ActionId(this.hash)) as EntryBeadMat;
     if (!entryBead) {
       return html`<ui5-busy-indicator delay="0" size="M" active style="color: var(--vines-warning)"></ui5-busy-indicator>`;
     }
     const manifestEh = entryBead.sourceEh;
-    const filePprm = this._filesDvm.deliveryZvm.perspective.publicParcels.get(manifestEh);
-    if (!filePprm) {
+    if (!lookup) {
       /** Retry once */
       if (this._canRetry) {
         this._canRetry = false;
@@ -236,7 +302,7 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
     }
 
     const MAX_VIEWABLE_SIZE = 100 * 1024 * 1024;
-    const fileDesc = filePprm.description;
+    const fileDesc = lookup.description;
     const fileType = kind2Type(fileDesc.kind_info);
     const isViewableType = fileType == FileType.Image || fileType == FileType.Audio || fileType == FileType.Video || fileType == FileType.Text || fileType == FileType.Pdf;
     const isViewable = isViewableType && fileDesc.size < MAX_VIEWABLE_SIZE;
