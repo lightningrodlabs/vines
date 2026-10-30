@@ -524,7 +524,7 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
               const {top, height} = target.getBoundingClientRect();
               const isAfterTarget = e.clientY > top + height / 2;
               const container = this.shadowRoot!.getElementById('container')! as HTMLElement;
-              reorderAnimated(this.shadowRoot!, 'ui5-panel, sl-tooltip', () =>
+              reorderAnimated(this.shadowRoot!, 'ui5-panel, sl-tooltip > .threadItem', () =>
                 container.insertBefore(this._dragged, isAfterTarget ? target.nextSibling : target));
               return;
             }
@@ -542,18 +542,18 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
                  if (first && first !== this._dragged) {
                    const dim = first.getBoundingClientRect();
                    if (e.clientY < dim.top + dim.height / 2) {
-                     reorderAnimated(this.shadowRoot!, 'ui5-panel, sl-tooltip', () => panel.insertBefore(this._dragged, first));
+                     reorderAnimated(this.shadowRoot!, 'ui5-panel, sl-tooltip > .threadItem', () => panel.insertBefore(this._dragged, first));
                      return;
                    }
                  }
                  if (panel.lastElementChild !== this._dragged) {
-                   reorderAnimated(this.shadowRoot!, 'ui5-panel, sl-tooltip', () => panel.appendChild(this._dragged));
+                   reorderAnimated(this.shadowRoot!, 'ui5-panel, sl-tooltip > .threadItem', () => panel.appendChild(this._dragged));
                  }
                  return;
                }
                const {top, height} = target.getBoundingClientRect();
                const isAfterTarget = e.clientY > top + height / 2;
-               reorderAnimated(this.shadowRoot!, 'ui5-panel, sl-tooltip', () =>
+               reorderAnimated(this.shadowRoot!, 'ui5-panel, sl-tooltip > .threadItem', () =>
                  panel.insertBefore(this._dragged, isAfterTarget ? target.nextSibling : target));
              }
          }}

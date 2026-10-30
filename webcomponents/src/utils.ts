@@ -582,7 +582,8 @@ export function tooltipOnlyWhenClipped(e: Event): void {
  * The drag-and-drop listers move rows with insertBefore, which makes the other rows jump into
  * place. This runs the move and lets every displaced element glide from its old place to its
  * new one instead (FLIP, 140ms). An element inside another that also moved (a row in a panel
- * that shifted) animates only its own share of the displacement.
+ * that shifted) animates only its own share of the displacement. The selector must match
+ * elements with a box: an sl-tooltip wrapper is display:contents, so match the row inside it.
  */
 export function reorderAnimated(scope: ParentNode, selector: string, mutate: () => void): void {
   const before = new Map<HTMLElement, number>();

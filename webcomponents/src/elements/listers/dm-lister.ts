@@ -223,7 +223,7 @@ export class DmLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
                            /** The rows live inside the section panel */
                            const list = first!.parentElement!;
-                           reorderAnimated(this.shadowRoot!, 'sl-tooltip', () => {
+                           reorderAnimated(this.shadowRoot!, 'sl-tooltip > .threadItem', () => {
                                if (isBeforeFirst) {
                                    list.insertBefore(this._dragged, first);
                                } else {
