@@ -1973,7 +1973,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         <div id="emptyPane">
             ${emptyMark}
             <div class="hint">
-                <b>${msg("Nothing here yet")}</b>
                 ${msg("Pick a channel on the left, or create one with +")}
             </div>
         </div>`;
@@ -3720,13 +3719,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           font-size: var(--vines-text-m);
         }
 
-        #emptyPane .hint b {
-          display: block;
-          color: var(--vines-ink);
-          font-weight: 600;
-          font-size: var(--vines-text-l);
-          margin-bottom: 4px;
-        }
 
         .mypanel {
             background-color: var(--vines-surface);
