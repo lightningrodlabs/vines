@@ -1,6 +1,9 @@
 import {css, html, TemplateResult} from "lit";
 import {tooltipOnlyWhenClipped} from "../../utils";
 import {customElement, property, state} from "lit/decorators.js";
+import "@ui5/webcomponents/dist/Icon.js";
+import "@ui5/webcomponents-icons/dist/slim-arrow-right.js";
+import "@ui5/webcomponents-icons/dist/slim-arrow-down.js";
 import {ActionId, AgentIdMap, DnaMultiElement, EntryId} from "@ddd-qc/lit-happ";
 //import {ThreadsPerspective} from "../../viewModels/threads.perspective";
 import {msg} from "@lit/localize";
@@ -50,7 +53,7 @@ export class DmMultiLister extends DnaMultiElement<ThreadsDvm> {
   /** */
   override render() {
     console.log("<dm-multi-lister>.render()", this._dvms);
-    const itemMap: AgentIdMap<TemplateResult<1>> = new AgentIdMap();
+    const itemMap: AgentIdMap<{unread: boolean, tmpl: TemplateResult<1>}> = new AgentIdMap();
     for (const dvm of this._dvms.values()) {
       Array.from(dvm.threadsZvm.perspective.dmAgents.entries()).map(([otherAgent, ppAh]) => {
         if (itemMap.has(otherAgent)) {
@@ -66,7 +69,7 @@ export class DmMultiLister extends DnaMultiElement<ThreadsDvm> {
         /** Render DM thread */
         const maybe = dvm.threadsZvm.perspective.threads.get(ppAh);
         if (!maybe) {
-          itemMap.set(otherAgent, html`<ui5-busy-indicator delay="0" size="M" active style="width:100%; height:100%;"></ui5-busy-indicator>`);
+          itemMap.set(otherAgent, {unread: false, tmpl: html`<ui5-busy-indicator delay="0" size="M" active style="width:100%; height:100%;"></ui5-busy-indicator>`});
           return;
         }
         console.log("<dm-multi-lister> this.selectedThreadHash", this.selectedThreadHash, ppAh.short);
@@ -129,7 +132,7 @@ export class DmMultiLister extends DnaMultiElement<ThreadsDvm> {
             }));
           }}></ui5-button>`;
 
-        itemMap.set(otherAgent, html`
+        itemMap.set(otherAgent, {unread: !!(threadIsNew || notifCount > 0 || hasNewBeads), tmpl: html`
           <sl-tooltip content=${otherProfile.nickname} style="--show-delay:1500" disabled @mouseover=${tooltipOnlyWhenClipped}>
               <div id=${ppAh.b64} class="threadItem"
                    style="
@@ -143,22 +146,27 @@ export class DmMultiLister extends DnaMultiElement<ThreadsDvm> {
                   ${hideShowBtn}
               </div>
           </sl-tooltip>
-      `);
+      `});
       });
     }
-    const allTreeItems: TemplateResult<1>[] = [...itemMap.values()];
+    /** A closed section still lists the DMs with unread, notified or new messages */
+    const allTreeItems: TemplateResult<1>[] = [...itemMap.values()].filter((r) => !this._collapsed || r.unread).map((r) => r.tmpl);
     console.log("<dm-multi-lister>.render() allTreeItems", allTreeItems);
 
     /** Handle empty tree case */
-    if (allTreeItems.length == 0) {
+    if (!this._collapsed && allTreeItems.length == 0) {
       allTreeItems.push(html`<div style="color: var(--vines-ink-muted); text-align: center; margin-top: 10px; cursor: default">${msg('No messages found')}</div`)
     }
 
     /** render all */
     return html`
-        <ui5-panel class="lister-panel" ?collapsed=${this._collapsed}
-                   @toggle=${(e: any) => this._collapsed = e.target.collapsed}>
-            <div slot="header" class="lister-panel-header">
+        <ui5-panel class="lister-panel ${this._collapsed? "collapsed" : ""}" fixed>
+            <div slot="header" class="lister-panel-header"
+                 @click=${(e: any) => {
+                     if (e.target.closest && e.target.closest('ui5-button')) return;
+                     this._collapsed = !this._collapsed;
+                 }}>
+                <ui5-icon class="lister-chevron" name=${this._collapsed? "slim-arrow-right" : "slim-arrow-down"}></ui5-icon>
                 <div class="lister-panel-title">${msg("Direct Messages")}</div>
                 <ui5-button icon="add" tooltip=${msg("New Direct Message")} design="Transparent"
                             style="color: var(--vines-ink-muted)"

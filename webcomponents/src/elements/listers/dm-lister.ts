@@ -1,6 +1,9 @@
 import {css, html, TemplateResult} from "lit";
 import {tooltipOnlyWhenClipped} from "../../utils";
 import {customElement, property, state} from "lit/decorators.js";
+import "@ui5/webcomponents/dist/Icon.js";
+import "@ui5/webcomponents-icons/dist/slim-arrow-right.js";
+import "@ui5/webcomponents-icons/dist/slim-arrow-down.js";
 import {ActionId, AgentId, DnaElement, EntryId} from "@ddd-qc/lit-happ";
 import {ThreadsPerspective} from "../../viewModels/threads.perspective";
 import {msg} from "@lit/localize";
@@ -101,18 +104,18 @@ export class DmLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         break;
     }
 
-    let treeItems = pairs.map(([otherAgent, ppAh]) => {
+    const rows = pairs.map(([otherAgent, ppAh]) => {
       /** Skip if hidden */
       const subjectEh = EntryId.from(otherAgent);
       //console.log("<dm-lister>.render() hide subjectEh?", subjectEh, otherAgent);
       const isThreadHidden = this.threadsPerspective.hiddens[subjectEh.b64]? this.threadsPerspective.hiddens[subjectEh.b64] : false;
       if (isThreadHidden && !this.showArchived) {
-        return html``;
+        return undefined;
       }
       /** Render DM thread */
       const maybe = this.threadsPerspective.threads.get(ppAh);
       if (!maybe) {
-        return html`<ui5-busy-indicator delay="0" size="M" active style="width:100%; height:100%;"></ui5-busy-indicator>`;
+        return {unread: false, tmpl: html`<ui5-busy-indicator delay="0" size="M" active style="width:100%; height:100%;"></ui5-busy-indicator>`};
       }
       //console.debug("<dm-lister> this.selectedThreadHash", this.selectedThreadHash, ppAh.short);
       const isSelected = this.selectedThreadHash && this.selectedThreadHash.equals(ppAh);
@@ -169,7 +172,7 @@ export class DmLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                             }));
                         }}></ui5-button>`;
 
-      return html`
+      return {unread: !!(threadIsNew || notifCount > 0 || hasNewBeads), tmpl: html`
           <sl-tooltip content=${otherProfile.nickname} style="--show-delay:1500" disabled @mouseover=${tooltipOnlyWhenClipped}>
               <div id=${ppAh.b64} .agent=${otherAgent.b64} 
                    class="threadItem"
@@ -245,12 +248,13 @@ export class DmLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                   ${hideShowBtn}
               </div>
           </sl-tooltip>
-      `
+      `};
     });
-    treeItems = treeItems.filter((value) => value !== undefined);
+    /** A closed section still lists the DMs with unread, notified or new messages */
+    let treeItems = rows.filter((r) => !!r && (!this._collapsed || r.unread)).map((r) => r!.tmpl);
     //console.log("<dm-lister>.render() treeItems", treeItems);
     /** Handle empty tree case */
-    if (treeItems.length == 0) {
+    if (!this._collapsed && treeItems.length == 0) {
       treeItems.push(html`<div style="color: var(--vines-ink-muted); text-align: center; margin-top: 10px; cursor: default">${msg('No messages found')}</div`)
     }
     /** render all */
@@ -270,9 +274,13 @@ export class DmLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                 </ui5-button>
             </div>
         `}
-        <ui5-panel class="lister-panel" ?collapsed=${this._collapsed}
-                   @toggle=${(e: any) => this._collapsed = e.target.collapsed}>
-            <div slot="header" class="lister-panel-header">
+        <ui5-panel class="lister-panel ${this._collapsed? "collapsed" : ""}" fixed>
+            <div slot="header" class="lister-panel-header"
+                 @click=${(e: any) => {
+                     if (e.target.closest && e.target.closest('ui5-button')) return;
+                     this._collapsed = !this._collapsed;
+                 }}>
+                <ui5-icon class="lister-chevron" name=${this._collapsed? "slim-arrow-right" : "slim-arrow-down"}></ui5-icon>
                 <div class="lister-panel-title">${msg("Direct Messages")}</div>
                 <ui5-button icon="add" tooltip=${msg("New Direct Message")} design="Transparent"
                             style="color: var(--vines-ink-muted)"

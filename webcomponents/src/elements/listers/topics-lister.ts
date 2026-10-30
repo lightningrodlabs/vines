@@ -1,5 +1,8 @@
 import {css, html, nothing, render, TemplateResult} from "lit";
 import {customElement, property, state} from "lit/decorators.js";
+import "@ui5/webcomponents/dist/Icon.js";
+import "@ui5/webcomponents-icons/dist/slim-arrow-right.js";
+import "@ui5/webcomponents-icons/dist/slim-arrow-down.js";
 import {ActionId, ActionIdMap, AgentId, DnaElement} from "@ddd-qc/lit-happ";
 import {ThreadsPerspective} from "../../viewModels/threads.perspective";
 import {msg} from "@lit/localize";
@@ -228,6 +231,13 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
       if (isSubjectHidden && !this.showArchivedTopics) {
         return;
       }
+      /** Our own collapsed state (the panel is fixed): a closed category still lists the
+       *  channels with unread, notified or new messages */
+      if (this.collapsed.get(topicAh) === undefined) {
+        this.collapsed.set(topicAh, false);
+      }
+      const collapsed = !!this.collapsed.get(topicAh);
+      const unreadPps = new Set<string>();
       /** Render threads for Topic */
       let threadElems: TemplateResult<1>[] = [];
       let topicThreads = this.threadsPerspective.getSubjectThreads(topicAh);
@@ -275,6 +285,9 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
             //let badge = html`<ui5-tag>0</ui5-tag>`;
             let badge = html`<div style="min-width: 26px"></div>`;
             let notifCount = this.threadsPerspective.getAllNotificationsForPp(ppAh).length;
+            if (threadIsNew || notifCount > 0 || hasNewBeads) {
+              unreadPps.add(ppAh.b64);
+            }
             if (threadIsNew) {
               if (isPersistent) {
                 badge = html`<ui5-tag class="notifBadge" title="new channel!">${notifCount}</ui5-tag>`;
@@ -316,7 +329,7 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
                          ${threadIsNew || notifCount? "color: var(--vines-accent-soft);" : ""}
                          ${isSelected? "background: var(--vines-sidebar-row-selected); box-shadow: var(--vines-shadow-row); color: var(--vines-ink);" : ""}
                        "
-                       .draggable=${this.order == "custom"? "true" : ""}
+                       .draggable=${this.order == "custom" && !collapsed? "true" : ""}
                        @dragstart=${(e: any) => {
                           e.stopPropagation();
                           this._dragged = e.target.closest('sl-tooltip');
@@ -348,6 +361,9 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
                   </div>
                 </sl-tooltip>`
           })
+          if (collapsed) {
+            threadElems = threadElems.filter((_, i) => unreadPps.has(topicThreads[i]!.b64));
+          }
         }
         /* */
         const newSubjects = this.threadsPerspective.getNewSubjects();
@@ -405,7 +421,7 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
       const topicHasUnreads = unreadSubjects.map((id) => id.b64).includes(topicAh.b64);
 
       //console.log("<topics-lister>.render() threads", threads);
-      if (threadElems.length == 0) {
+      if (!collapsed && threadElems.length == 0) {
         const tBgColor = "transparent";
         threadElems = [html`<div class="threadItem" style="cursor: default; display: flex; flex-direction: column; background: ${tBgColor}">
                    <span style="color: var(--vines-ink-muted);">${msg('No channels found')}</span>
@@ -425,25 +441,19 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
       }
 
       /** render topic item */
-      //console.debug("<topics-lister> collapsed", this.collapsed);
-      let collapsed = false;
-      if (this.collapsed.get(topicAh)) {
-        collapsed = this.collapsed.get(topicAh)!;
-      } else {
-        this.collapsed.set(topicAh, false);
-      }
       const bgColor = this._dvm.perspective.myNewestTopic && topicAh.equals(this._dvm.perspective.myNewestTopic)? "background: var(--vines-surface-tint)" : "";
       return html`
-          <ui5-panel id=${topicAh.b64} ?collapsed=${collapsed}
+          <ui5-panel id=${topicAh.b64} fixed class=${collapsed? "collapsed" : ""}
                      style="${bgColor}"
-                     .draggable=${this.order == "custom"? "true" : ""}
-                     @toggle=${(e: any) => {
-                        //console.log("<topics-lister> TOGGLED", e.target.collapsed);
-                        this.collapsed.set(topicAh, e.target.collapsed);
-                        this.requestUpdate();
-                      }}>
-            <!-- header -->
-            <div slot="header" class="topicHeader" style="display:flex; flex-direction:row; overflow:hidden; width:100%;">
+                     .draggable=${this.order == "custom" && !collapsed? "true" : ""}>
+            <!-- header: a click toggles the section; its buttons are left alone -->
+            <div slot="header" class="topicHeader" style="display:flex; flex-direction:row; align-items:center; overflow:hidden; width:100%; cursor:pointer;"
+                 @click=${(e: any) => {
+                    if (e.target.closest && e.target.closest('ui5-button')) return;
+                    this.collapsed.set(topicAh, !collapsed);
+                    this.requestUpdate();
+                 }}>
+                <ui5-icon class="lister-chevron" name=${collapsed? "slim-arrow-right" : "slim-arrow-down"}></ui5-icon>
                 <div style="flex-grow:1; height:18px; margin-right:10px; font-weight:${topicHasUnreads? "bold" : ""}; text-overflow:ellipsis; overflow:hidden;">${title}</div>
                 <!-- ${topicBadge} -->
                 ${topicCommentButton}
@@ -523,7 +533,7 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
                /** Any category panel takes the row. A row under the pointer sets the position;
                 *  the header or empty space means first when above the first row, else last. */
                const panel = e.target.closest('ui5-panel') as HTMLElement | null;
-               if (!panel) return;
+               if (!panel || panel.classList.contains('collapsed')) return;
                const target = e.target.closest('sl-tooltip');
                if (target === this._dragged) return;
                if (!target) {

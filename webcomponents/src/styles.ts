@@ -114,8 +114,19 @@ export const sharedStyles = [
     .lister-panel-header {
         display: flex;
         flex-direction: row;
+        align-items: center;
         overflow: hidden;
         width: 100%;
+        cursor: pointer;
+    }
+    /* Our own chevron: the panels are \`fixed\` so a closed section can still list its
+       rows with unread messages */
+    .lister-chevron {
+        width: 1rem;
+        height: 1rem;
+        margin: 0 0.5rem 0 0.25rem;
+        flex-shrink: 0;
+        color: var(--vines-ink-muted);
     }
     .lister-panel-title {
         flex-grow: 1;
