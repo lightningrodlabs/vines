@@ -547,11 +547,17 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
                const target = e.target.closest('sl-tooltip');
                if (target === this._dragged) return;
                if (!target) {
-                 const first = panel.querySelector<HTMLElement>('sl-tooltip');
-                 if (first && first !== this._dragged) {
-                   const dim = first.children[0]!.getBoundingClientRect();
+                 /** Above the middle of the first other row (the header, say) means first.
+                  *  Measured against the first row that is not the dragged one, so a row
+                  *  already at the top stays there instead of bouncing to the bottom. */
+                 const rows = Array.from(panel.querySelectorAll<HTMLElement>(':scope > sl-tooltip'));
+                 const firstOther = rows.find((r) => r !== this._dragged);
+                 if (firstOther) {
+                   const dim = firstOther.children[0]!.getBoundingClientRect();
                    if (e.clientY < dim.top + dim.height / 2) {
-                     reorderAnimated(this.shadowRoot!, 'ui5-panel, sl-tooltip > .threadItem', () => panel.insertBefore(this._dragged, first));
+                     if (this._dragged.nextElementSibling !== firstOther) {
+                       reorderAnimated(this.shadowRoot!, 'ui5-panel, sl-tooltip > .threadItem', () => panel.insertBefore(this._dragged, firstOther));
+                     }
                      return;
                    }
                  }
