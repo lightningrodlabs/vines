@@ -45,11 +45,6 @@ export default defineConfig({
         {src: "../webapp/icon.png", dest: DIST_FOLDER},
         {src: "../webapp/add-to-pocket.svg", dest: DIST_FOLDER},
 
-        {
-          src: "../node_modules/@shoelace-style/shoelace/dist/themes/light.css",
-          dest: DIST_FOLDER,
-          rename: "styles.css"
-        },
         //{ src: '../node_modules/@shoelace-style/shoelace', dest: DIST_FOLDER }
         /** To the root (DIST_FOLDER), not shoelace-assets. In the applet the Shoelace
          *  base path is './', set by @ddd-qc/we-utils' setupProd() when setup() runs at

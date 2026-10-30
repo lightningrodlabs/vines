@@ -4,7 +4,6 @@ import {consume} from "@lit/context";
 
 import Popover from "@ui5/webcomponents/dist/Popover";
 
-import {inputBarStyleTemplate, suggestionListTemplate} from "../styles";
 
 
 import Input from "@ui5/webcomponents/dist/Input";
@@ -175,20 +174,6 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
 
   /** */
   protected override async firstUpdated(_changedProperties: PropertyValues) {
-    /** Fiddle with shadow parts CSS */
-    const inputBar = this.shadowRoot!.getElementById('inputBar') as HTMLElement;
-    if (inputBar) {
-      inputBar.shadowRoot!.appendChild(inputBarStyleTemplate.content.cloneNode(true));
-
-      const input = inputBar.querySelector("#textMessageInput") as HTMLElement;
-      //console.log("textMessageInput", input);
-      input.shadowRoot!.appendChild(inputBarStyleTemplate.content.cloneNode(true));
-
-      const pop = this.shadowRoot!.getElementById('pop') as HTMLElement;
-      const list = pop.querySelector("#agent-list") as HTMLElement;
-      //console.log("<vines-input-bar> #agent-list", pop, list);
-      list.shadowRoot!.appendChild(suggestionListTemplate.content.cloneNode(true));
-    }
     /** Set initial background */
     if (this.background) {
       const elem = this.shadowRoot!.getElementById('inputBar') as HTMLElement;
@@ -852,6 +837,13 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           width: 100%;
           border: none;
           padding: 0px;
+          /* borderless field: UI5 reads these inside its shadow root */
+          --sapField_BorderWidth: 0;
+          --sapField_BorderColor: transparent;
+          --sapField_Hover_BorderColor: transparent;
+          --sapField_Hover_Shadow: none;
+          --sapField_Background: transparent;
+          --sapField_Hover_Background: transparent;
         }
 
         .fileIcon {
@@ -869,14 +861,8 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           border-color: #ec0e0e;
         }
 
-          ui5-textarea::part(textarea) {
-             text-wrap:auto;
-          }
-          
-        .ui5-textarea-wrapper
-        ui5-textarea div div {
-          /*background: red;*/
-          border: 0px;
+        ui5-textarea::part(textarea) {
+          text-wrap: auto;
         }
       `,
 

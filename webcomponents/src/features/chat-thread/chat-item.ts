@@ -19,7 +19,6 @@ import Button from "@ui5/webcomponents/dist/Button";
 import Popover from "@ui5/webcomponents/dist/Popover";
 
 import {toasty} from "../../toast";
-//import {popoverStyleTemplate} from "../../styles";
 import {countValidReceipts, determineBeadName} from "../../utils";
 import {Profile as ProfileMat} from "@ddd-qc/profiles-dvm/dist/bindings/profiles.types";
 import {ThreadsPerspective} from "../../viewModels/threads.perspective";

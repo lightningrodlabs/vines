@@ -235,7 +235,6 @@ import {
   renderAvatar,
   RulesEdit,
   RulesView,
-  searchFieldStyleTemplate,
   sharedStyles,
   ShowProfileEvent,
   ShowRulesEvent,
@@ -1206,13 +1205,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       topicsBtn.selected = true;
     }
 
-    /** Fiddle with shadow parts CSS */
-    const searchField = this.shadowRoot!.getElementById('search-field') as Input;
-    console.log("search-field", searchField, searchField.shadowRoot);
-    if (searchField) {
-      searchField.shadowRoot!.appendChild(searchFieldStyleTemplate.content.cloneNode(true));
-      this.requestUpdate();
-    }
     /** Grab all AppletIds & GroupProfiles */
     if (this.weServices) {
       console.debug("<vines-page>.firstUpdated() cacheFullAppletInfo", this.weServices);
@@ -2678,7 +2670,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                     }
                     <div style="flex-grow: 1"></div>
                     <ui5-input id="search-field" placeholder=${msg('Search')} show-clear-icon
-                               style="border-radius: 10px; border: none; height: 32px;"
                                @input=${(e: any) => {
                                    console.log("<search-field> @input", e.keyCode, e);
                                    let searchElem = this.shadowRoot!.getElementById("search-field") as Input;
@@ -3373,6 +3364,22 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           height: 100vh;
           width: 100vw;
           background: #F6FAFC;
+        }
+
+        #search-field {
+          height: 32px;
+          --sapField_PlaceholderTextColor: var(--vines-ink-muted);
+        }
+
+        #search-field::part(root) {
+          background: var(--vines-surface);
+          border: 1px solid var(--vines-border);
+          border-radius: var(--vines-radius-pill);
+          color: var(--vines-ink-muted);
+        }
+
+        #search-field::part(clear-icon) {
+          color: var(--vines-ink-muted);
         }
 
         .spinning {

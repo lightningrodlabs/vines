@@ -1,6 +1,6 @@
 import {NetworkInfoResponse} from "@ddd-qc/lit-happ";
 import {TransportStats} from "@holochain/client";
-import {html, css, PropertyValues, TemplateResult} from "lit";
+import {html, css, TemplateResult} from "lit";
 import {state, customElement} from "lit/decorators.js";
 import {ContextProvider} from "@lit/context";
 import {msg, localized} from '@lit/localize';
@@ -28,7 +28,6 @@ import {
     THREADS_DEFAULT_INTEGRITY_ZOME_NAME,
     filesContext,
     weClientContext,
-    cardStyleTemplate,
     JumpEvent,
     VINES_DEFAULT_ROLE_NAME,
     onlineLoadedContext,
@@ -360,14 +359,6 @@ export class VinesApp extends HappMultiElement {
   }
 
 
-  /** */
-  protected override async updated(_changedProperties: PropertyValues) {
-    /** Fiddle with shadow parts CSS */
-    const profileCard = this.shadowRoot!.getElementById('profileCard') as HTMLElement;
-    if (profileCard) {
-      profileCard.shadowRoot!.appendChild(cardStyleTemplate.content.cloneNode(true));
-    }
-  }
 
 
   /** */
@@ -672,6 +663,10 @@ export class VinesApp extends HappMultiElement {
 
         #profileCard {
           box-shadow: rgba(0, 0, 0, 0.25) 0px 14px 28px, rgba(0, 0, 0, 0.22) 0px 10px 10px;
+        }
+
+        #profileCard::part(root) {
+          padding: 10px;
         }
           
         #profileCardHeader::part(title) {
