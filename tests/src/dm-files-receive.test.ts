@@ -71,6 +71,39 @@ test('accepts an Unreplied notice from a DM peer, not from anyone else, and not 
   assert.deepEqual(accepted.map((e) => e.b64), [nAEh.b64]);
 });
 
+test('accept skips an Unreplied notice whose parcel is already on the chain (the zome rejects it itself)', async () => {
+  const { dvm, p, accepted } = fakeFilesDvm();
+  p.privateManifests.set(aManifestEh, [aManifest, 0]);
+  p.notices.set(nAEh, [nA, 0, NoticeState.Unreplied, new Set()]);
+  p.noticeByParcel.set(aManifestEh, nAEh);
+  assert.deepEqual(await acceptDmDeliveries(dvm, dmAgents, new Set()), []);
+  assert.equal(accepted.length, 0);
+});
+
+test('a failing accept neither blocks the other notices nor the next pass', async () => {
+  const { dvm, p, accepted } = fakeFilesDvm();
+  const dave = AgentId.empty(8);
+  const peers = new AgentIdMap<ActionId>();
+  peers.set(alice, ActionId.empty(9));
+  peers.set(dave, ActionId.empty(10));
+  const nDEh = EntryId.empty(11);
+  p.notices.set(nAEh, [nA, 0, NoticeState.Unreplied, new Set()]);
+  p.notices.set(nDEh, [noticeFrom(dave, EntryId.empty(12), 'd.txt'), 0, NoticeState.Unreplied, new Set()]);
+  let failOnce = true;
+  dvm.deliveryZvm.acceptDelivery = async (noticeEh) => {
+    if (failOnce && noticeEh.equals(nAEh)) {
+      failOnce = false;
+      throw new Error('zome call failed');
+    }
+    accepted.push(noticeEh);
+    return EntryId.empty(0);
+  };
+  const inFlight = new Set<string>();
+  assert.deepEqual((await acceptDmDeliveries(dvm, peers, inFlight)).map((e) => e.b64), [nDEh.b64]);
+  assert.deepEqual((await acceptDmDeliveries(dvm, peers, inFlight)).map((e) => e.b64), [nAEh.b64]);
+  assert.deepEqual(accepted.map((e) => e.b64), [nDEh.b64, nAEh.b64]);
+});
+
 test('resume: Accepted without manifest re-accepts only while the sender is online, at most once per interval', async () => {
   const { dvm, p, accepted } = fakeFilesDvm();
   p.notices.set(nAEh, [nA, 0, NoticeState.Accepted, new Set()]);

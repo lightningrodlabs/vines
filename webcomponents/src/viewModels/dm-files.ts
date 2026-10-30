@@ -63,10 +63,16 @@ export function lookupParcel(delivery: DeliveryPerspective, manifestEh: EntryId)
 
 
 /** True when the bytes can be fetched locally: any public file, a private file the agent
- *  authored (no notice), or a received private file whose notice is in state Received. */
+ *  authored (no notice), or a received private file whose manifest is on the chain and whose
+ *  notice no longer has chunks outstanding. The notice state alone is not enough: the delivery
+ *  zome auto-rejects a notice for a parcel the agent already holds (a file sent twice), and
+ *  that Refused notice then shadows the Received one for the same manifest. */
 export function isParcelReady(lookup: ParcelLookup): boolean {
   if (!lookup.isPrivate || !lookup.noticeEh) {
     return true;
+  }
+  if (lookup.manifest) {
+    return lookup.noticeState != NoticeState.Accepted && lookup.noticeState != NoticeState.PartiallyReceived;
   }
   return lookup.noticeState == NoticeState.Received;
 }
@@ -187,16 +193,28 @@ export function dmNoticesFrom(delivery: DeliveryPerspective, dmAgents: AgentIdMa
 
 /** Accepts every Unreplied notice from a DM peer that is not already in `inFlight`; adds the
  *  accepted ones to inFlight (the perspective only learns the new state from the reply's
- *  entry pulse, so a second call in between must not reply again). Returns them. */
+ *  entry pulse, so a second call in between must not reply again). A notice for a parcel
+ *  already on the chain is left alone: the zome rejects it itself. A reply that fails is
+ *  logged, taken out of inFlight so a later pass retries it, and does not stop the others.
+ *  Returns the notices accepted. */
 export async function acceptDmDeliveries(filesDvm: DmFilesPort, dmAgents: AgentIdMap<ActionId>, inFlight: Set<HoloHashB64>): Promise<EntryId[]> {
+  const delivery = filesDvm.deliveryZvm.perspective;
   const accepted: EntryId[] = [];
-  for (const [noticeEh, _notice, state] of dmNoticesFrom(filesDvm.deliveryZvm.perspective, dmAgents)) {
+  for (const [noticeEh, notice, state] of dmNoticesFrom(delivery, dmAgents)) {
     if (state != NoticeState.Unreplied || inFlight.has(noticeEh.b64)) {
       continue;
     }
+    if (delivery.privateManifests.get(new EntryId(notice.summary.parcel_reference.parcel_eh))) {
+      continue;
+    }
     inFlight.add(noticeEh.b64);
-    await filesDvm.deliveryZvm.acceptDelivery(noticeEh);
-    accepted.push(noticeEh);
+    try {
+      await filesDvm.deliveryZvm.acceptDelivery(noticeEh);
+      accepted.push(noticeEh);
+    } catch (e) {
+      inFlight.delete(noticeEh.b64);
+      console.warn("acceptDmDeliveries() reply failed for", noticeEh.short, e);
+    }
   }
   return accepted;
 }

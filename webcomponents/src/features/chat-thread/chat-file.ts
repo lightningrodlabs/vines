@@ -43,8 +43,10 @@ export class ChatFile extends DnaElement<unknown, ThreadsDvm> {
 
   @state() private _loading = true;
   @state() private _manifest?: ParcelManifest;
-  /** Set by the delivery subscription; a change may mean a DM file finished arriving. */
-  @state() deliveryPerspective?: DeliveryPerspective;
+  /** Set by the delivery subscription; a change may mean a DM file finished arriving. The
+   *  subscription assigns the same object every time, so the change check must not compare. */
+  @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
+  deliveryPerspective?: DeliveryPerspective;
   private _file: File | null = null;
   private _maybeBlobUrl: string | undefined = undefined;
   private _canRetry = true;

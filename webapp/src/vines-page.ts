@@ -402,8 +402,10 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   /** File upload */
   @state() private _splitObj: SplitObject | undefined = undefined;
 
-  /** Set by the files DVM subscription; a change means a delivery signal arrived. */
-  @state() filesPerspective?: FilesDvmPerspective;
+  /** Set by the files DVM subscription; a change means a delivery signal arrived. The
+   *  subscription assigns the same object every time, so the change check must not compare. */
+  @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
+  filesPerspective?: FilesDvmPerspective;
   private _dmAcceptInFlight = new Set<HoloHashB64>();
   private _dmRetryAt = new Map<HoloHashB64, number>();
   @state() _uploadingFile: boolean = false;
@@ -1619,7 +1621,10 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         .catch((e:any) => console.warn("probeAll() failed", e))
         .finally(() => {
           this._probeRunning = false;
-          /** A peer coming online is what starts a probe; a DM transfer may have waited for it */
+          /** A peer coming online is what starts a probe; a DM transfer may have waited for it.
+           *  The files DVM is probed too: a delivery notice sent while we were offline sits in
+           *  the DHT inbox until processInbox runs, which nothing else does after startup. */
+          this._filesDvm?.probeAll(GetStrategy.Local);
           /*await*/ this.maintainDmDeliveries();
           if (this._probeQueued) {
             this._probeQueued = false;

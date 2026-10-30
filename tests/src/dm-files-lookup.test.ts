@@ -60,6 +60,22 @@ test('private manifest with a notice: ready only once the notice is Received', (
   assert.isTrue(isParcelReady(lookupParcel(p, manifestEh)!));
 });
 
+test('private manifest present with a Refused notice (the zome auto-rejects a re-sent file we already hold): ready', () => {
+  const p = new DeliveryPerspectiveMutable();
+  p.privateManifests.set(manifestEh, [manifest, 0]);
+  p.notices.set(noticeEh, [notice, 0, NoticeState.Refused, new Set()]);
+  p.noticeByParcel.set(manifestEh, noticeEh);
+  assert.isTrue(isParcelReady(lookupParcel(p, manifestEh)!));
+});
+
+test('private manifest present but the notice is still Accepted: not ready (chunks not pulled yet)', () => {
+  const p = new DeliveryPerspectiveMutable();
+  p.privateManifests.set(manifestEh, [manifest, 0]);
+  p.notices.set(noticeEh, [notice, 0, NoticeState.Accepted, new Set()]);
+  p.noticeByParcel.set(manifestEh, noticeEh);
+  assert.isFalse(isParcelReady(lookupParcel(p, manifestEh)!));
+});
+
 test('public parcel without a local manifest (a channel file from someone else): ready, no manifest', () => {
   const p = new DeliveryPerspectiveMutable();
   p.publicParcels.set(manifestEh, {
