@@ -1,4 +1,5 @@
-import {AgentId, EntryId} from "@ddd-qc/lit-happ";
+import {ActionId, AgentId, AgentIdMap, EntryId} from "@ddd-qc/lit-happ";
+import {HoloHashB64} from "@holochain/client";
 import {
   DeliveryNotice,
   DeliveryPerspective,
@@ -156,4 +157,99 @@ export async function commitPrivateFileForDm(filesDvm: DmFilesPort, file: File, 
     throw new Error("File commit refused");
   }
   return waitForLocalManifest(filesDvm.deliveryZvm.perspective, splitObj.dataHash, timeoutMs, 250);
+}
+
+
+/** -- Receiving -- */
+
+/** How the delivery zome moves a private file, which decides the policy below: the notice
+ *  reaches the recipient even offline (DHT inbox fallback), but the manifest and chunks only
+ *  travel by direct message, pulled by the recipient once the sender has answered its reply.
+ *  So a reply sent while the sender was offline leaves the notice Accepted with no manifest,
+ *  and the fix is to reply again while the sender is online. Missing chunks after the
+ *  manifest arrived are pulled by requestMissingChunks. */
+
+/** Least time between two automatic retries of the same stalled transfer. */
+export const DM_RETRY_INTERVAL_MS = 30_000;
+
+
+/** Notices whose sender is a DM peer (a key of dmAgents). */
+export function dmNoticesFrom(delivery: DeliveryPerspective, dmAgents: AgentIdMap<ActionId>): [EntryId, DeliveryNotice, NoticeState][] {
+  const res: [EntryId, DeliveryNotice, NoticeState][] = [];
+  for (const [noticeEh, [notice, _ts, state, _chunks]] of delivery.notices.entries()) {
+    if (dmAgents.has(new AgentId(notice.sender))) {
+      res.push([noticeEh, notice, state]);
+    }
+  }
+  return res;
+}
+
+
+/** Accepts every Unreplied notice from a DM peer that is not already in `inFlight`; adds the
+ *  accepted ones to inFlight (the perspective only learns the new state from the reply's
+ *  entry pulse, so a second call in between must not reply again). Returns them. */
+export async function acceptDmDeliveries(filesDvm: DmFilesPort, dmAgents: AgentIdMap<ActionId>, inFlight: Set<HoloHashB64>): Promise<EntryId[]> {
+  const accepted: EntryId[] = [];
+  for (const [noticeEh, _notice, state] of dmNoticesFrom(filesDvm.deliveryZvm.perspective, dmAgents)) {
+    if (state != NoticeState.Unreplied || inFlight.has(noticeEh.b64)) {
+      continue;
+    }
+    inFlight.add(noticeEh.b64);
+    await filesDvm.deliveryZvm.acceptDelivery(noticeEh);
+    accepted.push(noticeEh);
+  }
+  return accepted;
+}
+
+
+/** For each notice from a DM peer: Accepted with no manifest in privateManifests and the
+ *  sender in onlinePeers → acceptDelivery again; PartiallyReceived → requestMissingChunks.
+ *  Skips a notice retried less than DM_RETRY_INTERVAL_MS ago (lastRetryAt, keyed by notice
+ *  hash, updated here). Returns the notices retried. */
+export async function resumeDmDeliveries(filesDvm: DmFilesPort, dmAgents: AgentIdMap<ActionId>, onlinePeers: AgentId[], lastRetryAt: Map<HoloHashB64, number>, now: number): Promise<EntryId[]> {
+  const delivery = filesDvm.deliveryZvm.perspective;
+  const retried: EntryId[] = [];
+  for (const [noticeEh, notice, state] of dmNoticesFrom(delivery, dmAgents)) {
+    const last = lastRetryAt.get(noticeEh.b64);
+    if (last !== undefined && now - last < DM_RETRY_INTERVAL_MS) {
+      continue;
+    }
+    if (state == NoticeState.PartiallyReceived) {
+      lastRetryAt.set(noticeEh.b64, now);
+      await filesDvm.deliveryZvm.requestMissingChunks(noticeEh);
+      retried.push(noticeEh);
+      continue;
+    }
+    if (state == NoticeState.Accepted) {
+      const manifestEh = new EntryId(notice.summary.parcel_reference.parcel_eh);
+      const senderOnline = onlinePeers.some((agent) => agent.equals(notice.sender));
+      if (delivery.privateManifests.get(manifestEh) || !senderOnline) {
+        continue;
+      }
+      lastRetryAt.set(noticeEh.b64, now);
+      await filesDvm.deliveryZvm.acceptDelivery(noticeEh);
+      retried.push(noticeEh);
+    }
+  }
+  return retried;
+}
+
+
+/** Manual retry from the UI for one file: the same per-state action as resumeDmDeliveries,
+ *  with no throttle and no online check. No-op without a notice. */
+export async function retryDmDelivery(filesDvm: DmFilesPort, lookup: ParcelLookup): Promise<void> {
+  if (!lookup.noticeEh) {
+    return;
+  }
+  switch (lookup.noticeState) {
+    case NoticeState.Unreplied:
+    case NoticeState.Accepted:
+      await filesDvm.deliveryZvm.acceptDelivery(lookup.noticeEh);
+      break;
+    case NoticeState.PartiallyReceived:
+      await filesDvm.deliveryZvm.requestMissingChunks(lookup.noticeEh);
+      break;
+    default:
+      break;
+  }
 }
