@@ -103,9 +103,12 @@ export const sharedStyles = [
         padding-left: 7px;
         background: transparent;
     }
+    /* UI5 keeps 1rem on the left for the collapse button it would show on a non-fixed
+       panel; nothing goes there, so the chevron lines up with the channel titles instead */
     ui5-panel.lister-panel::part(header) {
         border: none;
         color: var(--vines-ink-muted);
+        padding-left: 7px;
         padding-right: 5px;
     }
     ui5-panel.lister-panel::part(header):hover {
@@ -124,7 +127,7 @@ export const sharedStyles = [
     .lister-chevron {
         width: 1rem;
         height: 1rem;
-        margin: 0 0.5rem 0 0.25rem;
+        margin: 0 0.5rem 0 0;
         flex-shrink: 0;
         color: var(--vines-ink-muted);
     }
