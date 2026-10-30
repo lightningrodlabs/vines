@@ -617,7 +617,7 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                       @click=${(_e: any) => {
                           const settingsMenu = this.shadowRoot!.getElementById("addMenu") as Menu;
                           const settingsBtn = this.shadowRoot!.getElementById("addBtn") as Button;
-                          settingsMenu.opener = settingsBtn; settingsMenu.open = true;
+                          settingsMenu.opener = settingsBtn; settingsMenu.open = !settingsMenu.open;
                       }}>
           </ui5-button>
       `

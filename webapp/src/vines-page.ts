@@ -2318,7 +2318,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                         @click=${(_e: any) => {
                             const menu = this.shadowRoot!.getElementById("viewMenu") as Menu;
                             const btn = this.shadowRoot!.getElementById("viewMenuBtn") as Button;
-                            menu.opener = btn; menu.open = true;
+                            menu.opener = btn; menu.open = !menu.open;
                         }}></ui5-button>
             ${this._listerToShow == "topics-option"? html`
                 <ui5-button icon="add" design="Transparent" class="top-btn"
@@ -2416,7 +2416,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                                 @click=${(_e: any) => {
                                     const settingsMenu = this.shadowRoot!.getElementById("settingsMenu") as Menu;
                                     const settingsBtn = this.shadowRoot!.getElementById("settingsBtn") as Button;
-                                    settingsMenu.opener = settingsBtn; settingsMenu.open = true;
+                                    settingsMenu.opener = settingsBtn; settingsMenu.open = !settingsMenu.open;
                                 }}>
                     </ui5-button>
                     <ui5-menu id="settingsMenu" header-text=${msg("Settings")}

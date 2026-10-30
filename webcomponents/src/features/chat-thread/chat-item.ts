@@ -209,10 +209,10 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
   }
 
   /** */
-  onClickAddEmoji() {
+  onClickAddEmoji(toggle = false) {
     const popover = this.shadowRoot!.getElementById("emojiPopover") as Popover;
     const btn = this.shadowRoot!.getElementById("buttonsPop") as HTMLElement;
-    popover.opener = btn; popover.open = true;
+    popover.opener = btn; popover.open = toggle? !popover.open : true;
   }
 
 
@@ -495,7 +495,8 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
                         //console.log("onSettingsMenu()", e);
                         const menu = this.shadowRoot!.getElementById("moreMenu") as Menu;
                         const btn = this.shadowRoot!.getElementById("menu-btn") as Button;
-                        menu.opener = btn; menu.open = true;
+                        /** A click on the opener does not close a UI5 popover: toggle it here */
+                        menu.opener = btn; menu.open = !menu.open;
                     }}></ui5-button>`;
 
     const replyButton = /*this.cell.agentId.b64 == beadInfo.author? html`` :*/
@@ -506,7 +507,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     const reactionButton = html`
         <ui5-button id="add-reaction-btn" icon="feedback" tooltip=${msg('Add Reaction')} design="Transparent"
                     style="border:none;"
-                    @click=${(_e: any) => this.onClickAddEmoji()}></ui5-button>`;
+                    @click=${(_e: any) => this.onClickAddEmoji(true)}></ui5-button>`;
 
     const isFavorite = this.threadsPerspective.favorites.map((id) => id.b64).includes(this.hash.b64);
     const starButton = isFavorite? html`

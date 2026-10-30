@@ -112,10 +112,17 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
   async openMenu(e: Event, target: MenuTarget) {
     e.stopPropagation();
     e.preventDefault();
+    const button = e.currentTarget as Button;
+    const menu = this.shadowRoot!.getElementById("moreMenu") as Menu;
+    /** A click on the opener does not close a UI5 popover: a second click on the same
+     *  button closes the menu here. A click on another row's button already closed it. */
+    if (menu.open && menu.opener === button) {
+      menu.open = false;
+      return;
+    }
     this._menuTarget = target;
     await this.updateComplete;
-    const menu = this.shadowRoot!.getElementById("moreMenu") as Menu;
-    menu.opener = e.currentTarget as Button; menu.open = true;
+    menu.opener = button; menu.open = true;
   }
 
 
