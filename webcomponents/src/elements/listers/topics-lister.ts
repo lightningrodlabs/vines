@@ -172,6 +172,18 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
   }
 
 
+  /** Run the move a cross-category drop recorded. Called after dragend has repainted the
+   *  list: changing the perspective while a row still sits where the drag left it would
+   *  fight that repaint. */
+  flushPendingMove() {
+    const move = this._pendingMove;
+    this._pendingMove = undefined;
+    if (move) {
+      /*await*/ this.moveChannel(move[0], move[1]);
+    }
+  }
+
+
   /** File a channel under another category; the ZVM shows it there at once and puts it back
    *  if the zome refuses */
   async moveChannel(ppAh: ActionId, toTopicAh: ActionId) {
@@ -335,6 +347,9 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
                            /** Force clear and repaint */
                            render(nothing, this.shadowRoot!);
                            this.requestUpdate();
+                           /** This handler stops propagation, so the container's dragend
+                            *  never sees a row drag: flush the move here */
+                           this.flushPendingMove();
                        }}
                        @dragleave=${(e: DragEvent) => {
                            (e.currentTarget as HTMLElement).classList.remove('drag-over');
@@ -497,13 +512,7 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
              /** Force clear and repaint */
              render(nothing, this.shadowRoot!);
              this.requestUpdate();
-             /** Only now change the perspective: a re-render while a row still sits where the
-              *  drag left it would fight the repaint above */
-             const move = this._pendingMove;
-             this._pendingMove = undefined;
-             if (move) {
-               /*await*/ this.moveChannel(move[0], move[1]);
-             }
+             this.flushPendingMove();
          }}
          @dragover=${(e: any) => {
             e.preventDefault();
