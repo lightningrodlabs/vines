@@ -12,6 +12,11 @@ pub struct PublishDmThreadInput {
 
 
 
+/// Largest file a DM may carry, in bytes. The integrity zome rejects anything above
+/// `max_file_size`, and `FileLimits::default()` is 0, so the value has to be explicit.
+pub const DM_MAX_FILE_SIZE: u32 = 16 * 1024 * 1024;
+
+
 /// Publish a Pp off of another Agent
 #[hdk_extern]
 #[feature(zits_blocking)]
@@ -22,10 +27,17 @@ pub fn publish_dm_thread(input: PublishDmThreadInput) -> ExternResult<ActionHash
     return zome_error!("Cannot DM self");
   }
 
-  // Only text in DMs (reason: files are not encrypted and wals are niche use case difficult to manage UI wise)
-  let mut limitations = Limitations::default();
-  limitations.can_wal = false;
-  limitations.can_file = None;
+  /// Files travel the files module's private path (committed on the sender's chain, delivered
+  /// to the other party), so they are allowed. Assets (WALs) stay off: niche and hard to manage.
+  let limitations = Limitations {
+    can_wal: false,
+    can_file: Some(FileLimits {
+      allowed_file_types: Vec::new(),
+      min_file_size: 0,
+      max_file_size: DM_MAX_FILE_SIZE,
+    }),
+    ..Limitations::default()
+  };
 
   /// Create PP
   let pp = ParticipationProtocol {
