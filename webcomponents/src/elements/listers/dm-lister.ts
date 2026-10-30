@@ -172,7 +172,7 @@ export class DmLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                             }));
                         }}></ui5-button>`;
 
-      return {unread: !!(threadIsNew || notifCount > 0 || hasNewBeads), tmpl: html`
+      return {unread: !!(isSelected || threadIsNew || notifCount > 0 || hasNewBeads), tmpl: html`
           <sl-tooltip content=${otherProfile.nickname} style="--show-delay:1500" disabled @mouseover=${tooltipOnlyWhenClipped}>
               <div id=${ppAh.b64} .agent=${otherAgent.b64} 
                    class="threadItem"
@@ -250,7 +250,7 @@ export class DmLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           </sl-tooltip>
       `};
     });
-    /** A closed section still lists the DMs with unread, notified or new messages */
+    /** A closed section still lists the open DM and the DMs with unread, notified or new messages */
     let treeItems = rows.filter((r) => !!r && (!this._collapsed || r.unread)).map((r) => r!.tmpl);
     //console.log("<dm-lister>.render() treeItems", treeItems);
     /** Handle empty tree case */

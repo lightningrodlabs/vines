@@ -232,7 +232,7 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
         return;
       }
       /** Our own collapsed state (the panel is fixed): a closed category still lists the
-       *  channels with unread, notified or new messages */
+       *  open channel and the channels with unread, notified or new messages */
       if (this.collapsed.get(topicAh) === undefined) {
         this.collapsed.set(topicAh, false);
       }
@@ -285,7 +285,7 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
             //let badge = html`<ui5-tag>0</ui5-tag>`;
             let badge = html`<div style="min-width: 26px"></div>`;
             let notifCount = this.threadsPerspective.getAllNotificationsForPp(ppAh).length;
-            if (threadIsNew || notifCount > 0 || hasNewBeads) {
+            if (isSelected || threadIsNew || notifCount > 0 || hasNewBeads) {
               unreadPps.add(ppAh.b64);
             }
             if (threadIsNew) {
