@@ -279,6 +279,7 @@ import {GetStrategy} from "@holochain-open-dev/core-types";
 import {APP_VERSION} from "./generated/version";
 import {APK_LINK, happShareCodeContext, isMobile} from "./globals";
 import {ImportFilesData} from "@vines/elements/src/features/migration/import-utils";
+import {commitPrivateFileForDm, FileAlreadyPublicError} from "@vines/elements/src/viewModels/dm-files";
 
 setBasePath('/shoelace-assets');
 setDefaultFontLoading(false);
@@ -679,6 +680,12 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       this.requestUpdate();
       splitFile(e.detail.file, this._filesDvm.dnaProperties.maxChunkSize).then((obj) => {
         this._splitObj = obj;
+        /** A DM file must not be published to the group */
+        const otherAgent = this._dvm.threadsZvm.isThreadDm(ppAh);
+        if (otherAgent) {
+          /*await*/ this.sendPrivateFileMessage(e.detail.file!, obj, otherAgent, ppAh, replyToAh);
+          return;
+        }
         const succeeded = this._filesDvm.startPublishFile(e.detail.file!, obj, [], this._dvm.profilesZvm.perspective.agents,
           async (eh) => {
             console.debug("<vines-page> startPublishFile callback", eh);
@@ -1079,6 +1086,37 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     this.createThreadDialogElem.open = false;
     /** Jump to new thread */
     this.dispatchEvent(threadJumpEvent(ppAh));
+  }
+
+
+  /** DM files go through the files module's private path: committed on this chain, delivered to
+   *  the other party only, never published. There is no callback, so wait for the manifest. */
+  private async sendPrivateFileMessage(file: File, splitObj: SplitObject, otherAgent: AgentId, ppAh: ActionId, replyToAh?: ActionId): Promise<void> {
+    try {
+      const eh = await commitPrivateFileForDm(this._filesDvm, file, splitObj, otherAgent);
+      await this._dvm.publishMessage(
+        ThreadsEntryType.EntryBead,
+        {eh, size: file.size, type: simplifyMimeType(file.type)},
+        ppAh,
+        undefined,
+        replyToAh,
+        this.weServices,
+      );
+    } catch (e: any) {
+      const reason = e instanceof FileAlreadyPublicError
+        ? msg("This file is already shared with the group, so it can't be sent privately")
+        : msg("Publish Message failed: ") + (e.failure ?? e.message ?? e);
+      toasty(reason);
+      console.warn("sendPrivateFileMessage() failed:", e);
+      const inputBar = this.shadowRoot!.getElementById("input-bar") as InputBar;
+      if (inputBar) {
+        inputBar.setFile(file);
+      }
+    } finally {
+      this._splitObj = undefined;
+      this._uploadingFile = false;
+      this._waitingForBeadCommit = undefined;
+    }
   }
 
 
