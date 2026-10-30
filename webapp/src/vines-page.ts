@@ -2236,7 +2236,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     hisLister = html``;
 
     const toggleLeftBtn = html`
-        <ui5-button icon="slim-arrow-right" tooltip=${msg("Show side panel")}
+        <ui5-button icon="open-command-field" tooltip=${msg("Show side panel")}
                     class="${this._canShowLeft? "pressed" : ""}                    
                     slot=" startButton"
         style="margin-right:5px; display: ${this._canShowLeft? "none" : ""}"
@@ -2305,7 +2305,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     const topLeft = html`
         <!-- Top bar: places on the left, list actions on the right -->
         <div id="topBar">
-            <ui5-button icon="slim-arrow-left" design="Transparent" class="top-btn" tooltip=${msg('Close side panel')}
+            <ui5-button icon="close-command-field" design="Transparent" class="top-btn" tooltip=${msg('Close side panel')}
                         @click=${(_e: any) => this._canShowLeft = false}></ui5-button>
             <ui5-button icon="favorite-list" design="Transparent" tooltip=${msg("Favorites")}
                         class="top-btn ${this._mainView == MainViewType.Favorites? "active" : ""}"
