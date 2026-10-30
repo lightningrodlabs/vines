@@ -465,7 +465,7 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
       /** render topic item */
       const bgColor = this._dvm.perspective.myNewestTopic && topicAh.equals(this._dvm.perspective.myNewestTopic)? "background: var(--vines-surface-tint)" : "";
       return html`
-          <ui5-panel id=${topicAh.b64} fixed class=${collapsed? "collapsed" : ""}
+          <ui5-panel id=${topicAh.b64} fixed class="lister-panel ${collapsed? "collapsed" : ""}"
                      style="${bgColor}"
                      .draggable=${this.order == "custom" && !collapsed? "true" : ""}>
             <!-- header: a click toggles the section; its buttons are left alone -->
@@ -681,30 +681,8 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
               margin-top: 10px !important;
           }
 
-          ui5-panel {
-              display: flex;
-              flex-direction: column;
-              /*padding: 7px;*/
-              border: none;
-              background: transparent;
-              margin-bottom: 4px;
-              --_ui5_panel_header_height: 2.25rem;
-          }
-
-          ui5-panel::part(content) {
-              padding: 0;
-              padding-left: 7px;
-              background: transparent;
-          }
-
-          /** Same right inset as the channel rows (margin-right 5px) and the top bar,
-           *  so the "+" and "⋮" columns line up at every level */
-          ui5-panel::part(header) {
-              border: none;
-              color: var(--vines-ink-muted);
-              padding-right: 5px;
-          }
-
+          /** Panel box, header insets and chevron come from .lister-panel in sharedStyles,
+           *  shared with the Direct Messages section */
           ui5-panel::part(header):hover {
               /*font-weight: bold;*/
               color: var(--vines-accent) !important;
