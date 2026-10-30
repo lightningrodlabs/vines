@@ -185,7 +185,7 @@ export class ExportFilesDialog extends LitElement {
           }
           
           .channel-list {
-              background: #ebebeb9e;
+              background: var(--vines-surface-2);
               border-radius: 10px;
               display: flex;
               flex-direction: column;
@@ -206,12 +206,12 @@ export class ExportFilesDialog extends LitElement {
           }
 
           .channel-item:hover {
-              background: var(--sapList_Hover_Background, #f5f5f5);
+              background: var(--vines-row-hover);
           }
 
           .channel-item.selected {
-              background: var(--sapList_SelectionBackgroundColor, #e8f3ff);
-              border-color: var(--sapSelectedColor, #0070f2);
+              background: var(--vines-surface-tint);
+              border-color: var(--vines-accent);
           }
 
           .channel-icon {
@@ -224,7 +224,7 @@ export class ExportFilesDialog extends LitElement {
           .channel-name {
               flex: 1;
               font-size: var(--sapFontSize, 1.0rem);
-              color: var(--sapTextColor, #32363a);
+              color: var(--vines-ink);
               overflow: hidden;
               text-overflow: ellipsis;
               text-wrap: nowrap;
@@ -233,7 +233,7 @@ export class ExportFilesDialog extends LitElement {
           .channel-meta {
               font-size: 0.875rem;
               padding-right: 0.75rem;
-              color: var(--sapContent_LabelColor, #6a6d70);
+              color: var(--vines-ink-muted);
           }
 
           .select-all-row {

@@ -1,4 +1,5 @@
 import {html, css} from 'lit';
+import {palette} from "../theme";
 import {property, customElement} from 'lit/decorators.js';
 import {localized} from '@lit/localize';
 import cytoscape, {ElementDefinition} from 'cytoscape';
@@ -123,28 +124,28 @@ export class GraphViewer extends DnaElement<unknown, ThreadsDvm> {
         {
           selector: 'node',
           style: {
-            'background-color': '#6ec2b3',
+            'background-color': palette.accentSoft,
             'label': 'data(label)'
           }
         },
         {
           selector: 'node[type = "Ghost"]',
           style: {
-            'background-color': '#666',
+            'background-color': palette.inkMuted,
             'shape': 'triangle',
           }
         },
         {
           selector: 'node[type = "Thread"]',
           style: {
-            'background-color': '#fa1638',
+            'background-color': palette.negative,
             'shape': 'diamond',
           }
         },
         {
           selector: 'node[type = "EntryBead"]',
           style: {
-            'background-color': '#b0a95b',
+            'background-color': palette.warning,
             'shape': 'rectangle',
             'label': '<File>',
           }
@@ -152,7 +153,7 @@ export class GraphViewer extends DnaElement<unknown, ThreadsDvm> {
         {
           selector: 'node[type = "AnyBead"]',
           style: {
-            'background-color': '#55e844',
+            'background-color': palette.accentAlt,
             'shape': 'star',
             'label': '<WAL>',
           }
@@ -161,8 +162,8 @@ export class GraphViewer extends DnaElement<unknown, ThreadsDvm> {
           selector: 'edge',
           style: {
             'width': 2,
-            'line-color': '#ccc',
-            'target-arrow-color': '#ccc',
+            'line-color': palette.border,
+            'target-arrow-color': palette.border,
             'target-arrow-shape': 'triangle',
             'curve-style': 'bezier'
           }

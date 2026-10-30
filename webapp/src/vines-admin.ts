@@ -241,7 +241,7 @@ export class VinesAdmin extends LitElement {
           <div class="column center-content flex-1" style="gap:15px; height:100%;">
               <div class="dialog-title" style="display:flex; flex-direction:row; gap:5px; align-items:baseline; overflow: hidden;">
                   <span style="overflow-wrap: break-word; word-break: break-word; max-width: 100vw;">${customName != "" ?  customName : appInfo.installed_app_id}</span>
-                  <div style="margin-left:5px; color:rgb(45, 111, 244); font-size:18px;">${isDefault? `(${msg("default")})`: ""}</div>
+                  <div style="margin-left:5px; color: var(--vines-accent); font-size:18px;">${isDefault? `(${msg("default")})`: ""}</div>
               </div>
               <div>${msg("Peers online: ")} ${this._peers.get(dnaId) ?? 0}</div>
               <button @click=${(_e:any) => this.queryBootStrapServer(dnaId)}>Recheck</button>
@@ -370,7 +370,7 @@ export class VinesAdmin extends LitElement {
                         </div>
                         <div class="column center-content hint" style="margin-bottom: 12px; max-width:100%;">
                             <div style="margin-bottom:3px;">${msg('An invite code looks like:')}</div>
-                            <div style="background: rgba(230,246,215,0.58); padding:3px;text-overflow: ellipsis;overflow: clip;max-width: 100%;">
+                            <div style="background: var(--vines-surface-tint); padding:3px;text-overflow: ellipsis;overflow: clip;max-width: 100%;">
                                 g69vcmlnaW5hbERuYUhhc2jEJ4QtJEUWYfwZRyGSlKexuB/xOV02DsJ+RON4IFANf+C7cdRx0a5/GaRu
                             </div>
                         </div>
@@ -473,9 +473,9 @@ export class VinesAdmin extends LitElement {
       return html`
           <div class="centered">
               <ui5-busy-indicator delay="0" size="L" active
-                                  style="color:#9e9c65"
+                                  style="color: var(--vines-warning)"
               ></ui5-busy-indicator>
-              <div style="font-size: 18px; color: #131312;">${this._loading}</div>
+              <div style="font-size: 18px; color: var(--vines-ink);">${this._loading}</div>
               ${HAPP_BUILD_MODE != HappBuildModeType.Retail? html`
                   <button id="retryBtn"
                           style="max-width:300px"
@@ -536,13 +536,13 @@ export class VinesAdmin extends LitElement {
                            this._showGroupInvite = [app, customName]
                         }}>
                         <div class="app-name">${name}</div>
-                        <div style="margin-left: 5px; color: rgb(45, 111, 244)">${isDefault? `(${msg("default")})`: ""}</div>
+                        <div style="margin-left: 5px; color: var(--vines-accent)">${isDefault? `(${msg("default")})`: ""}</div>
                         <span class="flex flex-1"></span>
-                        <div style="color:grey; font-size:small">${dayTimestamp(app.installed_at)}</div>
+                        <div style="color: var(--vines-ink-muted); font-size:small">${dayTimestamp(app.installed_at)}</div>
                 </div>
             ` : html`
                     <div class="app-panel" 
-                         style="background:rgba(215, 215, 215, 0.74); color:rgb(81, 97, 79); cursor:default;">
+                         style="background: var(--vines-surface-2); color: var(--vines-ink-muted); cursor:default;">
                         <div class="app-name">${name}</div>
                         <span class="flex flex-1"></span>
                         <button
@@ -691,11 +691,11 @@ export class VinesAdmin extends LitElement {
     return [
       css`
           .default-font {
-              font-family: 'Inter Variable', 'Aileron', 'Open Sans', 'Helvetica Neue', sans-serif;
+              font-family: var(--vines-font);
           }
 
           :host {
-              background: #d1f6ce;
+              background: var(--vines-page-bg);
               display: block;
               height: 100vh;
               width: 100%;
@@ -704,7 +704,7 @@ export class VinesAdmin extends LitElement {
               
               /* for cards */
               --sl-border-radius-medium: 6px;
-              --sl-shadow-x-small: 1px 1px 5px 0 #9b9b9b;
+              --sl-shadow-x-small: var(--vines-shadow-card);
 
               /* for buttons */
               --sl-input-border-radius-medium: 6px;
@@ -712,37 +712,12 @@ export class VinesAdmin extends LitElement {
               --sl-input-height-large: 60px;
 
               /* Fonts */
-              --sl-font-mono: 'Inter Variable', 'Aileron', 'Open Sans', 'Helvetica Neue', sans-serif;
+              --sl-font-mono: var(--vines-font);
 
               /* Colors */
-              --moss-main-green: #e0eed5;
-
-              --moss-light-green: #f4fed6;
-
-              --moss-inactive-green: #b7c3b0;
-
-              --moss-medium-green: #85b46e;
-
-              --moss-fishy-green: #bac9af;
-
-              --moss-dark-green: #1c251e;
-
-              --moss-hint-green: #324d47;
-
-              --moss-grey-green: #4c6a39;
-
-              --moss-grey-light: #e8e8e8;
-              --moss-grey-dark: #757575;
-
-              --moss-dark-button: #151a11;
-
-              --moss-purple: #7461eb;
-              --moss-purple-semi-transparent: #2d2941;
-
-              --moss-field-grey: #f4f4f4;
 
               /* shoelace dialog overlay background */
-              --sl-overlay-background-color: #324d4781;
+              --sl-overlay-background-color: color-mix(in srgb, var(--vines-ink-hint) 50%, transparent);
 
               /* tooltip border radius */
               --sl-tooltip-border-radius: 8px;
@@ -751,7 +726,7 @@ export class VinesAdmin extends LitElement {
           .app-panel {
               height: 40px;
               width: 85%;
-              background: white;
+              background: var(--vines-surface);
               border-radius: 20px;
               padding: 20px;
               display:flex; 
@@ -761,12 +736,12 @@ export class VinesAdmin extends LitElement {
 
           .app-panel:hover {
               cursor: pointer;
-              background: #cddfaa;
+              background: var(--vines-surface-tint);
           }
 
           .error {
-              background-color: #ffebee;
-              color: #c62828;
+              background-color: color-mix(in srgb, var(--vines-negative) 12%, transparent);
+              color: var(--vines-negative);
               padding: 15px;
               border-radius: 6px;
               margin: 20px 0;
@@ -829,31 +804,31 @@ export class VinesAdmin extends LitElement {
 
           .moss-button {
               all: unset;
-              background: black;
+              background: var(--vines-ink);
               border-radius: 16px;
               padding: 16px 20px;
               font-size: 18px;
               font-weight: 500;
               line-height: 20px;
-              color: white;
+              color: var(--vines-surface);
               cursor: pointer;
               text-align: center;
-              --sl-color-neutral-0: black;
-              --sl-color-primary-50: #455b36;
+              --sl-color-neutral-0: var(--vines-ink);
+              --sl-color-primary-50: var(--vines-accent);
           }
 
           .moss-button:hover {
-              background: #455b36;
+              background: var(--vines-accent);
           }
 
           .moss-button:disabled {
               opacity: 0.4;
-              background: var(--moss-grey-green);
+              background: var(--vines-accent);
               cursor: default;
           }
 
           .moss-button:focus-visible {
-              outline: 2px solid var(--moss-purple);
+              outline: 2px solid var(--vines-accent-alt);
           }
 
           /* enable-btn */
@@ -867,15 +842,14 @@ export class VinesAdmin extends LitElement {
               font-size: 18px;
               font-weight: 500;
               line-height: 20px;
-              color: #1cb504;
-              border: 2px solid #41df1e;
+              color: var(--vines-positive);
+              border: 2px solid var(--vines-accent-soft);
               cursor: pointer;
-              background: white;
+              background: var(--vines-surface);
           }
 
           .enable-btn:hover {
-              background: rgba(185, 250, 131, 0.53);
-              /*color: white;*/
+              background: color-mix(in srgb, var(--vines-accent-soft) 40%, transparent);
           }
 
           /* disable-btn */
@@ -889,15 +863,15 @@ export class VinesAdmin extends LitElement {
               font-size: 18px;
               font-weight: 500;
               line-height: 20px;
-              color: red;
-              border: 2px solid #cc4444;
+              color: var(--vines-negative);
+              border: 2px solid var(--vines-negative);
               cursor: pointer;
-              background: white;
+              background: var(--vines-surface);
           }
 
           .disable-btn:hover {
-              background: rgba(223, 30, 30, 0.53);
-              color: white;
+              background: color-mix(in srgb, var(--vines-negative) 50%, transparent);
+              color: var(--vines-surface);
           }
 
           .disable-btn:disabled {
@@ -907,7 +881,7 @@ export class VinesAdmin extends LitElement {
           }
 
           .disable-btn:focus-visible {
-              outline: 2px solid var(--moss-purple);
+              outline: 2px solid var(--vines-accent-alt);
           }
 
           /* moss-button-secondary */
@@ -921,14 +895,14 @@ export class VinesAdmin extends LitElement {
               font-size: 18px;
               font-weight: 500;
               line-height: 20px;
-              color: black;
-              border: 2px solid #334128;
+              color: var(--vines-ink);
+              border: 2px solid var(--vines-ink);
               cursor: pointer;
-              background: white;
+              background: var(--vines-surface);
           }
 
           .moss-button-secondary:hover {
-              background: #f2ffd8;
+              background: var(--vines-surface-tint);
           }
 
           .moss-button-secondary:disabled {
@@ -938,7 +912,7 @@ export class VinesAdmin extends LitElement {
           }
 
           .moss-button-secondary:focus-visible {
-              outline: 2px solid var(--moss-purple);
+              outline: 2px solid var(--vines-accent-alt);
           }
 
           .app-name {
@@ -950,15 +924,15 @@ export class VinesAdmin extends LitElement {
           }
 
           #cancel-btn {
-              background: rgb(18, 77, 4);
+              background: var(--vines-accent);
           }
 
           #cancel-btn:hover {
-              background: black;
+              background: var(--vines-ink);
           }
 
           .app-card {
-              background: #f8f8f8;
+              background: var(--vines-surface-2);
               border-radius: 20px;
               padding: 15px 20px 15px 15px;
               width: 90%;
@@ -967,12 +941,12 @@ export class VinesAdmin extends LitElement {
 
           .app-card:hover {
               cursor: pointer;
-              background: #ffffff;
+              background: var(--vines-surface);
               /*width: 95%;*/
           }
 
           .group-button {
-              background: #cfe4ae;
+              background: var(--vines-surface-tint);
               cursor: pointer;
               border-radius: 20px;
               display: inline-flex;
@@ -981,13 +955,13 @@ export class VinesAdmin extends LitElement {
               font-size: large;
               padding: 10px;
               padding-left: 20px;
-              color: black;
+              color: var(--vines-ink);
           }
 
           /* moss-card */
 
           .moss-card {
-              background: white;
+              background: var(--vines-surface);
               border-radius: 20px;
               padding: 15px;
           }
@@ -995,12 +969,12 @@ export class VinesAdmin extends LitElement {
           /* moss-dialog */
 
           .moss-dialog {
-              color: black;
+              color: var(--vines-ink);
           }
 
           .moss-dialog::part(panel) {
               border-radius: 20px;
-              background: white;
+              background: var(--vines-surface);
           }
 
           .moss-dialog::part(title) {
@@ -1024,20 +998,20 @@ export class VinesAdmin extends LitElement {
               position: relative;
               /* For the label color to only show up on :focus-within the default color is transparent */
               /* color: transparent; */
-              color: var(--moss-grey-dark);
+              color: var(--vines-ink-muted);
           }
 
           .moss-input::part(base) {
               border-radius: 12px;
-              border: 1px solid --moss-grey-light;
+              border: 1px solid var(--vines-border);
               font-size: 16px;
           }
 
           .moss-input {
-              --sl-input-focus-ring-color: var(--moss-main-green);
-              --sl-input-border-color-hover: var(--moss-dark-button);
-              --sl-input-border-color-focus: var(--moss-dark-button);
-              --sl-input-placeholder-color: var(--moss-grey-dark);
+              --sl-input-focus-ring-color: var(--vines-surface-tint);
+              --sl-input-border-color-hover: var(--vines-ink);
+              --sl-input-border-color-focus: var(--vines-ink);
+              --sl-input-placeholder-color: var(--vines-ink-muted);
               --sl-input-height-medium: 52px;
           }
 
@@ -1055,11 +1029,11 @@ export class VinesAdmin extends LitElement {
           }
 
           .moss-input::part(input) {
-              color: black;
+              color: var(--vines-ink);
           }
 
           .moss-input::part(input):placeholder-shown {
-              color: var(--moss-grey-dark);
+              color: var(--vines-ink-muted);
               z-index: 1;
           }
 
@@ -1077,7 +1051,7 @@ export class VinesAdmin extends LitElement {
 
           .moss-input::part(form-control-help-text) {
               margin-left: 14px;
-              color: var(--moss-purple);
+              color: var(--vines-accent-alt);
               font-size: 12px;
           }
 
@@ -1087,20 +1061,20 @@ export class VinesAdmin extends LitElement {
               position: relative;
               /* For the label color to only show up on :focus-within the default color is transparent */
               /* color: transparent; */
-              color: var(--moss-grey-dark);
+              color: var(--vines-ink-muted);
           }
 
           .moss-input-no-label::part(base) {
               border-radius: 12px;
-              border: 1px solid --moss-grey-light;
+              border: 1px solid var(--vines-border);
               font-size: 16px;
           }
 
           .moss-input-no-label {
-              --sl-input-focus-ring-color: var(--moss-main-green);
-              --sl-input-border-color-hover: var(--moss-dark-button);
-              --sl-input-border-color-focus: var(--moss-dark-button);
-              --sl-input-placeholder-color: var(--moss-grey-dark);
+              --sl-input-focus-ring-color: var(--vines-surface-tint);
+              --sl-input-border-color-hover: var(--vines-ink);
+              --sl-input-border-color-focus: var(--vines-ink);
+              --sl-input-placeholder-color: var(--vines-ink-muted);
               --sl-input-height-medium: 52px;
           }
 
@@ -1115,7 +1089,7 @@ export class VinesAdmin extends LitElement {
           }
 
           .moss-hover-icon-button:hover .moss-hover-icon-button-text {
-              color: black;
+              color: var(--vines-ink);
           }
 
           .moss-hover-icon-button-text {
@@ -1128,7 +1102,7 @@ export class VinesAdmin extends LitElement {
           }
 
           .moss-hover-icon-button:hover .moss-hover-icon-button-icon {
-              background: var(--moss-main-green);
+              background: var(--vines-surface-tint);
           }
 
           /* moss dialog close button */
@@ -1144,7 +1118,7 @@ export class VinesAdmin extends LitElement {
           }
 
           .moss-dialog-close-button:hover {
-              background: var(--moss-main-green);
+              background: var(--vines-surface-tint);
           }
 
           /* moss dialog page indicator dots */
@@ -1153,18 +1127,18 @@ export class VinesAdmin extends LitElement {
               height: 8px;
               width: 8px;
               border-radius: 50%;
-              background-color: #d9d9d9;
+              background-color: var(--vines-border);
           }
 
           /* radio button styles */
 
           sl-radio {
-              /* --sl-input-background-color: var(--moss-main-green); */
-              --sl-color-neutral-0: black;
-              --sl-color-primary-600: var(--moss-main-green);
-              --sl-input-background-color: var(--moss-main-green);
-              --sl-color-primary-500: var(--moss-main-green);
-              --sl-input-background-color-hover: var(--moss-light-green);
+              /* --sl-input-background-color: var(--vines-surface-tint); */
+              --sl-color-neutral-0: var(--vines-ink);
+              --sl-color-primary-600: var(--vines-surface-tint);
+              --sl-input-background-color: var(--vines-surface-tint);
+              --sl-color-primary-500: var(--vines-surface-tint);
+              --sl-input-background-color-hover: var(--vines-surface-tint);
           }
 
           /* sidebar buttons */
@@ -1174,17 +1148,17 @@ export class VinesAdmin extends LitElement {
               cursor: pointer;
               height: 48px;
               width: 48px;
-              color: #fff;
+              color: var(--vines-surface);
               border-radius: 12px;
           }
 
           .moss-sidebar-button:hover {
-              background: var(--moss-dark-button);
+              background: var(--vines-ink);
           }
 
           .moss-sidebar-button:focus-visible {
-              outline: 2px solid var(--moss-purple);
-              background: var(--moss-dark-button);
+              outline: 2px solid var(--vines-accent-alt);
+              background: var(--vines-ink);
           }
 
           .install-button {
@@ -1194,9 +1168,9 @@ export class VinesAdmin extends LitElement {
               justify-content: center;
               border-radius: 8px;
               border: solid 2px;
-              border-color: black;
-              color: black;
-              background-color: white;
+              border-color: var(--vines-ink);
+              color: var(--vines-ink);
+              background-color: var(--vines-surface);
               font-style: normal;
               font-size: 14px;
               line-height: 16px;
@@ -1204,8 +1178,8 @@ export class VinesAdmin extends LitElement {
           }
 
           .install-button:hover {
-              color: white;
-              background-color: black;
+              color: var(--vines-surface);
+              background-color: var(--vines-ink);
           }
 
           .moss-mini-button-primary,
@@ -1223,25 +1197,25 @@ export class VinesAdmin extends LitElement {
           }
 
           .moss-mini-button-secondary {
-              border-color: black;
-              color: black;
-              background-color: white;
+              border-color: var(--vines-ink);
+              color: var(--vines-ink);
+              background-color: var(--vines-surface);
           }
 
           .moss-mini-button-secondary:hover {
-              color: white;
-              background-color: black;
+              color: var(--vines-surface);
+              background-color: var(--vines-ink);
           }
 
           .moss-mini-button-primary:hover {
-              color: black;
-              background-color: white;
+              color: var(--vines-ink);
+              background-color: var(--vines-surface);
           }
 
           .moss-mini-button-primary {
-              border-color: black;
-              color: white;
-              background-color: black;
+              border-color: var(--vines-ink);
+              color: var(--vines-surface);
+              background-color: var(--vines-ink);
           }
 
           .moss-mini-button-disabled {
@@ -1250,7 +1224,7 @@ export class VinesAdmin extends LitElement {
           }
 
           .tab-bar {
-              border-bottom: 2px solid var(--moss-grey-light);
+              border-bottom: 2px solid var(--vines-border);
               /* margin-bottom: -2px; */
           }
 
@@ -1267,17 +1241,17 @@ export class VinesAdmin extends LitElement {
           }
 
           .tab:focus-visible {
-              background: var(--moss-purple-semi-transparent);
+              background: color-mix(in srgb, var(--vines-accent-alt) 25%, var(--vines-ink));
           }
 
           .tab:hover {
-              color: var(--moss-purple);
-              border-bottom: 2px solid var(--moss-purple);
+              color: var(--vines-accent-alt);
+              border-bottom: 2px solid var(--vines-accent-alt);
           }
 
           .tab-selected {
-              border-bottom: 2px solid var(--moss-purple);
-              color: var(--moss-purple);
+              border-bottom: 2px solid var(--vines-accent-alt);
+              color: var(--vines-accent-alt);
           }
 
           /* Loading dots for buttons */
@@ -1289,29 +1263,29 @@ export class VinesAdmin extends LitElement {
               width: 10px;
               height: 10px;
               border-radius: 5px;
-              background-color: var(--carousel-color, #ffffff);
-              color: var(--carousel-color, #ffffff);
-              box-shadow: 9984px 0 0 0 var(--carousel-color, #ffffff),
-              9999px 0 0 0 var(--carousel-color, #ffffff),
-              10014px 0 0 0 var(--carousel-color, #ffffff);
+              background-color: var(--carousel-color, var(--vines-surface));
+              color: var(--carousel-color, var(--vines-surface));
+              box-shadow: 9984px 0 0 0 var(--carousel-color, var(--vines-surface)),
+              9999px 0 0 0 var(--carousel-color, var(--vines-surface)),
+              10014px 0 0 0 var(--carousel-color, var(--vines-surface));
               animation: dot-carousel 1.5s infinite linear;
           }
 
           @keyframes dot-carousel {
               0% {
-                  box-shadow: 9984px 0 0 -1px var(--carousel-color, #ffffff),
-                  9999px 0 0 1px var(--carousel-color, #ffffff),
-                  10014px 0 0 -1px var(--carousel-color, #ffffff);
+                  box-shadow: 9984px 0 0 -1px var(--carousel-color, var(--vines-surface)),
+                  9999px 0 0 1px var(--carousel-color, var(--vines-surface)),
+                  10014px 0 0 -1px var(--carousel-color, var(--vines-surface));
               }
               50% {
-                  box-shadow: 10014px 0 0 -1px var(--carousel-color, #ffffff),
-                  9984px 0 0 -1px var(--carousel-color, #ffffff),
-                  9999px 0 0 1px var(--carousel-color, #ffffff);
+                  box-shadow: 10014px 0 0 -1px var(--carousel-color, var(--vines-surface)),
+                  9984px 0 0 -1px var(--carousel-color, var(--vines-surface)),
+                  9999px 0 0 1px var(--carousel-color, var(--vines-surface));
               }
               100% {
-                  box-shadow: 9999px 0 0 1px var(--carousel-color, #ffffff),
-                  10014px 0 0 -1px var(--carousel-color, #ffffff),
-                  9984px 0 0 -1px var(--carousel-color, #ffffff);
+                  box-shadow: 9999px 0 0 1px var(--carousel-color, var(--vines-surface)),
+                  10014px 0 0 -1px var(--carousel-color, var(--vines-surface)),
+                  9984px 0 0 -1px var(--carousel-color, var(--vines-surface));
               }
           }
 
@@ -1401,7 +1375,7 @@ export class VinesAdmin extends LitElement {
           /* color classes */
 
           .bg-black {
-              background-color: black;
+              background-color: var(--vines-ink);
           }
       `,
 

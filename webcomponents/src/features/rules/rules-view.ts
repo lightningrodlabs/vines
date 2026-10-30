@@ -111,7 +111,7 @@ export class RulesView extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
                 <div class="field-value badge-container">
                     ${fileRules.allowedFileTypes.length > 0
                             ? fileRules.allowedFileTypes.map(fileType => html`
-                                <ui5-tag color-scheme="info" style="background: rgb(57 57 57);">
+                                <ui5-tag color-scheme="info" style="background: var(--vines-ink);">
                                     ${(handledMimeTypes as any)[fileType]}
                                 </ui5-tag>`)
                             : html`
@@ -190,7 +190,7 @@ export class RulesView extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
                             ? html`
                                 <div class="peers">${peerList}</div>`
                             : html`
-                                <ui5-text style="color:red">${msg('No moderators set for this channel')}</ui5-text>`}
+                                <ui5-text style="color: var(--vines-negative)">${msg('No moderators set for this channel')}</ui5-text>`}
                 </div>
             </div>
 
@@ -259,7 +259,7 @@ export class RulesView extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
         .field-label {
           font-weight: bold;
           min-width: 150px;
-          color: var(--sapContent_LabelColor, #6a6d70);
+          color: var(--vines-ink-muted);
         }
 
         .field-value {
@@ -269,7 +269,7 @@ export class RulesView extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
         .field-group {
           margin-left: 1.5rem;
           padding-left: 1rem;
-          border-left: 3px solid var(--sapInformationBorderColor, #0a6ed1);
+          border-left: 3px solid var(--vines-accent);
           margin-bottom: 1rem;
         }
 
@@ -280,15 +280,15 @@ export class RulesView extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
         }
 
         .icon-true {
-          color: var(--sapPositiveColor, #107e3e);
+          color: var(--vines-positive);
         }
 
         .icon-false {
-          color: var(--sapNegativeColor, #bb0000);
+          color: var(--vines-negative);
         }
 
         pre {
-          background-color: var(--sapGroup_ContentBackground, #f7f7f7);
+          background-color: var(--vines-surface-2);
           /*padding: 0.5rem;*/
           /*border-radius: 0.25rem;*/
           white-space: pre-wrap;

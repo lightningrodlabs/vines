@@ -214,7 +214,7 @@ export class QRScanner extends LitElement {
             }
 
             h1 {
-                color: #333;
+                color: var(--vines-ink);
                 text-align: center;
             }
 
@@ -223,7 +223,7 @@ export class QRScanner extends LitElement {
                 width: 100%;
                 max-width: 500px;
                 margin: 20px auto;
-                background: #000;
+                background: var(--vines-ink);
                 border-radius: 8px;
                 overflow: hidden;
             }
@@ -245,7 +245,7 @@ export class QRScanner extends LitElement {
                 transform: translate(-50%, -50%);
                 width: 250px;
                 height: 250px;
-                border: 3px solid #00ff00;
+                border: 3px solid var(--vines-accent-soft);
                 border-radius: 8px;
                 pointer-events: none;
             }
@@ -267,44 +267,44 @@ export class QRScanner extends LitElement {
             }
 
             .start-btn {
-                background-color: #4CAF50;
-                color: white;
+                background-color: var(--vines-accent);
+                color: var(--vines-surface);
             }
 
             .start-btn:hover {
-                background-color: #45a049;
+                background-color: color-mix(in srgb, var(--vines-accent) 85%, black);
             }
 
             .start-btn:disabled {
-                background-color: #ccc;
+                background-color: var(--vines-border);
                 cursor: not-allowed;
             }
 
             .stop-btn {
-                background-color: #f44336;
-                color: white;
+                background-color: var(--vines-negative);
+                color: var(--vines-surface);
             }
 
             .stop-btn:hover {
-                background-color: #da190b;
+                background-color: color-mix(in srgb, var(--vines-negative) 85%, black);
             }
 
             .result {
                 margin: 20px 0;
                 padding: 15px;
-                background-color: #f0f0f0;
+                background-color: var(--vines-surface-2);
                 border-radius: 6px;
                 word-break: break-all;
             }
 
             .result h3 {
                 margin-top: 0;
-                color: #333;
+                color: var(--vines-ink);
             }
 
             .error {
-                background-color: #ffebee;
-                color: #c62828;
+                background-color: color-mix(in srgb, var(--vines-negative) 12%, transparent);
+                color: var(--vines-negative);
                 padding: 15px;
                 border-radius: 6px;
                 margin: 20px 0;
@@ -313,7 +313,7 @@ export class QRScanner extends LitElement {
             .placeholder {
                 text-align: center;
                 padding: 40px;
-                color: #666;
+                color: var(--vines-ink-muted);
             }
         `,
         ];

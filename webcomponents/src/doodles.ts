@@ -1,6 +1,6 @@
 import {html} from "lit";
+import {palette} from "./theme";
 
-// #E3EBFF
 export const doodle_weave = html`
   <css-doodle>
       @grid: 1 / 100%;
@@ -16,7 +16,7 @@ export const doodle_weave = html`
             path {
               fill: none;
               stroke-linecap: square;
-              stroke: #ECF3F7;
+              stroke: ${palette.surface2};
               stroke-width: 0.6;
               draw: 0.1s;
               d: M 4 5
@@ -36,7 +36,7 @@ export const doodle_threads = html`
       @grid: 1 / 100%;
       @content: @svg(
       viewBox: 0 0 16 16 p 1;
-      stroke: #aeacfb;
+      stroke: ${palette.accentAlt};
       stroke-width: .1;
       stroke-linecap: round;
       line*16x16 {
@@ -58,7 +58,7 @@ export const doodle_comment_manual = html`
           gap: 1px;
           @size: 100% 100%;
         }
-        background: #60569e;
+        background: ${palette.accentAlt};
         width: @rand(5%, 100%); /* from 5% to 100% by random */
     </css-doodle>
 `;
@@ -66,7 +66,7 @@ export const doodle_comment_manual = html`
 export const doodle_leafs = html`
     <css-doodle>
     @grid: 1 / 100%;
-    background-color: #332B33;
+    background-color: ${palette.ink};
     background-image: @doodle(
     :doodle {
     @grid: 1 / 10000px;
@@ -79,11 +79,11 @@ export const doodle_leafs = html`
     border-radius: 0% 60%;
     }
     position: absolute;
-    border: 1px solid #BCB8BB;
+    border: 1px solid ${palette.border};
     @nth(1) { border-radius: 0% 60%; }
     @size: calc(100% - 100% / @I * (@i - 1));
     background: linear-gradient(
-    45deg, @stripe(transparent, #BCB8BB 1px, transparent)
+    45deg, @stripe(transparent, ${palette.border} 1px, transparent)
     );
     );
     );
@@ -100,7 +100,7 @@ export const doodle_flowers_animate = html`
         overflow: hidden;
         }
 
-        --colors: (#75b9be,#696d7d,#d72638,#f49d37,#140f2d);
+        --colors: (${palette.accentSoft},${palette.inkMuted},${palette.accentAlt},${palette.warning},${palette.inkHint});
         --color-1: @p(--colors);
         --color-2: @P;
         --transform: translateY(@r(2, 90)%);
@@ -205,7 +205,7 @@ export const doodle_flowers = html`
         overflow: hidden;
         }
 
-        --colors: (#75b9be,#696d7d,#d72638,#f49d37,#140f2d);
+        --colors: (${palette.accentSoft},${palette.inkMuted},${palette.accentAlt},${palette.warning},${palette.inkHint});
         --color-1: @p(--colors);
         --color-2: @P;
         --transform: translateY(@r(2, 90)%);

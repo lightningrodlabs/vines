@@ -120,7 +120,7 @@ export class ImportSummary extends LitElement {
               ? html`<h3>${msg('Discord channel')}</h3>
                <div style="display:grid; grid-template-columns: 1fr 1fr; column-gap: 1rem;">
                  <div>
-                 <div style="color:grey; font-size:small">${msg('Category')}</div>
+                 <div style="color: var(--vines-ink-muted); font-size:small">${msg('Category')}</div>
                     <ui5-input id="discord-topic" outlined required show-clear-icon
                                .value=${this.data.discord.channels[0]!.category}
                                .placeholder=${this.data.discord.channels[0]!.category}
@@ -134,7 +134,7 @@ export class ImportSummary extends LitElement {
                     </ui5-input>
             </div>
             <div>
-                <div style="color:grey; font-size:small">${msg('Channel')}</div>
+                <div style="color: var(--vines-ink-muted); font-size:small">${msg('Channel')}</div>
                 <ui5-input id="discord-channel" outlined required show-clear-icon
                            .value=${this.data.discord.channels[0]!.name}
                            .placeholder=${this.data.discord.channels[0]!.name}
@@ -322,8 +322,8 @@ export class ImportSummary extends LitElement {
           }
 
           .stat-card {
-              background: var(--sapTile_Background, #fff);
-              border: 1px solid var(--sapTile_BorderColor, #d9d9d9);
+              background: var(--vines-surface);
+              border: 1px solid var(--vines-border);
               border-radius: 0.5rem;
               padding: 1rem 1.25rem;
               display: flex;
@@ -333,7 +333,7 @@ export class ImportSummary extends LitElement {
 
           .stat-label {
               font-size: var(--sapFontSmallSize, 0.75rem);
-              color: var(--sapContent_LabelColor, #6a6d70);
+              color: var(--vines-ink-muted);
               text-transform: uppercase;
               letter-spacing: 0.05em;
           }
@@ -341,14 +341,14 @@ export class ImportSummary extends LitElement {
           .stat-value {
               font-size: 2rem;
               font-weight: 700;
-              color: var(--sapTextColor, #32363a);
+              color: var(--vines-ink);
               line-height: 1;
               margin: auto;
           }
           
           .channel-group-title {
               font-size: var(--sapFontSmallSize, 0.75rem);
-              color: var(--sapContent_LabelColor, #6a6d70);
+              color: var(--vines-ink-muted);
               text-transform: uppercase;
               /*letter-spacing: 0.06em;*/
               margin: 0.75rem 0 0.35rem;
@@ -356,7 +356,7 @@ export class ImportSummary extends LitElement {
           }
 
           .channel-list {
-              background: #ebebeb9e;
+              background: var(--vines-surface-2);
               border-radius: 10px;
               display: flex;
               flex-direction: column;
@@ -377,12 +377,12 @@ export class ImportSummary extends LitElement {
           }
 
           .channel-item:hover {
-              background: var(--sapList_Hover_Background, #f5f5f5);
+              background: var(--vines-row-hover);
           }
 
           .channel-item.selected {
-              background: var(--sapList_SelectionBackgroundColor, #e8f3ff);
-              border-color: var(--sapSelectedColor, #0070f2);
+              background: var(--vines-surface-tint);
+              border-color: var(--vines-accent);
           }
 
           .channel-icon {
@@ -395,7 +395,7 @@ export class ImportSummary extends LitElement {
           .channel-name {
               flex: 1;
               font-size: var(--sapFontSize, 1.0rem);
-              color: var(--sapTextColor, #32363a);
+              color: var(--vines-ink);
               overflow: hidden;
               text-overflow: ellipsis;
               text-wrap: nowrap;
@@ -404,7 +404,7 @@ export class ImportSummary extends LitElement {
           .channel-meta {
               font-size: 0.875rem;
               padding-right: 0.75rem;
-              color: var(--sapContent_LabelColor, #6a6d70);
+              color: var(--vines-ink-muted);
           }
 
           .select-all-row {

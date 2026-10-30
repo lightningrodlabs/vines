@@ -144,7 +144,7 @@ export class ImportPanel extends LitElement {
             flex-direction: column;
             gap:15px;
             border-radius: 10px;
-            background: #e7e7e7;
+            background: var(--vines-surface-2);
             padding:10px;
             flex:1;
             line-height: 24px;
