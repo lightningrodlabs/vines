@@ -2,7 +2,7 @@ import {css, html, TemplateResult} from "lit";
 import {customElement, property, state} from "lit/decorators.js";
 import {
     ActionId,
-    AgentId, AnyId,
+    AnyId,
     DnaElement, DnaId, EntryId,
     intoAnyId, intoDhtId,
 } from "@ddd-qc/lit-happ";
@@ -66,45 +66,6 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
   }
 
 
-  /* */
-  renderDmThreadHeader(otherAgent: AgentId) {
-    console.log("renderDmThreadHeader()", otherAgent, this.cell.address.dnaId.print());
-    const profile = this._dvm.profilesZvm.perspective.getProfile(otherAgent);
-    const copyBtn = html`<copy-wal-button .dnaId=${this.cell.address.dnaId} .hash=${this.threadHash!} .name=${msg('DM channel')}></copy-wal-button>`;
-    if (!profile) {
-      console.warn("No profile found");
-      return html``;
-    }
-
-    let groups = ""
-    if (this.groupNames) {
-      groups = msg("in groups") + ": " + this.groupNames.join(", ");
-    }
-
-    //<ui5-button icon="number-sign" design="Transparent" tooltip=${this.hash} @click=${(e:any) => {navigator.clipboard.writeText(this.hash); toasty(("Copied AgentPubKey to clipboard"));}}></ui5-button>
-    /** render all */
-    return html`
-        <div id="chat-header">
-          ${renderProfileAvatar(this, otherAgent, profile, "L")}
-          <h2 style="display: flex; align-items: center">
-              ${profile.nickname}
-              ${copyBtn}
-              <ui5-button icon="number-sign" design="Transparent" tooltip=${msg("AgentPubKey") + ": " + otherAgent.b64}
-                          @click=${(_e: any) => {
-                              navigator.clipboard.writeText(otherAgent.b64);
-                              toasty(msg("Copied AgentPubKey to clipboard"));
-                            }}>
-              </ui5-button>
-          </h2>
-          <div class="subtext">
-              <span>${msg('This is the beginning of your direct message history')}</span>
-              <span>${groups}</span>
-          </div>
-        </div>
-    `;
-  }
-
-
   /** */
   override render(): any {
     //console.debug("<chat-header>.render()", this.threadHash, this._latestSubjectId);
@@ -116,54 +77,78 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
       return html`<div>No thread found</div>`;
     }
     //console.debug("<chat-header>.render() thread", thread);
+
+    /** One layout for channels, comment threads and DMs: a title line with the actions right
+     *  beside it, then who started it and when, then a kind-specific line. */
     const maybeDmThread = this._dvm.threadsZvm.isThreadDm(this.threadHash);
-    if (maybeDmThread) {
-      return this.renderDmThreadHeader(maybeDmThread);
+    const dmProfile = maybeDmThread? this._dvm.profilesZvm.perspective.getProfile(maybeDmThread) : undefined;
+    if (maybeDmThread && !dmProfile) {
+      console.warn("No profile found");
+      return html``;
     }
 
-    const subjectId = ActionId.from(this._latestSubjectId!);
-    const isComment = thread.pp.purpose == "comment";
+    const isComment = !maybeDmThread && thread.pp.purpose == "comment";
     const isDiscussion = isComment && isDiscussionSubject(thread.pp.subject.typeName);
-    const subjectName = latestSubjectName(thread.pp, this._dvm.threadsZvm);
-    const copyBtn = html`<copy-wal-button .dnaId=${this.cell.address.dnaId} .hash=${this.threadHash!} .name=${isComment? commentThreadKindName(thread.pp.subject.typeName) : msg('channel')}></copy-wal-button>`;
+    const copyBtn = html`<copy-wal-button .dnaId=${this.cell.address.dnaId} .hash=${this.threadHash!}
+                                          .name=${maybeDmThread? msg('DM channel') : isComment? commentThreadKindName(thread.pp.subject.typeName) : msg('channel')}></copy-wal-button>`;
 
-    /** Title: "<Category> / <channel>", "<Category or channel> / Discussion" or "Comments on <subject>" */
+    /** Lead: the other party's avatar for a DM, the comment icon for comment threads */
+    let lead = html``;
+    let extraBtn = html``;
     let title: TemplateResult<1>;
-    if (thread.pp.subject.typeName == SpecialSubjectType.SemanticTopic) {
-      title = html`
-          <span class="path">${subjectName}</span>
-          <span class="sep">/</span>
-          <span class="path">${isComment? msg("Discussion") : thread.title}</span>`;
-    } else if (isDiscussion) {
-      const channelAh = new ActionId(thread.pp.subject.address);
-      title = html`
-          <span class="path link" @click=${(_e: any) => this.dispatchEvent(threadJumpEvent(channelAh))}>${subjectName}</span>
-          <span class="sep">/</span>
-          <span class="path">${msg("Discussion")}</span>`;
+    if (maybeDmThread) {
+      lead = renderProfileAvatar(this, maybeDmThread, dmProfile!, "L");
+      title = html`<span class="path">${dmProfile!.nickname}</span>`;
+      extraBtn = html`
+          <ui5-button icon="number-sign" design="Transparent" tooltip=${msg("AgentPubKey") + ": " + maybeDmThread.b64}
+                      @click=${(_e: any) => {
+                          navigator.clipboard.writeText(maybeDmThread.b64);
+                          toasty(msg("Copied AgentPubKey to clipboard"));
+                      }}>
+          </ui5-button>`;
     } else {
-      const subjectBead = this._dvm.threadsZvm.perspective.getBeadInfo(subjectId);
-      if (subjectBead) {
+      const subjectId = ActionId.from(this._latestSubjectId!);
+      const subjectName = latestSubjectName(thread.pp, this._dvm.threadsZvm);
+      if (isComment) {
+        lead = html`<ui5-icon name="comment" class="kind-icon"></ui5-icon>`;
+      }
+      /** Title: "<Category> / <channel>", "<Category or channel> / Discussion" or "Comments on <subject>" */
+      if (thread.pp.subject.typeName == SpecialSubjectType.SemanticTopic) {
         title = html`
-            <span class="path">${msg("Comments on")}</span>
-            <span class="path quote link" @click=${(_e: any) => this.dispatchEvent(beadJumpEvent(subjectId))}>"${subjectName}"</span>
-            ${renderAvatar(this, this._dvm.profilesZvm, subjectBead.author, "XS")}`;
+            <span class="path">${subjectName}</span>
+            <span class="sep">/</span>
+            <span class="path">${isComment? msg("Discussion") : thread.title}</span>`;
+      } else if (isDiscussion) {
+        const channelAh = new ActionId(thread.pp.subject.address);
+        title = html`
+            <span class="path link" @click=${(_e: any) => this.dispatchEvent(threadJumpEvent(channelAh))}>${subjectName}</span>
+            <span class="sep">/</span>
+            <span class="path">${msg("Discussion")}</span>`;
       } else {
-        let wal: WAL | undefined = undefined;
-        let fromElem = html``;
-        if (this.weServices) {
-          wal = {
-            hrl: intoHrl(new DnaId(thread.pp.subject.dnaHashB64), intoDhtId(thread.pp.subject.address)),
-            context: undefined
-          };
-          fromElem = html`<span class="muted">${msg('from')}</span>
-              <span class="path link" @click=${() => { /*await*/ this.weServices.openAppletMain(new EntryId(thread?.pp.subject.appletId).hash, wal)}}>
-                  ${this._appletInfo?.appletName}
-              </span>`;
+        const subjectBead = this._dvm.threadsZvm.perspective.getBeadInfo(subjectId);
+        if (subjectBead) {
+          title = html`
+              <span class="path">${msg("Comments on")}</span>
+              <span class="path quote link" @click=${(_e: any) => this.dispatchEvent(beadJumpEvent(subjectId))}>"${subjectName}"</span>
+              ${renderAvatar(this, this._dvm.profilesZvm, subjectBead.author, "XS")}`;
+        } else {
+          let wal: WAL | undefined = undefined;
+          let fromElem = html``;
+          if (this.weServices) {
+            wal = {
+              hrl: intoHrl(new DnaId(thread.pp.subject.dnaHashB64), intoDhtId(thread.pp.subject.address)),
+              context: undefined
+            };
+            fromElem = html`<span class="muted">${msg('from')}</span>
+                <span class="path link" @click=${() => { /*await*/ this.weServices.openAppletMain(new EntryId(thread?.pp.subject.appletId).hash, wal)}}>
+                    ${this._appletInfo?.appletName}
+                </span>`;
+          }
+          title = html`
+              <span class="path">${msg("Comments on")}</span>
+              <span class="path ${wal? "link" : ""}" @click=${() => {if (wal) this.weServices.openAsset(wal, 'side')}}>${subjectName}</span>
+              ${fromElem}`;
         }
-        title = html`
-            <span class="path">${msg("Comments on")}</span>
-            <span class="path ${wal? "link" : ""}" @click=${() => {if (wal) this.weServices.openAsset(wal, 'side')}}>${subjectName}</span>
-            ${fromElem}`;
       }
     }
 
@@ -172,7 +157,8 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
     const authorName = authorProfile? authorProfile.nickname : msg("unknown");
     const createdOn = new Date(thread.creationTime / 1000).toLocaleDateString(undefined, {year: "numeric", month: "long", day: "numeric"});
     const origin = html`
-        <span>${!isComment? msg("Channel created by")
+        <span>${maybeDmThread? msg("Direct message started by")
+            : !isComment? msg("Channel created by")
             : isDiscussion? msg("Discussion started by")
             : msg("Comment thread started by")}</span>
         ${renderAvatar(this, this._dvm.profilesZvm, thread.author, "XS")}
@@ -195,36 +181,44 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
                            }));
                        }}></ui5-button>`;
 
+    /** Third line: DM history note and groups, or rules and moderators */
+    let groups = "";
+    if (maybeDmThread && this.groupNames) {
+      groups = msg("in groups") + ": " + this.groupNames.join(", ");
+    }
+    const detail = maybeDmThread? html`
+        <span>${msg('This is the beginning of your direct message history')}</span>
+        <span>${groups}</span>` : html`
+        <span class="rules"
+              @click=${(e: any) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.dispatchEvent(new CustomEvent<ShowRulesEvent>('show-rules', {
+                  detail: {
+                    ppAh: this.threadHash!,
+                    x: e.clientX,
+                    y: e.clientY
+                  }, bubbles: true, composed: true
+                }));
+              }}>
+          ${msg("Rules")}
+        </span>
+        |
+        ${msg("Moderators")}:
+        ${renderModerators(this, thread.pp.moderation.moderators, this._dvm.profilesZvm.perspective)}`;
+
     /** render all */
     return html`
         <div id="chat-header">
           <h2>
-            ${isComment? html`<ui5-icon name="comment" class="kind-icon"></ui5-icon>` : html``}
+            ${lead}
             ${title}
-            <span style="flex-grow:1"></span>
             ${copyBtn}
+            ${extraBtn}
             ${toSideBtn}
           </h2>
           <div class="subtext">${origin}</div>
-          <div class="subtext">
-              <span class="rules" 
-                    @click=${(e: any) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      this.dispatchEvent(new CustomEvent<ShowRulesEvent>('show-rules', {
-                        detail: {
-                          ppAh: this.threadHash!,
-                          x: e.clientX,
-                          y: e.clientY
-                        }, bubbles: true, composed: true
-                      }));
-                    }}>
-                ${msg("Rules")}
-              </span>
-              |
-              ${msg("Moderators")}:
-              ${renderModerators(this, thread.pp.moderation.moderators, this._dvm.profilesZvm.perspective)}
-          </div>
+          <div class="subtext">${detail}</div>
         </div>
     `;
   }
