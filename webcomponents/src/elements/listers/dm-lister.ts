@@ -1,4 +1,5 @@
 import {css, html, TemplateResult} from "lit";
+import {tooltipOnlyWhenClipped} from "../../utils";
 import {customElement, property} from "lit/decorators.js";
 import {ActionId, AgentId, DnaElement, EntryId} from "@ddd-qc/lit-happ";
 import {ThreadsPerspective} from "../../viewModels/threads.perspective";
@@ -167,7 +168,7 @@ export class DmLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                         }}></ui5-button>`;
 
       return html`
-          <sl-tooltip content=${otherProfile.nickname} style="--show-delay:1500">
+          <sl-tooltip content=${otherProfile.nickname} style="--show-delay:1500" disabled @mouseover=${tooltipOnlyWhenClipped}>
               <div id=${ppAh.b64} .agent=${otherAgent.b64} 
                    class="threadItem"
                    style="
@@ -238,7 +239,7 @@ export class DmLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                    @click=${(_e: any) => this.dispatchEvent(threadJumpEvent(ppAh))}>
                   ${badge}
                   ${renderProfileAvatar(this, otherAgent, otherProfile, 'XS')}
-                  <span style="flex-grow:1;margin-left:10px;margin-right:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;font-weight: ${hasNewBeads || isSelected? "bold" : ""}">${otherProfile.nickname}</span>
+                  <span class="rowTitle" style="flex-grow:1;margin-left:10px;margin-right:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;font-weight: ${hasNewBeads || isSelected? "bold" : ""}">${otherProfile.nickname}</span>
                   ${hideShowBtn}
               </div>
           </sl-tooltip>

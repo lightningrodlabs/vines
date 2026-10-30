@@ -563,3 +563,16 @@ export function countValidReceipts(receipts: MyValidationReceiptSet[]): number {
   //console.log("countValidReceipts", count);
   return count;
 }
+
+
+/**
+ * Lister rows wrap their title in an <sl-tooltip> carrying the full title, so a name the
+ * sidebar clips with an ellipsis can still be read. Hook this on the tooltip's `mouseover`
+ * (it runs before the tooltip's show delay) to keep the bubble off when the `.rowTitle`
+ * inside is not clipped at all.
+ */
+export function tooltipOnlyWhenClipped(e: Event): void {
+  const tip = e.currentTarget as HTMLElement & {disabled: boolean};
+  const title = tip.querySelector<HTMLElement>(".rowTitle");
+  tip.disabled = !title || title.scrollWidth <= title.clientWidth;
+}

@@ -1,4 +1,5 @@
 import {css, html, /*PropertyValues,*/} from "lit";
+import {tooltipOnlyWhenClipped} from "../../utils";
 import {consume} from "@lit/context";
 import {customElement, property} from "lit/decorators.js";
 import {ActionId, ZomeElement} from "@ddd-qc/lit-happ";
@@ -170,7 +171,7 @@ export class HistoryLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> i
         }}></ui5-button>`;
 
       return html`
-          <sl-tooltip content=${thread.title} style="--show-delay:1000">
+          <sl-tooltip content=${thread.title} style="--show-delay:1000" disabled @mouseover=${tooltipOnlyWhenClipped}>
             <div id=${ppAh.b64} class="threadItem" 
                  style="
                  font-weight:${hasNewBeads && !threadIsNew? "bold" : "normal"}; 
@@ -179,7 +180,7 @@ export class HistoryLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> i
                  "
                  @click=${(_e: any) => this.dispatchEvent(threadJumpEvent(ppAh, true))}>
                 ${badge}
-                <span style="flex-grow:1;margin-left:10px;margin-right:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;font-weight: ${hasNewBeads || isSelected? "bold" : ""}; color: var(--vines-ink);">${thread.title}</span>
+                <span class="rowTitle" style="flex-grow:1;margin-left:10px;margin-right:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;font-weight: ${hasNewBeads || isSelected? "bold" : ""}; color: var(--vines-ink);">${thread.title}</span>
                 ${this.cell.address.agentId.equals(thread.author)? html`<ui5-button id=${"edit-" + ppAh.b64} icon="edit" tooltip=${msg("Edit Title")} design="Transparent"
                             style="border:none;display: none"
                             @click=${(_e: any) => this.onClickEditChannel(ppAh)}></ui5-button>` : html``}

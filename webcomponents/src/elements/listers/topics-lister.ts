@@ -5,7 +5,7 @@ import {ThreadsPerspective} from "../../viewModels/threads.perspective";
 import {msg} from "@lit/localize";
 import {CommentRequest, EditTopicRequest, HideEvent, SpecialSubjectType, threadJumpEvent} from "../../events";
 import {sharedStyles} from "../../styles";
-import {latestThreadName} from "../../utils";
+import {latestThreadName, tooltipOnlyWhenClipped} from "../../utils";
 import {toasty} from "../../toast";
 import {renderAvatar, renderAvatarGroup} from "../../render";
 import {ThreadsDnaPerspective, ThreadsDvm} from "../../viewModels/threads.dvm";
@@ -308,7 +308,7 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
 
             /** render topic thread */
             return html`
-                <sl-tooltip content=${thread.title} style="--show-delay:1000">
+                <sl-tooltip content=${thread.title} style="--show-delay:1000" disabled @mouseover=${tooltipOnlyWhenClipped}>
                   <div id=${ppAh.b64} .topic=${topicAh.b64} 
                        class="threadItem" 
                        style="
@@ -341,7 +341,7 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
                        }}
                        @click=${() => this.dispatchEvent(threadJumpEvent(ppAh))}>
                       ${badge}
-                      <span style="flex-grow:1; margin-left:10px; margin-right:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight:${hasNewBeads || isSelected? "bold" : ""}; color: var(--vines-ink);"
+                      <span class="rowTitle" style="flex-grow:1; margin-left:10px; margin-right:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight:${hasNewBeads || isSelected? "bold" : ""}; color: var(--vines-ink);"
                       >${thread.title}</span>
                       ${avatarGrp}
                       ${menuBtn}

@@ -11,7 +11,7 @@ import {WeServicesEx} from "@ddd-qc/we-utils";
 
 import {ThreadsZvm} from "../../viewModels/threads.zvm";
 import {ThreadsPerspective} from "../../viewModels/threads.perspective";
-import {AnyIdMap} from "../../utils";
+import {AnyIdMap, tooltipOnlyWhenClipped} from "../../utils";
 import {toasty} from "../../toast";
 import {threadJumpEvent} from "../../events";
 import {Thread} from "../../viewModels/thread";
@@ -154,7 +154,7 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
         }}></ui5-button>`;
 
       return html`
-            <sl-tooltip content=${thread.title} style="--show-delay:1000">
+            <sl-tooltip content=${thread.title} style="--show-delay:1000" disabled @mouseover=${tooltipOnlyWhenClipped}>
                 <div id=${ppAh.b64} class="threadItem"
                      style="
                        font-weight:${hasNewBeads && !threadIsNew? "bold" : "normal"}; 
@@ -166,7 +166,7 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
                         this.dispatchEvent(jump);
                       }}>
                   ${badge}
-                  <span style="flex-grow:1;margin-left:10px;margin-right:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;font-weight: ${hasNewBeads || isSelected? "bold" : ""}">${thread.pp.purpose}</span>
+                  <span class="rowTitle" style="flex-grow:1;margin-left:10px;margin-right:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;font-weight: ${hasNewBeads || isSelected? "bold" : ""}">${thread.pp.purpose}</span>
                   <!-- ${hideShowBtn} -->
                   ${commentButton}
                 </div>
