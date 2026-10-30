@@ -30,3 +30,6 @@ bin/
 
 # Specific files
 hash_zome*
+
+# brainstorming mockups
+.superpowers/
