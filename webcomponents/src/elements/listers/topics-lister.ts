@@ -444,7 +444,7 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
                       }}>
             <!-- header -->
             <div slot="header" class="topicHeader" style="display:flex; flex-direction:row; overflow:hidden; width:100%;">
-                <div style="flex-grow:1; height:18px; margin-top:8px; margin-right:10px; font-weight:${topicHasUnreads? "bold" : ""}; text-overflow:ellipsis; overflow:hidden;">${title}</div>
+                <div style="flex-grow:1; height:18px; margin-right:10px; font-weight:${topicHasUnreads? "bold" : ""}; text-overflow:ellipsis; overflow:hidden;">${title}</div>
                 <!-- ${topicBadge} -->
                 ${topicCommentButton}
                 ${topicMenuBtn}
@@ -653,7 +653,8 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
               /*padding: 7px;*/
               border: none;
               background: transparent;
-              margin-bottom: 20px;
+              margin-bottom: 4px;
+              --_ui5_panel_header_height: 2.25rem;
           }
 
           ui5-panel::part(content) {

@@ -233,7 +233,8 @@ export class HistoryLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> i
           /*padding: 7px;*/
           border: none;
           background: transparent;
-          margin-bottom: 20px;
+          margin-bottom: 4px;
+          --_ui5_panel_header_height: 2.25rem;
         }
 
         ui5-panel::part(content) {

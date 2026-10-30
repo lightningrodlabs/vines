@@ -251,7 +251,7 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
     }}>
             <!-- header -->
             <div slot="header" style="display:flex; flex-direction:row; overflow:hidden;width: 100%; height: 36px;">
-                <div style="flex-grow:1; height:18px; margin-top:8px; margin-right:10px; font-weight:${subjectHasUnreads? "bold" : ""}; text-overflow:ellipsis; overflow:hidden;">${title}</div>
+                <div style="flex-grow:1; height:18px; margin-right:10px; font-weight:${subjectHasUnreads? "bold" : ""}; text-overflow:ellipsis; overflow:hidden;">${title}</div>
                 <!-- ${subjectBadge} -->
                 ${subjectCommentButton}
     </div>
@@ -385,7 +385,7 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
         if (cmt) cmt.style.display = "none";
       }}>
               <div slot="header" style="display:flex; flex-direction:row; overflow:hidden; width:100%; height:36px; font-size:18px; color: var(--vines-accent-alt)">
-                  <div style="flex-grow:1; height:18px; margin-top:8px; margin-right:10px; font-weight:${appletHasUnreadComments? "bold" : ""}; text-overflow:ellipsis; overflow:hidden;">${appletName}</div>
+                  <div style="flex-grow:1; height:18px; margin-right:10px; font-weight:${appletHasUnreadComments? "bold" : ""}; text-overflow:ellipsis; overflow:hidden;">${appletName}</div>
                   ${appletCommentBtn}
               </div>
               ${appletSubLister}
@@ -432,7 +432,8 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
           /*padding: 7px;*/
           border: none;
           background: transparent;
-          margin-bottom: 20px;
+          margin-bottom: 4px;
+          --_ui5_panel_header_height: 2.25rem;
         }
 
         ui5-panel::part(content) {

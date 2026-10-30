@@ -176,7 +176,7 @@ export class ToolLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> impl
                          }}>
                   <div slot="header" style="display:flex; flex-direction:row; overflow:hidden; cursor:pointer; width:100%; height:36px;">
                       <div class="assetTitle"
-                           style="flex-grow:1; height:18px; margin-top:8px; margin-right:10px; font-weight:${hasNewThreads || isSelected? "bold" : ""}; text-overflow:ellipsis; overflow:hidden;"
+                           style="flex-grow:1; height:18px; margin-right:10px; font-weight:${hasNewThreads || isSelected? "bold" : ""}; text-overflow:ellipsis; overflow:hidden;"
                            @click=${(e: any) => {
                                e.preventDefault();
                                e.stopPropagation();
@@ -317,7 +317,7 @@ export class ToolLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> impl
                          /*await*/ this.toggleSubjectTypePanel(pathEh);
                      }}>
               <div slot="header" style="display:flex; flex-direction:row; overflow:hidden;width: 100%; height: 36px;">
-              <div style="flex-grow:1; height:18px; margin-top:8px; margin-right:10px; font-weight:${subjectHasUnreads? "bold" : ""}; text-overflow:ellipsis; overflow:hidden;">
+              <div style="flex-grow:1; height:18px; margin-right:10px; font-weight:${subjectHasUnreads? "bold" : ""}; text-overflow:ellipsis; overflow:hidden;">
                   ${subjectType}
               </div>
               ${commentButton}
@@ -407,7 +407,8 @@ export class ToolLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> impl
               /*padding: 7px;*/
               border: none;
               background: transparent;
-              margin-bottom: 20px;
+              margin-bottom: 4px;
+              --_ui5_panel_header_height: 2.25rem;
           }
 
           ui5-panel::part(content) {

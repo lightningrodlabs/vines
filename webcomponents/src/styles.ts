@@ -94,7 +94,8 @@ export const sharedStyles = [
         display: flex;
         flex-direction: column;
         border: none;
-        margin-bottom: 20px;
+        margin-bottom: 4px;
+        --_ui5_panel_header_height: 2.25rem;
         background: transparent;
     }
     ui5-panel.lister-panel::part(content) {
@@ -119,7 +120,6 @@ export const sharedStyles = [
     .lister-panel-title {
         flex-grow: 1;
         height: 18px;
-        margin-top: 8px;
         margin-right: 10px;
         text-overflow: ellipsis;
         overflow: hidden;
