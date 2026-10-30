@@ -44,6 +44,7 @@ export default defineConfig({
         {src: "weave.config.json", dest: DIST_FOLDER},
         {src: "../webapp/icon.png", dest: DIST_FOLDER},
         {src: "../webapp/add-to-pocket.svg", dest: DIST_FOLDER},
+        {src: "../webapp/vines-mark.png", dest: DIST_FOLDER},
 
         //{ src: '../node_modules/@shoelace-style/shoelace', dest: DIST_FOLDER }
         /** To the root (DIST_FOLDER), not shoelace-assets. In the applet the Shoelace

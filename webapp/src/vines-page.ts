@@ -201,7 +201,7 @@ import {
   ConfirmDialog,
   defaultLimitations,
   defaultModeration,
-  doodle_flowers, downloadFilesAsZip,
+  downloadFilesAsZip,
   EditTopicRequest,
   ExportFilesDialog,
   FavoritesEvent,
@@ -1966,15 +1966,23 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         }
     }
 
-    /** Default: show empty flowers */
+    /** Default: the faint Vines mark with a hint */
     let primaryTitle = msg("No channel selected");
-    let centerSide = html`${doodle_flowers}`;
+    const emptyMark = html`<div class="vines-mark"></div>`;
+    let centerSide = html`
+        <div id="emptyPane">
+            ${emptyMark}
+            <div class="hint">
+                <b>${msg("Nothing here yet")}</b>
+                ${msg("Pick a channel on the left, or create one with +")}
+            </div>
+        </div>`;
     /** If there are no threads and the user is the progenitor (and not in cross-group view), show the import panel */
     console.debug("<vines-page> progenitor", this.progenitor, this.multi)
     if (!this.multi && this._dvm.threadsZvm.perspective.threads.size == 0 && this.progenitor) {
       centerSide = html`
-          <div style="flex-grow:1; position: absolute; top:0; left:0; width:100%; height:100%;">
-              ${doodle_flowers}
+          <div id="emptyPane" style="position: absolute; inset: 0;">
+              ${emptyMark}
           </div>
           <div class="mypanel">
               <import-panel
@@ -3685,6 +3693,39 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           width: 100%;
           align-items: center;
           padding: 0.5rem 0;
+        }
+
+        /* Empty message pane: the app mark in accent at low strength, hint beneath */
+        #emptyPane {
+          flex-grow: 1;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 20px;
+        }
+
+        .vines-mark {
+          width: min(220px, 50%);
+          aspect-ratio: 1;
+          background: var(--vines-accent);
+          opacity: 0.15;
+          -webkit-mask: url(vines-mark.png) no-repeat center / contain;
+          mask: url(vines-mark.png) no-repeat center / contain;
+        }
+
+        #emptyPane .hint {
+          text-align: center;
+          color: var(--vines-ink-muted);
+          font-size: var(--vines-text-m);
+        }
+
+        #emptyPane .hint b {
+          display: block;
+          color: var(--vines-ink);
+          font-weight: 600;
+          font-size: var(--vines-text-l);
+          margin-bottom: 4px;
         }
 
         .mypanel {

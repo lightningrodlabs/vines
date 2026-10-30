@@ -28,6 +28,7 @@ export default defineConfig({
           targets: [
               { src: "./icon.png", dest: "./" },
               { src: "./add-to-pocket.svg", dest: "./" },
+              { src: "./vines-mark.png", dest: "./" },
               { src: '../node_modules/@shoelace-style/shoelace/dist/assets', dest: "shoelace-assets" }
           ]
     }),
