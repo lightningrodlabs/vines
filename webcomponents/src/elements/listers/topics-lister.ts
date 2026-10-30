@@ -681,12 +681,8 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
               margin-top: 10px !important;
           }
 
-          /** Panel box, header insets and chevron come from .lister-panel in sharedStyles,
-           *  shared with the Direct Messages section */
-          ui5-panel::part(header):hover {
-              /*font-weight: bold;*/
-              color: var(--vines-accent) !important;
-          }
+          /** Panel box, header insets, hover and chevron come from .lister-panel in
+           *  sharedStyles, shared with the Direct Messages section */
 
           /** The "⋮" menu only shows while its row or category header is hovered.
            *  visibility (not display) so the "+" column does not shift. */

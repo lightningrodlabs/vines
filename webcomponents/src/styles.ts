@@ -111,8 +111,15 @@ export const sharedStyles = [
         padding-left: 7px;
         padding-right: 5px;
     }
+    /* Same hover as a channel row: a colour change alone (muted grey to dark green) is
+       too close in lightness to notice */
     ui5-panel.lister-panel::part(header):hover {
-        color: var(--vines-accent);
+        color: var(--vines-ink);
+        background: var(--vines-sidebar-row-hover);
+        border-radius: var(--vines-radius-s);
+    }
+    ui5-panel.lister-panel [slot="header"]:hover .lister-chevron {
+        color: var(--vines-ink);
     }
     .lister-panel-header {
         display: flex;

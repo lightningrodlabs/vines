@@ -423,8 +423,9 @@ export class ToolLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> impl
           }
 
           ui5-panel::part(header):hover {
-              /*font-weight: bold;*/
-              color: var(--vines-accent) !important;
+              color: var(--vines-ink) !important;
+              background: var(--vines-sidebar-row-hover);
+              border-radius: var(--vines-radius-s);
           }
 
           .selectedItem {
