@@ -448,7 +448,8 @@ export class RulesEdit extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
                 ${this.canLimit? html`
                     <div class="field-row">
                         <ui5-label>${msg('Participants')}:</ui5-label>
-                        <ui5-multi-combobox @selection-change=${this.handleAgentSelectionChange} placeholder="${msg('everyone')}"
+                        <ui5-multi-combobox style="flex-grow:1;"
+                                            @selection-change=${this.handleAgentSelectionChange} placeholder="${msg('everyone')}"
                                             .selectedValues=${b64s(this.limitations.allowedAgents)}>
                             ${peerItems()}
                         </ui5-multi-combobox>
