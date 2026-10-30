@@ -2455,7 +2455,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                 ${leftSide}
                 <div style="flex-grow: 1"></div>
                 <div id="profile-row">
-                    <div style="display: flex; flex-direction:row; flex-grow:1; min-width: 0; margin-left:2px">
+                    <div style="display: flex; flex-direction:row; align-items: center; flex-grow:1; min-width: 0; margin-left:2px">
                         ${avatar}
                         <div id="myNickname">${myNickname}</div>
                     </div>
@@ -3454,7 +3454,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
               position:relative;
               display: flex;
               flex-direction: column;
-              overflow: hidden;
+              overflow: clip;
+              overflow-clip-margin: 8px; /* room for the resize handle in the gap */
               transition: width 0.2s ease, min-width 0.2s ease, max-width 0.2s ease;
           }
 
@@ -3462,6 +3463,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
               width: 0 !important;
               min-width: 0 !important;
               max-width: 0 !important;
+              overflow-clip-margin: 0;
           }
 
           .leftSide.resizing {
@@ -3482,10 +3484,16 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
               touch-action: none;
               user-select: none;
           }
-          .resize-handle.right { right: 0; }
-          .resize-handle.left { left: 0; }
+          /* 6px wide, centred in the 8px gap between the panes; the panes clip with an
+             8px margin so the handle can sit outside their box */
+          .resize-handle.right { right: -7px; }
+          .resize-handle.left { left: -7px; }
           .resize-handle:hover, .resizing > .resize-handle {
               background: color-mix(in srgb, var(--vines-accent) 35%, transparent);
+          }
+          /* no text selection while a pane is being dragged */
+          #mainDiv:has(.resizing) {
+              user-select: none;
           }
           @media (max-width: 500px) {
               .resize-handle { display: none; }
@@ -3618,6 +3626,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           flex-direction: column;
           min-width: 350px;
           max-width: 350px;
+          overflow: clip;
+          overflow-clip-margin: 8px; /* room for the resize handle in the gap */
         }
 
         .chatAvatar {

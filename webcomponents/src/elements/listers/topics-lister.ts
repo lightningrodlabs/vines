@@ -653,12 +653,14 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
               flex-direction: column;
               /*padding: 7px;*/
               border: none;
+              background: transparent;
               margin-bottom: 20px;
           }
 
           ui5-panel::part(content) {
               padding: 0;
               padding-left: 7px;
+              background: transparent;
           }
 
           /** Same right inset as the channel rows (margin-right 5px) and the top bar,

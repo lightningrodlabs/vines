@@ -406,12 +406,14 @@ export class ToolLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> impl
               flex-direction: column;
               /*padding: 7px;*/
               border: none;
+              background: transparent;
               margin-bottom: 20px;
           }
 
           ui5-panel::part(content) {
               padding: 0;
               padding-left: 7px;
+              background: transparent;
           }
 
           ui5-panel::part(header) {
