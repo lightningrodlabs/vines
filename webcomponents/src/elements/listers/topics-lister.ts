@@ -615,10 +615,14 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
     } catch {
       return threads;
     }
-    /** Convert to ActionId and concat new/unsorted threads */
+    /** Convert to ActionId and concat new/unsorted threads. A saved id that is no longer in
+     *  this category (moved away, deleted) is skipped, not shown as a ghost. */
     let ordered: ActionId[] = [];
     for (const idb64 of ids) {
       const id = new ActionId(idb64);
+      if (!threads.some((key) => key.equals(id))) {
+        continue;
+      }
       ordered.push(id);
       threads = threads.filter((key) => !key.equals(id));
     }

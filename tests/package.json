@@ -10,5 +10,8 @@
     "typescript": "~5.9.0",
     "vitest": "^2.1.4"
   },
-  "type": "module"
+  "type": "module",
+  "devDependencies": {
+    "happy-dom": "^21.0.4"
+  }
 }

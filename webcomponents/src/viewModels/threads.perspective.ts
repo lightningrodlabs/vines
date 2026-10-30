@@ -96,6 +96,7 @@ export type ThreadsPerspectiveComparable = {
   hiddens: number,
   favorites: number,
   threads: number,
+  filings: number,
   bans: number,
   flags: number,
   threadTitles: string[],
@@ -183,6 +184,9 @@ export class ThreadsPerspective {
   /** Which subject each thread is filed under and the time of the "Threads" link that put it
    *  there. The link decides, not the entry's subject: a moved thread keeps its entry. */
   threadFiling: ActionIdMap<[AnyId, Timestamp]> = new ActionIdMap();
+  /** Bumped each time a thread is filed under a different subject. comparable() otherwise
+   *  only counts things, and a move changes no count, so subscribers would not be told. */
+  filingChanges: number = 0;
   /** PathEntryHash -> [DnaId, SubjectHash][] */
   subjectsPerType: EntryIdMap<[DnaId, AnyId][]> = new EntryIdMap();
   ///* name string -> ppAh */
@@ -208,6 +212,7 @@ export class ThreadsPerspective {
       hiddens: Object.keys(this.hiddens).length,
       favorites: this.favorites.length,
       threads: this.threads.size - this.deletedThreads.size,
+      filings: this.filingChanges,
       bans: this.bans.size,
       flags: this.flags.size,
       threadTitles: Array.from(this.threads.values()).map((thread) => thread.title),
@@ -1199,6 +1204,7 @@ export class ThreadsPerspectiveMutable extends ThreadsPerspective {
       }
     }
     this.threadFiling.set(ppAh, [subjectId, linkTs]);
+    this.filingChanges += 1;
     if (!this.threadsPerSubject.get(subjectId.b64)) {
       this.threadsPerSubject.set(subjectId.b64, []);
     }
