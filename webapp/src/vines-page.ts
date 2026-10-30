@@ -14,6 +14,10 @@ import {
 } from "@ddd-qc/lit-happ";
 import QRCode from 'qrcode'
 
+/** Theme: bundled Inter + the soft paper tokens, applied at document level */
+import "@fontsource-variable/inter";
+import {installDocumentTheme} from "@vines/elements";
+
 import "@ddd-qc/path-explorer";
 
 /** @ui5/webcomponents-fiori */
@@ -277,6 +281,7 @@ import {APK_LINK, happShareCodeContext, isMobile} from "./globals";
 import {ImportFilesData} from "@vines/elements/src/features/migration/import-utils";
 
 setBasePath('/shoelace-assets');
+installDocumentTheme();
 
 // HACK: For some reason hc-sandbox gives the dna name as the cell name instead of the role name...
 const FILES_CELL_NAME = HAPP_BUILD_MODE == HappBuildModeType.Debug? 'dFiles' : 'rFiles';

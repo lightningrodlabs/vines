@@ -117,7 +117,8 @@
     "clean:hc": "rm -rf .hc* && rm -f .kitsune2_bootstrap_srv & rm -rf we-applet/.hc*",
     "clean:all": "git clean -f -x -d -e .idea && rm -rf submodules",
     "check:colors": "node --no-warnings=ExperimentalWarning scripts/color-literals.mjs",
-    "test:scripts": "node --test scripts/*.test.mjs"
+    "test:scripts": "node --test scripts/*.test.mjs",
+    "test:theme": "node --experimental-strip-types --no-warnings --test webcomponents/src/theme.test.ts"
   },
   "devDependencies": {
     "@ddd-qc/hc-prebuilt": "0.601.0",

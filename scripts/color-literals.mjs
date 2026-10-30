@@ -84,6 +84,7 @@ export function defaultFiles(root = process.cwd()) {
   return files
     .map(f => f.split(path.sep).join("/"))
     .filter(f => !f.includes("/generated/"))
+    .filter(f => !f.endsWith(".test.ts"))
     .filter(f => !EXEMPT.has(f))
     .sort()
     .map(f => path.join(root, f));

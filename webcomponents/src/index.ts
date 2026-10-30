@@ -1,6 +1,7 @@
 export * from './contexts';
 export * from './utils';
 export * from './styles';
+export * from './theme';
 export * from './doodles';
 export * from './events';
 export * from './render';
