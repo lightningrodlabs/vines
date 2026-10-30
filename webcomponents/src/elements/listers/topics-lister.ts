@@ -641,7 +641,6 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
               flex-direction: column;
               /*overflow-y: auto;*/
               /*height: 100%;*/
-              padding-bottom: 20px;
           }
 
           .subjectBadge {

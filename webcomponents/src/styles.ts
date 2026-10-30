@@ -88,6 +88,43 @@ export const sharedStyles = [
         width: 100%;
     }
 
+    /* Section panels in the sidebar (categories, direct messages): no border or fill, muted
+       header, the chevron comes from ui5-panel itself */
+    ui5-panel.lister-panel {
+        display: flex;
+        flex-direction: column;
+        border: none;
+        margin-bottom: 20px;
+        background: transparent;
+    }
+    ui5-panel.lister-panel::part(content) {
+        padding: 0;
+        padding-left: 7px;
+        background: transparent;
+    }
+    ui5-panel.lister-panel::part(header) {
+        border: none;
+        color: var(--vines-ink-muted);
+        padding-right: 5px;
+    }
+    ui5-panel.lister-panel::part(header):hover {
+        color: var(--vines-accent);
+    }
+    .lister-panel-header {
+        display: flex;
+        flex-direction: row;
+        overflow: hidden;
+        width: 100%;
+    }
+    .lister-panel-title {
+        flex-grow: 1;
+        height: 18px;
+        margin-top: 8px;
+        margin-right: 10px;
+        text-overflow: ellipsis;
+        overflow: hidden;
+    }
+
     /* ui5-tag (2.x) paints background, border, text and radius on its root part */
     ui5-tag {
         min-width: 1.7rem;

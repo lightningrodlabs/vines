@@ -1,6 +1,6 @@
 import {css, html, TemplateResult} from "lit";
 import {tooltipOnlyWhenClipped} from "../../utils";
-import {customElement, property} from "lit/decorators.js";
+import {customElement, property, state} from "lit/decorators.js";
 import {ActionId, AgentIdMap, DnaMultiElement, EntryId} from "@ddd-qc/lit-happ";
 //import {ThreadsPerspective} from "../../viewModels/threads.perspective";
 import {msg} from "@lit/localize";
@@ -25,6 +25,8 @@ export class DmMultiLister extends DnaMultiElement<ThreadsDvm> {
 
   @property() showArchived?: string;
   @property() selectedThreadHash?: ActionId;
+
+  @state() private _collapsed = false;
 
   /** Observed perspective from zvm */
   // @property({type: Object, attribute: false, hasChanged: (_v, _old) => true})
@@ -153,7 +155,23 @@ export class DmMultiLister extends DnaMultiElement<ThreadsDvm> {
     }
 
     /** render all */
-    return html`${allTreeItems}`;
+    return html`
+        <ui5-panel class="lister-panel" ?collapsed=${this._collapsed}
+                   @toggle=${(e: any) => this._collapsed = e.target.collapsed}>
+            <div slot="header" class="lister-panel-header">
+                <div class="lister-panel-title">${msg("Direct Messages")}</div>
+                <ui5-button icon="add" tooltip=${msg("New Direct Message")} design="Transparent"
+                            style="color: var(--vines-ink-muted)"
+                            @click=${(e: any) => {
+                                e.stopPropagation();
+                                e.preventDefault();
+                                this.dispatchEvent(new CustomEvent<boolean>('createNewDm', {detail: true, bubbles: true, composed: true}));
+                            }}>
+                </ui5-button>
+            </div>
+            ${allTreeItems}
+        </ui5-panel>
+    `;
   }
 
 

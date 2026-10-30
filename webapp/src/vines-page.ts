@@ -2374,22 +2374,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
             </div>
         </div>
         <div id="listerGroup" style="display:flex; flex-direction:column; overflow:auto">
-            <!-- Messages -->
-            <div style="display: flex; flex-direction: row; gap: 10px;align-items: center; margin-left: 10px; color: var(--vines-ink-muted);margin-top: 30px;">
-                <ui5-icon style="width: 1.2rem; height: 1.2rem" name="paper-plane"></ui5-icon>
-                <span style="white-space:nowrap">${msg("Direct Messages")}</span>
-                <span style="flex-grow: 1"></span>
-                <ui5-button icon="add" tooltip=${msg("New Direct Message")}
-                            design="Transparent"
-                            style="color: var(--vines-ink-muted); margin-right: 8px;"
-                            @click=${async (e: any) => {
-                                e.stopPropagation();
-                                await this.updateComplete;
-                                const dialog = this.shadowRoot!.getElementById("pick-agent-dialog") as Dialog;
-                                dialog.open = true;
-                            }}>
-                </ui5-button>
-            </div>
             ${dmLister}
             <div style="min-height: 50px"></div>
         </div>
@@ -2401,22 +2385,6 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
             ${topicsLister}
             ${toolLister}
             ${hisLister}
-            <!-- Messages -->
-            <div style="display: flex; flex-direction: row; gap: 10px;align-items: center; margin-left: 10px; color: var(--vines-ink-muted);">
-                <ui5-icon style="width: 1.2rem; height: 1.2rem" name="paper-plane"></ui5-icon>
-                <span style="white-space:nowrap">${msg("Direct Messages")}</span>
-                <span style="flex-grow: 1"></span>
-                <ui5-button icon="add" tooltip=${msg("New Direct Message")}
-                            design="Transparent"
-                            style="color: var(--vines-ink-muted); margin-right: 8px;"
-                            @click=${async (e: any) => {
-                                e.stopPropagation();
-                                await this.updateComplete;
-                                const dialog = this.shadowRoot!.getElementById("pick-agent-dialog") as Dialog;
-                                dialog.open = true;
-                            }}>
-                </ui5-button>
-            </div>
             ${dmLister}
             <div style="min-height: 50px"></div>
         </div>
@@ -3785,7 +3753,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
-          font-size: 20px;
+          font-size: 18px;
         }
 
         #primaryTitle:hover {
