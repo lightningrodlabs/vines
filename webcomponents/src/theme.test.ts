@@ -47,6 +47,43 @@ test("frameworkTokenMap derives third-party tokens from vines tokens", () => {
   assert.doesNotMatch(text, /#[0-9a-fA-F]{3,8}\b/, "no raw hex in the framework map");
 });
 
+test("frameworkTokenMap covers every UI5 font family parameter", () => {
+  const text = frameworkTokenMap.cssText.replace(/\s+/g, " ");
+  for (const p of ["--sapFontBoldFamily", "--sapFontSemiboldFamily", "--sapFontSemiboldDuplexFamily",
+                   "--sapFontHeaderFamily", "--sapFontLightFamily", "--sapFontBlackFamily",
+                   "--sapButton_FontFamily", "--sapButton_Emphasized_FontFamily",
+                   "--_ui5_switch_text_with_label_font_family"]) {
+    assert.ok(text.includes(`${p}: var(--vines-font)`), `missing ${p}`);
+  }
+  assert.ok(text.includes("--sapContent_MonospaceFontFamily: var(--vines-font-mono)"));
+});
+
+test("frameworkTokenMap neutralises Horizon's blue hover, selected and field styles", () => {
+  const text = frameworkTokenMap.cssText.replace(/\s+/g, " ");
+  for (const p of ["--sapButton_Lite_Hover_TextColor", "--sapButton_Emphasized_Hover_Background",
+                   "--sapButton_Emphasized_Hover_BorderColor", "--sapButton_IconColor",
+                   "--sapButton_Selected_Background", "--sapButton_Selected_BorderColor",
+                   "--sapButton_Selected_TextColor", "--sapButton_Track_Selected_Background",
+                   "--sapButton_Track_Selected_BorderColor", "--sapContent_BusyColor",
+                   "--sapField_Hover_BorderColor", "--sapField_Active_BorderColor",
+                   "--sapList_SelectionBorderColor", "--sapList_Active_Background", "--sapLink_Hover_Color",
+                   "--sapButton_Active_BorderColor", "--sapButton_Active_TextColor"]) {
+    assert.match(text, new RegExp(`${p}: [^;]*var\\(--vines-`), `missing ${p}`);
+  }
+  assert.ok(text.includes("--sapField_BackgroundStyle: none"));
+  assert.ok(text.includes("--sapField_Hover_BackgroundStyle: none"));
+  assert.ok(text.includes("--sapField_Shadow: none"));
+  assert.ok(text.includes("--sapField_Hover_Shadow: none"));
+});
+
+test("frameworkTokenMap gives popups the spec radius and shadow", () => {
+  const text = frameworkTokenMap.cssText.replace(/\s+/g, " ");
+  assert.ok(text.includes("--_ui5_popup_border_radius: var(--vines-radius-l)"));
+  for (const p of ["--sapContent_Shadow0", "--sapContent_Shadow1", "--sapContent_Shadow2", "--sapContent_Shadow3"]) {
+    assert.ok(text.includes(`${p}: var(--vines-shadow-pop)`), `missing ${p}`);
+  }
+});
+
 test("themeStyles has no raw colors", () => {
   assert.doesNotMatch(themeStyles.cssText, /#[0-9a-fA-F]{3,8}\b/);
 });

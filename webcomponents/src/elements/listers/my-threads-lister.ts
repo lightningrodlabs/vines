@@ -449,10 +449,6 @@ export class MyThreadsLister extends ZomeElement<ThreadsPerspective, ThreadsZvm>
           color: var(--vines-accent) !important;
         }
 
-        ui5-panel::part(header) > ui5-button {
-          border: 1px solid black;
-          background: var(--vines-accent-soft);
-        }
 
         ui5-panel::part(header):hover > ui5-button {
           display: block !important;

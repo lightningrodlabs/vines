@@ -34,8 +34,27 @@ test("finds rgb/rgba/hsl", () => {
 });
 
 test("finds named colors only as property values", () => {
-  const src = 'color: blue;\nbackground:white"\nmsg("green")\nconst x = "red"';
+  const src = 'color: blue;\nbackground:white"\nmsg("green and other words")\nconst color = red;';
   assert.deepEqual(findColorLiterals(src).map(f => f.line), [1, 2]);
+});
+
+test("finds named colors inside shorthand values and quoted inline styles", () => {
+  const src = [
+    'border: 1px solid black;',                        // 1 shorthand
+    'style="color:${isSelected? "white" : ""}"',       // 2 quoted ternary
+    '-webkit-text-stroke: 0.1px black;',               // 3 shorthand
+    'const x = "border: 1px solid grey";',             // 4 string holding css
+    'const blackList = [];',                           // 5 identifier, not a color
+    'msg("The red button")',                           // 6 prose
+    '.whitespace { }',                                 // 7 identifier
+    'color: var(--sl-color-gray-700);',                // 8 color word inside a variable name
+    '<div class="orange">Send</div>',                  // 9 class name
+    '// <div style="border-top: 2px solid red;">',     // 10 line comment
+    '/* typings.has(x)? "red" : "" */',                // 11 block comment
+    ' * From https://github.com/x/functional-red-black-tree', // 12 doc-comment continuation
+    'background: color-mix(in srgb, var(--vines-accent) 85%, black);', // 13 literal mix endpoint
+  ].join("\n");
+  assert.deepEqual(findColorLiterals(src).map(f => f.line), [1, 2, 3, 4, 13]);
 });
 
 test("skips lines marked color-ok", () => {

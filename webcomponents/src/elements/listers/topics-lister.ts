@@ -341,7 +341,7 @@ export class TopicsLister extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> 
                        }}
                        @click=${() => this.dispatchEvent(threadJumpEvent(ppAh))}>
                       ${badge}
-                      <span style="flex-grow:1; margin-left:10px; margin-right:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight:${hasNewBeads || isSelected? "bold" : ""}; color:${isSelected? "white" : ""};"
+                      <span style="flex-grow:1; margin-left:10px; margin-right:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight:${hasNewBeads || isSelected? "bold" : ""}; color: var(--vines-ink);"
                       >${thread.title}</span>
                       ${avatarGrp}
                       ${menuBtn}

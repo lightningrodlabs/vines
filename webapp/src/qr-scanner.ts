@@ -272,7 +272,7 @@ export class QRScanner extends LitElement {
             }
 
             .start-btn:hover {
-                background-color: color-mix(in srgb, var(--vines-accent) 85%, black);
+                background-color: color-mix(in srgb, var(--vines-accent) 85%, var(--vines-ink));
             }
 
             .start-btn:disabled {
@@ -286,7 +286,7 @@ export class QRScanner extends LitElement {
             }
 
             .stop-btn:hover {
-                background-color: color-mix(in srgb, var(--vines-negative) 85%, black);
+                background-color: color-mix(in srgb, var(--vines-negative) 85%, var(--vines-ink));
             }
 
             .result {

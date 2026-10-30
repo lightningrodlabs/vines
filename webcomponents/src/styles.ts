@@ -77,36 +77,65 @@ export const sharedStyles = [
 
     /** Lister */
 
+    /* ui5-tag (2.x) paints background, border, text and radius on its root part */
     ui5-tag {
         min-width: 1.7rem;
         margin-top: 3px;
+    }
+
+    ui5-tag::part(root) {
         background: var(--vines-border);
         color: var(--vines-ink-muted);
         border: none;
         border-radius: var(--vines-radius-pill);
+        font-family: var(--vines-font);
     }
 
     ui5-tag:hover {
         cursor: pointer;
     }
 
-    .unreadBadge {
+    .unreadBadge::part(root) {
         background: var(--vines-accent-soft);
         color: var(--vines-surface);
-        border: none;
     }
 
-    .notifBadge {
+    .notifBadge::part(root) {
         color: var(--vines-surface);
         background: var(--vines-positive);
-        border: none;
     }
 
     .tempBadge {
+        min-width: 40px;
+    }
+
+    .tempBadge::part(root) {
         color: var(--vines-surface);
         background: var(--vines-warning);
-        border: none;
-        min-width: 40px;
+    }
+
+    /* outlined tag variants */
+    .tag-negative::part(root) {
+        color: var(--vines-negative);
+        background: var(--vines-surface);
+        border: 1px solid var(--vines-negative);
+    }
+
+    .tag-muted::part(root) {
+        color: var(--vines-ink-muted);
+        background: var(--vines-surface);
+        border: 1px solid var(--vines-border);
+    }
+
+    .tag-accent::part(root) {
+        color: var(--vines-accent);
+        background: var(--vines-surface);
+        border: 1px solid var(--vines-accent-soft);
+    }
+
+    .tag-warning::part(root) {
+        color: var(--vines-warning);
+        background: var(--vines-surface-tint);
     }
 
     .showBtn {

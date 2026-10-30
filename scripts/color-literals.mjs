@@ -26,7 +26,20 @@ const NAMED = [
   "darkgray", "darkgrey", "dimgray", "dimgrey", "lightblue", "lightgreen", "darkgreen", "darkblue",
   "darkred", "whitesmoke",
 ];
-const NAMED_RE = new RegExp(`:\\s*(${NAMED.join("|")})(?=\\s*(?:[;"'!)}]|$))`, "gi");
+const NAMED_ALT = NAMED.join("|");
+/** A named color as a whole word inside a CSS declaration value: after a `:` and before the
+ *  value ends (`;`, a quote, `}` or end of line), e.g. `border: 1px solid black;`. */
+const NAMED_IN_VALUE_RE = new RegExp(`:[^;:"'{}]*?(?<![\\w-])(${NAMED_ALT})(?![\\w-])(?=[^;:"'{}]*(?:[;"'}]|$))`, "gi");
+/** A named color that is the whole of a quoted string in a ternary branch or object value,
+ *  e.g. the `"white"` in `color:${isSelected? "white" : ""}`. (`class="orange"` is not one.) */
+const NAMED_QUOTED_RE = new RegExp(`(?<=[?:]\\s*)["'](${NAMED_ALT})["']`, "gi");
+
+/** Drop comments so prose, URLs and commented-out markup are not reported. */
+function stripComments(line) {
+  const trimmed = line.trimStart();
+  if (trimmed.startsWith("//") || trimmed.startsWith("*") || trimmed.startsWith("/*")) return "";
+  return line.replace(/\/\*.*?\*\//g, "").replace(/\/\/.*$/, "");
+}
 
 /** HTML entities like `&#123;` precede the hash with `&`, which is excluded by the lookbehind
  *  only if `&` is in the class; it is not, so filter them explicitly. */
@@ -41,8 +54,9 @@ function isEntity(line, index) {
 export function findColorLiterals(source) {
   const findings = [];
   const lines = source.split("\n");
-  lines.forEach((text, i) => {
-    if (text.includes("color-ok")) return;
+  lines.forEach((raw, i) => {
+    if (raw.includes("color-ok")) return;
+    const text = stripComments(raw);
     const line = i + 1;
     for (const m of text.matchAll(HEX_RE)) {
       if (isEntity(text, m.index)) continue;
@@ -51,8 +65,14 @@ export function findColorLiterals(source) {
     for (const m of text.matchAll(FN_RE)) {
       findings.push({line, match: m[0]});
     }
-    for (const m of text.matchAll(NAMED_RE)) {
-      findings.push({line, match: m[1]});
+    const seen = new Set();
+    for (const re of [NAMED_IN_VALUE_RE, NAMED_QUOTED_RE]) {
+      for (const m of text.matchAll(re)) {
+        const key = m.index + m[0].length;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        findings.push({line, match: m[1]});
+      }
     }
   });
   return findings;

@@ -1,6 +1,7 @@
 import {html, TemplateResult} from "lit";
 import "@ui5/webcomponents/dist/Menu.js";
 import "@ui5/webcomponents/dist/MenuItem.js";
+import "@ui5/webcomponents-fiori/dist/NotificationList.js";
 import {customElement, property} from "lit/decorators.js";
 import {DnaElement} from "@ddd-qc/lit-happ";
 import {ThreadsPerspective} from "../../viewModels/threads.perspective";
@@ -87,6 +88,7 @@ export class NotificationList extends DnaElement<unknown, ThreadsDvm> {
         return html`
           <ui5-li-notification 
               show-close
+              .vinesNotif=${notif}
               title-text=${title} 
               @close=${async (_e: any) => {await this._dvm.threadsZvm.deleteNotification(linkAh);}}>
               ${renderAvatar(this, this._dvm.profilesZvm, author, "XS")}
@@ -104,9 +106,12 @@ export class NotificationList extends DnaElement<unknown, ThreadsDvm> {
 
     /** render all */
     return html`
-        <ui5-list>
+        <ui5-notification-list @item-click=${(e: any) => {
+            const notif = e.detail?.item?.vinesNotif;
+            if (notif) this.dispatchEvent(notification2JumpEvent(notif));
+        }}>
             ${notifsLi}
-        </ui5-list>
+        </ui5-notification-list>
     `;
   }
 }

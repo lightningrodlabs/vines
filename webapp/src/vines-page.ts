@@ -3128,7 +3128,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
             </ui5-dialog>
             <ui5-dialog id="confirm-thread-dialog" header-text=${msg("Confirm New Channel")}>
                 <section>
-                    <div style="border: 1px solid grey; padding:10px; padding-bottom:0px">
+                    <div style="border: 1px solid var(--vines-border); padding:10px; padding-bottom:0px">
                         <rules-view id="confirm-rules-view"></rules-view>
                     </div>
                     <div style="font-weight: bold; margin-top:20px;">

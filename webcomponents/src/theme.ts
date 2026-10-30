@@ -89,7 +89,19 @@ export const vinesTokens: CSSResult = css`
 export const frameworkTokenMap: CSSResult = css`
   html:root {
     /* ---- UI5 Web Components (Horizon parameter names) ---- */
+    /* Horizon's parameters are literals (not derived from --sapBrandColor), so each
+       family of blues and each "72" font stack is mapped on its own. */
     --sapFontFamily: var(--vines-font);
+    --sapFontBoldFamily: var(--vines-font);
+    --sapFontSemiboldFamily: var(--vines-font);
+    --sapFontSemiboldDuplexFamily: var(--vines-font);
+    --sapFontHeaderFamily: var(--vines-font);
+    --sapFontLightFamily: var(--vines-font);
+    --sapFontBlackFamily: var(--vines-font);
+    --sapButton_FontFamily: var(--vines-font);
+    --sapButton_Emphasized_FontFamily: var(--vines-font);
+    --_ui5_switch_text_with_label_font_family: var(--vines-font);
+    --sapContent_MonospaceFontFamily: var(--vines-font-mono);
     --sapFontSize: var(--vines-text-m);
     --sapBrandColor: var(--vines-accent);
     --sapHighlightColor: var(--vines-accent);
@@ -135,6 +147,38 @@ export const frameworkTokenMap: CSSResult = css`
     --sapContent_BadgeTextColor: var(--vines-surface);
     --sapScrollBar_FaceColor: var(--vines-border);
     --sapScrollBar_TrackColor: transparent;
+    /* hover / active / selected states that Horizon paints blue */
+    --sapButton_Lite_Hover_TextColor: var(--vines-ink);
+    --sapButton_Emphasized_Hover_Background: color-mix(in srgb, var(--vines-accent) 85%, black);
+    --sapButton_Emphasized_Hover_BorderColor: color-mix(in srgb, var(--vines-accent) 85%, black);
+    --sapButton_IconColor: var(--vines-ink);
+    --sapButton_Active_BorderColor: var(--vines-accent);
+    --sapButton_Active_TextColor: var(--vines-accent);
+    --sapButton_Selected_Background: var(--vines-surface-tint);
+    --sapButton_Selected_BorderColor: var(--vines-accent);
+    --sapButton_Selected_TextColor: var(--vines-accent);
+    --sapButton_Selected_Hover_Background: var(--vines-surface-tint);
+    --sapButton_Selected_Hover_BorderColor: var(--vines-accent);
+    --sapButton_Track_Selected_Background: var(--vines-accent);
+    --sapButton_Track_Selected_BorderColor: var(--vines-accent);
+    --sapButton_Handle_Selected_Background: var(--vines-surface);
+    --sapContent_BusyColor: var(--vines-accent);
+    --sapField_Hover_BorderColor: var(--vines-accent);
+    --sapField_Active_BorderColor: var(--vines-accent);
+    --sapList_SelectionBorderColor: var(--vines-accent);
+    --sapList_Active_Background: var(--vines-surface-tint);
+    --sapLink_Hover_Color: var(--vines-accent);
+    /* fields: no Horizon underline or inset outline */
+    --sapField_BackgroundStyle: none;
+    --sapField_Hover_BackgroundStyle: none;
+    --sapField_Shadow: none;
+    --sapField_Hover_Shadow: none;
+    /* popups: spec radius and shadow */
+    --_ui5_popup_border_radius: var(--vines-radius-l);
+    --sapContent_Shadow0: var(--vines-shadow-pop);
+    --sapContent_Shadow1: var(--vines-shadow-pop);
+    --sapContent_Shadow2: var(--vines-shadow-pop);
+    --sapContent_Shadow3: var(--vines-shadow-pop);
 
     /* ---- Shoelace ---- */
     --sl-font-sans: var(--vines-font);

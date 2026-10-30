@@ -179,7 +179,7 @@ export class HistoryLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> i
                  "
                  @click=${(_e: any) => this.dispatchEvent(threadJumpEvent(ppAh, true))}>
                 ${badge}
-                <span style="flex-grow:1;margin-left:10px;margin-right:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;font-weight: ${hasNewBeads || isSelected? "bold" : ""}; color: ${isSelected? "white" : ""};">${thread.title}</span>
+                <span style="flex-grow:1;margin-left:10px;margin-right:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;font-weight: ${hasNewBeads || isSelected? "bold" : ""}; color: var(--vines-ink);">${thread.title}</span>
                 ${this.cell.address.agentId.equals(thread.author)? html`<ui5-button id=${"edit-" + ppAh.b64} icon="edit" tooltip=${msg("Edit Title")} design="Transparent"
                             style="border:none;display: none"
                             @click=${(_e: any) => this.onClickEditChannel(ppAh)}></ui5-button>` : html``}
@@ -249,10 +249,6 @@ export class HistoryLister extends ZomeElement<ThreadsPerspective, ThreadsZvm> i
           color: var(--vines-accent) !important;
         }
 
-        ui5-panel::part(header) > ui5-button {
-          border: 1px solid black;
-          background: var(--vines-accent-soft);
-        }
 
         ui5-panel::part(header):hover > ui5-button {
           display: block !important;

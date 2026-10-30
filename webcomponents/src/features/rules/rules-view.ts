@@ -111,7 +111,7 @@ export class RulesView extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
                 <div class="field-value badge-container">
                     ${fileRules.allowedFileTypes.length > 0
                             ? fileRules.allowedFileTypes.map(fileType => html`
-                                <ui5-tag color-scheme="info" style="background: var(--vines-ink);">
+                                <ui5-tag class="tag-muted">
                                     ${(handledMimeTypes as any)[fileType]}
                                 </ui5-tag>`)
                             : html`

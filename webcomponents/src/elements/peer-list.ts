@@ -218,7 +218,7 @@ export class PeerList extends ZomeElement<ProfilesAltPerspective, ProfilesAltZvm
             }))}>
             ${renderProfileAvatar(this, null, profile, "S")}
             <div style="width:100%; display:flex; flex-direction:row; gap:5px;">
-              <div style="align-content:center; margin-left:10px; margin-right:7px; font-size:16px; font-weight:bold; -webkit-text-stroke:0.1px black;">${profile.nickname}</div>
+              <div style="align-content:center; margin-left:10px; margin-right:7px; font-size:16px; font-weight:bold; -webkit-text-stroke: 0.1px var(--vines-ink);">${profile.nickname}</div>
               <div style="flex-grow: 1"></div>
               <ui5-button icon="hide" tooltip=${msg("Hide")} design="Transparent"
                           style="border:none;"

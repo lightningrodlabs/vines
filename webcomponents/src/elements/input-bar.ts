@@ -596,7 +596,7 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       const maybePanel = this.shadowRoot!.getElementById("audio-panel") as AudioPanel;
       micBtn = html`
           <ui5-button id="micBtn" design="Transparent" icon="microphone" tooltip=${msg('Create Voice Message')}
-                      style="color: ${maybePanel && maybePanel.isRecording? "red" : ""}"
+                      style="color: ${maybePanel && maybePanel.isRecording? "var(--vines-negative)" : ""}"
                       @click=${(_e: any) => {
                           const el = this.shadowRoot!.getElementById("micBtn") as HTMLElement;
                           this.micDialogElem.opener = el; this.micDialogElem.open = true;
