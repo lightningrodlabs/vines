@@ -7,6 +7,7 @@ export * from './events';
 export * from './render';
 export * from './search';
 export * from './toast';
+export * from './viewModels/dm-files';
 
 export * as templates_webcomp_de from './generated/de.js';
 export * as templates_webcomp_es from './generated/es.js';

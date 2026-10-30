@@ -112,11 +112,21 @@ and `node_modules/@ddd-qc/delivery/dist/viewModels/delivery.zvm.js`.
   sides; confirm nothing appears in the files module's public list; confirm a
   channel file still works as before.
 
-## Open questions I did not verify
+## Answers to the open questions (verified in `delivery-zome` rev `e4427d1`)
 
-- Whether the delivery zome retries distribution to a recipient who is offline
-  for a long time, or whether the sender must be online again for the transfer.
-- Whether `acceptDelivery` alone pulls the chunks in, or the receiver must also
-  call `requestMissingChunks`.
-- Whether `fetchFileInfo` and `downloadFile` already handle a private
-  manifest the receiver holds.
+- **Offline recipient.** The `DeliveryNotice` reaches them: a direct message is
+  tried first, then a pending item in the recipient's DHT inbox, which
+  `process_inbox` (run by `deliveryZvm.probeDht`) picks up later. The manifest
+  and chunk bytes, however, only travel by direct message, pulled by the
+  recipient once the sender has answered its `NoticeReply`. So the sender must
+  be online for the transfer itself; a reply sent while the sender was offline
+  leaves the notice `Accepted` with no manifest, and the client replies again
+  when the sender is seen online (`resumeDmDeliveries` in
+  `webcomponents/src/viewModels/dm-files.ts`).
+- **`acceptDelivery` alone** pulls the manifest and then every chunk, through
+  the `NoticeReply` and `PrivateManifest` post-commit callbacks, provided the
+  sender answers the reply directly. `requestMissingChunks` is only needed for
+  a transfer that stopped after the manifest arrived (`PartiallyReceived`).
+- **`fetchFileInfo` and `downloadFile`** check `privateManifests` first and
+  `fetchChunk` reads the local chain, so a private manifest the receiver holds
+  resolves without changes.

@@ -710,7 +710,8 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
                              const myProfile = this._dvm.profilesZvm.getMyProfile()!;
                              //const day = format(Date.now() * 1000, "yyyy-MMMM-dd-HH.mm");
                              const day = formatTime(Date.now() * 1000, myProfile.fields["timezone"]!);
-                             const filename = `${this.topic}-${myProfile.nickname}-${day}.opus`;
+                             /** A DM may have no title; never name the file "undefined-..." */
+                             const filename = `${this.topic || msg("voice")}-${myProfile.nickname}-${day}.opus`;
                              const file = new File([e.detail.blob],
                                      filename,
                                      {type: MIC_MIME_TYPE, lastModified: Date.now()}

@@ -279,7 +279,9 @@ import {GetStrategy} from "@holochain-open-dev/core-types";
 import {APP_VERSION} from "./generated/version";
 import {APK_LINK, happShareCodeContext, isMobile} from "./globals";
 import {ImportFilesData} from "@vines/elements/src/features/migration/import-utils";
-import {acceptDmDeliveries, commitPrivateFileForDm, FileAlreadyPublicError, resumeDmDeliveries} from "@vines/elements/src/viewModels/dm-files";
+/** Runtime imports go through the package index: vite aliases "@vines/elements" to
+ *  webcomponents/src, so the "@vines/elements/src/..." form only works for types. */
+import {acceptDmDeliveries, commitPrivateFileForDm, FileAlreadyPublicError, resumeDmDeliveries} from "@vines/elements";
 
 setBasePath('/shoelace-assets');
 setDefaultFontLoading(false);
