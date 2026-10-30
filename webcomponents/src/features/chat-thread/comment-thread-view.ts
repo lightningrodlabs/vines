@@ -1,7 +1,7 @@
 import {css, html, PropertyValues} from "lit";
 import {msg} from "@lit/localize";
 import {customElement, property, state} from "lit/decorators.js";
-import "@ui5/webcomponents-icons/dist/open-command-field.js";
+import "@ui5/webcomponents-icons/dist/close-command-field.js";
 import {ActionId, DnaElement, DnaId, intoDhtId} from "@ddd-qc/lit-happ";
 
 import {WAL} from "@theweave/api";
@@ -483,7 +483,7 @@ export class CommentThreadView extends DnaElement<ThreadsDnaPerspective, Threads
             ${openInMainViewBtn}
             ${this.assetview? html`` : html`
                 <ui5-button design="Transparent" tooltip=${msg('Close')}
-                            icon="open-command-field"
+                            icon="close-command-field"
                             style="margin-right:-5px;"
                             @click=${(_e: any) => this.dispatchEvent(new CustomEvent<null>("close", {
                                 detail: null,

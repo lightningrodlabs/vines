@@ -1,6 +1,6 @@
 import {css, html, TemplateResult} from "lit";
 import {customElement, property, state} from "lit/decorators.js";
-import "@ui5/webcomponents-icons/dist/close-command-field.js";
+import "@ui5/webcomponents-icons/dist/open-command-field.js";
 import {
     ActionId,
     AnyId,
@@ -167,7 +167,7 @@ export class ChatHeader extends DnaElement<unknown, ThreadsDvm> {
         <span>${msg("on")} ${createdOn}</span>`;
 
     const toSideBtn = html`
-        <ui5-button tooltip=${msg("Open in side view")} icon="close-command-field" design="Transparent"
+        <ui5-button tooltip=${msg("Open in side view")} icon="open-command-field" design="Transparent"
                        @click=${(_e: any) => {
                            this.dispatchEvent(new CustomEvent<CommentRequest>('commenting-clicked', {
                                detail: {
