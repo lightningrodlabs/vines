@@ -130,3 +130,12 @@ and `node_modules/@ddd-qc/delivery/dist/viewModels/delivery.zvm.js`.
 - **`fetchFileInfo` and `downloadFile`** check `privateManifests` first and
   `fetchChunk` reads the local chain, so a private manifest the receiver holds
   resolves without changes.
+- **One copy per chain.** A file's bytes are stored once on an agent's chain
+  by default: the files module keys local manifests by data hash and refuses
+  a commit in either visibility when one exists, and the zome never checks.
+  Sharing one file both privately and with the group is therefore a second
+  copy (private and public chunks are different entry types), and the client
+  only writes it after the user confirms in a dialog (`commitFileCopy` in
+  `webcomponents/src/viewModels/dm-files.ts`, driving the zome directly since
+  the module's upload path stops once any manifest for the data hash exists).
+  The two copies on the two peers' chains are inherent to the private path.

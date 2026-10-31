@@ -4,6 +4,7 @@ import {
   DeliveryNotice,
   DeliveryPerspective,
   NoticeState,
+  ParcelChunk,
   ParcelDescription,
   ParcelManifest,
 } from "@ddd-qc/delivery";
@@ -114,12 +115,99 @@ export interface DmFilesPort {
 }
 
 
-/** The file was already shared with the group through the public path; it cannot also be
- *  sent privately (the files module would try to re-send a public manifest as private). */
+/** The file was already shared with the group through the public path. Sending it privately
+ *  would put a second copy of its bytes on the chain, which needs the user's consent
+ *  (sendPrivateCopyForDm). */
 export class FileAlreadyPublicError extends Error {
   constructor(name: string) {
     super(`File "${name}" is already shared publicly`);
   }
+}
+
+
+/** -- Second copies -- */
+
+/** One chain holds a file's bytes once by default: the files module refuses to commit a data
+ *  hash it already has in either visibility, and the zome does not check. Private and public
+ *  chunks are different entry types, so sharing one file both ways means a second copy, and
+ *  that only happens with the user's consent through commitFileCopy. The module's own upload
+ *  path cannot write it (it stops as soon as any manifest for the data hash exists), so the
+ *  copy goes through the zome directly, batched like the module does. */
+
+/** Manifests on this chain for one data hash, by visibility. localManifestByData keeps only
+ *  one of them, so the manifest maps are scanned instead. */
+export interface LocalCopies {
+  privateEh?: EntryId;
+  publicEh?: EntryId;
+}
+
+
+export function findLocalCopies(delivery: DeliveryPerspective, dataHash: string): LocalCopies {
+  const copies: LocalCopies = {};
+  for (const [eh, [manifest]] of delivery.privateManifests.entries()) {
+    if (manifest.data_hash == dataHash) {
+      copies.privateEh = eh;
+      break;
+    }
+  }
+  for (const [eh, [manifest]] of delivery.localPublicManifests.entries()) {
+    if (manifest.data_hash == dataHash) {
+      copies.publicEh = eh;
+      break;
+    }
+  }
+  return copies;
+}
+
+
+/** The slice of FilesDvm used to write a copy without the module's upload path. */
+export interface FileCopyPort {
+  dnaProperties: {maxChunkSize: number};
+  filesZvm: {
+    zomeProxy: {
+      writePrivateFileChunks(chunks: ParcelChunk[]): Promise<Uint8Array[]>;
+      writePublicFileChunks(chunks: ParcelChunk[]): Promise<Uint8Array[]>;
+    };
+    commitPrivateManifest(file: File, dataHash: string, chunks: EntryId[]): Promise<EntryId>;
+    publishFileManifest(file: File, dataHash: string, chunks: EntryId[]): Promise<EntryId>;
+    sendFile(manifestEh: EntryId, recipients: AgentId[]): Promise<ActionId>;
+  };
+}
+
+
+/** Largest zome call payload the conductor's websocket accepts; chunks are batched under it. */
+export const MAX_WEBSOCKET_PAYLOAD = 8 * 1024 * 1024;
+
+
+/** Writes the file's chunks and manifest on this chain with the given visibility, regardless
+ *  of what the chain already holds for that data hash. Resolves with the manifest hash.
+ *  Only called after the user consented to a second copy. */
+export async function commitFileCopy(filesDvm: FileCopyPort, file: File, splitObj: SplitObject, isPrivate: boolean): Promise<EntryId> {
+  const perBatch = Math.max(1, Math.floor(MAX_WEBSOCKET_PAYLOAD / filesDvm.dnaProperties.maxChunkSize));
+  const chunkIds: EntryId[] = [];
+  for (let index = 0; index < splitObj.numChunks; index += perBatch) {
+    const batch: ParcelChunk[] = splitObj.chunks
+      .slice(index, index + perBatch)
+      .map((data) => ({data_hash: splitObj.dataHash, data}));
+    const ehs = isPrivate
+      ? await filesDvm.filesZvm.zomeProxy.writePrivateFileChunks(batch)
+      : await filesDvm.filesZvm.zomeProxy.writePublicFileChunks(batch);
+    for (const eh of ehs) {
+      chunkIds.push(new EntryId(eh));
+    }
+  }
+  return isPrivate
+    ? filesDvm.filesZvm.commitPrivateManifest(file, splitObj.dataHash, chunkIds)
+    : filesDvm.filesZvm.publishFileManifest(file, splitObj.dataHash, chunkIds);
+}
+
+
+/** Consented second copy for a DM: writes the private copy and sends it to `recipient`.
+ *  Resolves with the private manifest hash. */
+export async function sendPrivateCopyForDm(filesDvm: FileCopyPort, file: File, splitObj: SplitObject, recipient: AgentId): Promise<EntryId> {
+  const manifestEh = await commitFileCopy(filesDvm, file, splitObj, true);
+  await filesDvm.filesZvm.sendFile(manifestEh, [recipient]);
+  return manifestEh;
 }
 
 
@@ -147,19 +235,23 @@ export function waitForLocalManifest(delivery: DeliveryPerspective, dataHash: st
 
 
 /** Commits the file privately and sends it to `recipient`; resolves with the private manifest
- *  hash. Already-private file: the files module re-sends it, and the existing hash is returned.
- *  Already-public file: rejects with FileAlreadyPublicError without touching the files module.
- *  Commit refused for any other reason (e.g. already in progress): rejects with Error. */
-export async function commitPrivateFileForDm(filesDvm: DmFilesPort, file: File, splitObj: SplitObject, recipient: AgentId, timeoutMs: number = 120_000): Promise<EntryId> {
-  const existing = filesDvm.deliveryZvm.perspective.localManifestByData[splitObj.dataHash];
-  if (existing && !existing[1]) {
+ *  hash. Already-private file: the existing manifest is sent again directly (the files
+ *  module's re-send looks the manifest up through localManifestByData, which may point at a
+ *  public copy of the same data) and its hash returned. Public copy only: rejects with
+ *  FileAlreadyPublicError without touching the files module; the caller may then ask for
+ *  consent and call sendPrivateCopyForDm. Commit refused for any other reason (e.g. already
+ *  in progress): rejects with Error. */
+export async function commitPrivateFileForDm(filesDvm: DmFilesPort & FileCopyPort, file: File, splitObj: SplitObject, recipient: AgentId, timeoutMs: number = 120_000): Promise<EntryId> {
+  const copies = findLocalCopies(filesDvm.deliveryZvm.perspective, splitObj.dataHash);
+  if (copies.privateEh) {
+    await filesDvm.filesZvm.sendFile(copies.privateEh, [recipient]);
+    return copies.privateEh;
+  }
+  if (copies.publicEh) {
     throw new FileAlreadyPublicError(file.name);
   }
   const started = filesDvm.startCommitPrivateAndSendFile(file, splitObj, [recipient], []);
   if (!started) {
-    if (existing) {
-      return existing[0];
-    }
     throw new Error("File commit refused");
   }
   return waitForLocalManifest(filesDvm.deliveryZvm.perspective, splitObj.dataHash, timeoutMs, 250);

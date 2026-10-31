@@ -281,7 +281,15 @@ import {APK_LINK, happShareCodeContext, isMobile} from "./globals";
 import {ImportFilesData} from "@vines/elements/src/features/migration/import-utils";
 /** Runtime imports go through the package index: vite aliases "@vines/elements" to
  *  webcomponents/src, so the "@vines/elements/src/..." form only works for types. */
-import {acceptDmDeliveries, commitPrivateFileForDm, FileAlreadyPublicError, resumeDmDeliveries} from "@vines/elements";
+import {
+  acceptDmDeliveries,
+  commitFileCopy,
+  commitPrivateFileForDm,
+  FileAlreadyPublicError,
+  findLocalCopies,
+  resumeDmDeliveries,
+  sendPrivateCopyForDm,
+} from "@vines/elements";
 
 setBasePath('/shoelace-assets');
 setDefaultFontLoading(false);
@@ -688,7 +696,7 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       console.log("<vines-page>.onCreateFileMessage()", e.detail.file.name, e.detail.file, this._filesDvm);
       this._uploadingFile = true;
       this.requestUpdate();
-      splitFile(e.detail.file, this._filesDvm.dnaProperties.maxChunkSize).then((obj) => {
+      splitFile(e.detail.file, this._filesDvm.dnaProperties.maxChunkSize).then(async (obj) => {
         this._splitObj = obj;
         /** A DM file must not be published to the group */
         const otherAgent = this._dvm.threadsZvm.isThreadDm(ppAh);
@@ -696,39 +704,64 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
           /*await*/ this.sendPrivateFileMessage(e.detail.file!, obj, otherAgent, ppAh, replyToAh);
           return;
         }
-        const succeeded = this._filesDvm.startPublishFile(e.detail.file!, obj, [], this._dvm.profilesZvm.perspective.agents,
-          async (eh) => {
-            console.debug("<vines-page> startPublishFile callback", eh);
-            const type = simplifyMimeType(e.detail.file!.type);
-            try {
-                await this._dvm.publishMessage(
-                    ThreadsEntryType.EntryBead,
-                    { eh, size: e.detail.file!.size, type },
-                    ppAh,
-                    undefined,
-                    replyToAh,
-                    this.weServices,
-                  );
-            } catch(error:any) {
-                toasty(msg("Publish Message failed: ") + error.failure);
-                this._waitingForBeadCommit = undefined;
-                const inputBar = this.shadowRoot!.getElementById("input-bar") as InputBar;
-                console.warn("Publish Message failed:",  inputBar);
-                if (inputBar && e.detail.file) {
-                  inputBar.setFile(e.detail.file!);
-                }
-            }
-            this._splitObj = undefined;
-            this._uploadingFile = false;
-          });
-        if (!succeeded) {
-          toasty(msg("Failed to load file"));
+        const restoreFile = () => {
           this._waitingForBeadCommit = undefined;
           const inputBar = this.shadowRoot!.getElementById("input-bar") as InputBar;
-          console.warn("Publish Message failed:",  inputBar);
           if (inputBar && e.detail.file) {
             inputBar.setFile(e.detail.file!);
           }
+          this._splitObj = undefined;
+          this._uploadingFile = false;
+        };
+        const publishFileBead = async (eh: EntryId) => {
+          console.debug("<vines-page> publishFileBead", eh);
+          const type = simplifyMimeType(e.detail.file!.type);
+          try {
+            await this._dvm.publishMessage(
+              ThreadsEntryType.EntryBead,
+              { eh, size: e.detail.file!.size, type },
+              ppAh,
+              undefined,
+              replyToAh,
+              this.weServices,
+            );
+          } catch(error:any) {
+            toasty(msg("Publish Message failed: ") + error.failure);
+            console.warn("Publish Message failed:", error);
+            restoreFile();
+            return;
+          }
+          this._splitObj = undefined;
+          this._uploadingFile = false;
+        };
+        /** The chain holds a file's bytes once by default (see dm-files.ts): reuse a public
+         *  copy; a private one, sent in a DM, is only duplicated with consent. */
+        const copies = findLocalCopies(this._filesDvm.deliveryZvm.perspective, obj.dataHash);
+        if (copies.publicEh) {
+          await publishFileBead(copies.publicEh);
+          return;
+        }
+        if (copies.privateEh) {
+          const consented = await this.askFileCopyConsent(
+            msg("This file was sent privately in a direct message. Sharing it with the group keeps a second copy of it on your chain."));
+          if (!consented) {
+            restoreFile();
+            return;
+          }
+          try {
+            const eh = await commitFileCopy(this._filesDvm, e.detail.file!, obj, false);
+            await publishFileBead(eh);
+          } catch (error: any) {
+            toasty(msg("Failed to load file"));
+            console.warn("commitFileCopy() failed:", error);
+            restoreFile();
+          }
+          return;
+        }
+        const succeeded = this._filesDvm.startPublishFile(e.detail.file!, obj, [], this._dvm.profilesZvm.perspective.agents, publishFileBead);
+        if (!succeeded) {
+          toasty(msg("Failed to load file"));
+          restoreFile();
         }
       });
       //console.log("<vines-page>.onCreateFileMessage() requestUpdate()");
@@ -1119,8 +1152,27 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
   /** DM files go through the files module's private path: committed on this chain, delivered to
    *  the other party only, never published. There is no callback, so wait for the manifest. */
   private async sendPrivateFileMessage(file: File, splitObj: SplitObject, otherAgent: AgentId, ppAh: ActionId, replyToAh?: ActionId): Promise<void> {
+    const inputBar = this.shadowRoot!.getElementById("input-bar") as InputBar;
     try {
-      const eh = await commitPrivateFileForDm(this._filesDvm, file, splitObj, otherAgent);
+      let eh: EntryId;
+      try {
+        eh = await commitPrivateFileForDm(this._filesDvm, file, splitObj, otherAgent);
+      } catch (e: any) {
+        if (!(e instanceof FileAlreadyPublicError)) {
+          throw e;
+        }
+        /** The chain holds a file's bytes once by default (see dm-files.ts); a second,
+         *  private copy of a file already shared with the group needs consent. */
+        const consented = await this.askFileCopyConsent(
+          msg("This file is already shared with the group. Sending it privately keeps a second copy of it on your chain."));
+        if (!consented) {
+          if (inputBar) {
+            inputBar.setFile(file);
+          }
+          return;
+        }
+        eh = await sendPrivateCopyForDm(this._filesDvm, file, splitObj, otherAgent);
+      }
       await this._dvm.publishMessage(
         ThreadsEntryType.EntryBead,
         {eh, size: file.size, type: simplifyMimeType(file.type)},
@@ -1130,12 +1182,8 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
         this.weServices,
       );
     } catch (e: any) {
-      const reason = e instanceof FileAlreadyPublicError
-        ? msg("This file is already shared with the group, so it can't be sent privately")
-        : msg("Publish Message failed: ") + (e.failure ?? e.message ?? e);
-      toasty(reason);
+      toasty(msg("Publish Message failed: ") + (e.failure ?? e.message ?? e));
       console.warn("sendPrivateFileMessage() failed:", e);
-      const inputBar = this.shadowRoot!.getElementById("input-bar") as InputBar;
       if (inputBar) {
         inputBar.setFile(file);
       }
@@ -1144,6 +1192,18 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
       this._uploadingFile = false;
       this._waitingForBeadCommit = undefined;
     }
+  }
+
+
+  @state() private _fileCopyPrompt = "";
+
+  /** Asks before a file's bytes get a second copy on this chain. Resolves with the answer. */
+  private async askFileCopyConsent(prompt: string): Promise<boolean> {
+    this._fileCopyPrompt = prompt;
+    await this.updateComplete;
+    const dialog = this.shadowRoot!.getElementById("confirm-file-copy") as ConfirmDialog;
+    dialog.title = msg("Keep a second copy?");
+    return dialog.confirm();
   }
 
 
@@ -3022,6 +3082,9 @@ export class VinesPage extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
             <!-- Confirm Dialog -->
             <confirm-dialog id="confirm-hide-topic"></confirm-dialog>
             <confirm-dialog id="confirm-delete-channel"></confirm-dialog>
+            <confirm-dialog id="confirm-file-copy">
+              <div style="padding: 10px; max-width: 400px;">${this._fileCopyPrompt}</div>
+            </confirm-dialog>
             <!-- View Embed Dialog -->
             <view-embed-dialog id="view-embed"></view-embed-dialog>
             <!-- View File Dialog -->
