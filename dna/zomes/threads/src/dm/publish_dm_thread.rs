@@ -28,9 +28,10 @@ pub fn publish_dm_thread(input: PublishDmThreadInput) -> ExternResult<ActionHash
   }
 
   /// Files travel the files module's private path (committed on the sender's chain, delivered
-  /// to the other party), so they are allowed. Assets (WALs) stay off: niche and hard to manage.
+  /// to the other party), so they are allowed. An asset link (WAL) is only a reference, and a
+  /// DM bead of any kind is encrypted to the other party, so assets are allowed too.
   let limitations = Limitations {
-    can_wal: false,
+    can_wal: true,
     can_file: Some(FileLimits {
       allowed_file_types: Vec::new(),
       min_file_size: 0,

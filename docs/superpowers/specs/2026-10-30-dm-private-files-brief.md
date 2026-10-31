@@ -7,8 +7,9 @@ Read this, then brainstorm or plan as the superpowers workflow requires.
 
 A direct message (DM) conversation can carry file attachments and voice messages,
 exactly as a channel can, without the content ever being published to the
-shared network. Asset links (WALs) in DMs are a separate, small change and are
-**out of scope** here.
+shared network. Asset links (WALs) in DMs were first left out of scope, then
+added on 2026-10-31: a WAL is only a reference and every DM bead is encrypted
+to the other party, so `can_wal` is now true for a DM as well.
 
 ## Why DMs are text-only today
 
@@ -64,8 +65,8 @@ and `node_modules/@ddd-qc/delivery/dist/viewModels/delivery.zvm.js`.
 
 ## Pieces of the work
 
-1. **Zome.** In `publish_dm_thread.rs`, give DMs file limits (keep
-   `can_wal = false`). Decide whether the file size limits should match
+1. **Zome.** In `publish_dm_thread.rs`, give DMs file limits (and, since
+   2026-10-31, `can_wal = true`). Decide whether the file size limits should match
    channels; the client currently uses `DEFAULT_MAX_FILE_SIZE` from
    `webcomponents/src/viewModels/threads.materialize.ts`.
 2. **Sending.** In `vines-page.ts` `onCreateFileMessage`, branch on
@@ -88,8 +89,8 @@ and `node_modules/@ddd-qc/delivery/dist/viewModels/delivery.zvm.js`.
    needs a visible placeholder instead of an error; the sender sees their own
    file at once. Decide what "retry" means for a pending private file.
 5. **Input bar.** Nothing to change if the zome sets `can_file`; verify the
-   attach, add-menu and microphone buttons appear in a DM and that the
-   add menu's "Embed an Asset" stays disabled (`canWal` false).
+   attach, add-menu and microphone buttons appear in a DM, "Embed an Asset"
+   included (`canWal` true since 2026-10-31).
 6. **Edge cases to settle.** A DM thread is created lazily when the first
    message is sent to a peer (`createDmThread` in `vines-page.ts`,
    `publishDmFromProfilePanel`); a first message that is a file must still

@@ -15,7 +15,7 @@ const appSource = () => ({
 const ZOME = 'zThreads';
 const APPLET_ID = 'vines-test-applet';
 
-test('a new DM thread allows files up to 16 MiB and still forbids assets', async () => {
+test('a new DM thread allows files up to 16 MiB and asset links', async () => {
   await runScenario(async (scenario) => {
     const [alice, bob] = await scenario.addPlayersWithApps([appSource(), appSource()]);
     await scenario.shareAllAgents();
@@ -38,7 +38,7 @@ test('a new DM thread allows files up to 16 MiB and still forbids assets', async
       minFileSize: 0,
       maxFileSize: 16 * 1024 * 1024,
     });
-    assert.equal(pp![0].limitations.canWal, false);
+    assert.equal(pp![0].limitations.canWal, true);
     assert.equal(pp![0].subject.typeName, 'AgentPubKey');
   });
 });
