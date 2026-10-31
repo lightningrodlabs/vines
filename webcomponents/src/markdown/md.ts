@@ -144,15 +144,30 @@ md.use(markdownItMark);
 md.use(emoji);
 
 
+/** Asset links. Moss builds them as `weave-<protocol version>://...` (e.g. weave-0.16://),
+ *  so any version is accepted rather than a fixed list that breaks on each Moss release. */
+export function isWeaveScheme(scheme: string): boolean {
+    return scheme == "we:" || scheme == "weave:" || /^weave-\d+\.\d+:$/.test(scheme);
+}
+
+
 /** Links */
 md.linkify
     .set({fuzzyEmail: false})
     .add('we:', 'http:')
     .add('weave:', 'http:')
-    .add('weave-0.12:', 'http:')
-    .add('weave-0.13:', 'http:')
-    .add('weave-0.14:', 'http:')
-    .add('weave-0.15:', 'http:')
+    /** `weave-` followed by a version and then an http-shaped `//host/path` */
+    .add('weave-', {
+        // @ts-ignore
+        validate: function (text, pos, self) {
+            const version = /^\d+\.\d+:/.exec(text.slice(pos));
+            if (!version) {
+                return 0;
+            }
+            const rest = self.__compiled__['http:'].validate(text, pos + version[0].length, self);
+            return rest ? version[0].length + rest : 0;
+        },
+    })
     // /** MENTION */
     // .add('@', {
     //     // @ts-ignore
@@ -188,7 +203,7 @@ md.renderer.rules.link_open = function (tokens, idx, options, env, self) {
     const url = new URL(href);
     //console.log("link_open() url", url);
     const scheme = url.protocol;
-    if (scheme == "we:" || scheme == "weave:" || scheme == "weave-0.12:" || scheme == "weave-0.13:" || scheme == "weave-0.14:" || scheme == "weave-0.15:") {
+    if (isWeaveScheme(scheme)) {
         try {
             //console.log("link_open() wal", href);
             return `<wurl-link wurl="${href}">`
@@ -211,7 +226,7 @@ md.renderer.rules.link_close = function (tokens, idx, options, env, self) {
     if (href) {
         const url = new URL(href);
         const scheme = url.protocol;
-        if (scheme == "we:" || scheme == "weave:" || scheme == "weave-0.12:" || scheme == "weave-0.13:" || scheme == "weave-0.14:" || scheme == "weave-0.15:") {
+        if (isWeaveScheme(scheme)) {
             return "</wurl-link>";
         }
         // else if (scheme == "agent:") {
