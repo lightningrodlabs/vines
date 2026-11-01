@@ -413,8 +413,10 @@ export class ThreadsPerspective {
     return res;
   }
 
+  /** The text to show for a text message: the last bead of its EDIT thread, else its own.
+   *  Reads through getBaseBead, since in a DM the message and its edits are encrypted beads. */
   getLatestEdit(beadAh: ActionId): string | undefined {
-    let bead = this.getBead(beadAh) as TextBeadMat;
+    let bead = this.getBaseBead(beadAh) as TextBeadMat;
     if (!bead) return undefined;
     const pair = this.getEditThread(beadAh);
     if (!pair) {
@@ -430,8 +432,8 @@ export class ThreadsPerspective {
       return bead.value;
     }
     const lastBead = lastBeads[0]!;
-    bead = this.getBead(lastBead.beadAh) as TextBeadMat;
-    return bead.value;
+    const latest = this.getBaseBead(lastBead.beadAh) as TextBeadMat | undefined;
+    return latest ? latest.value : bead.value;
   }
 
 

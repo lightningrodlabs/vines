@@ -380,7 +380,6 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     //const isPersistent = this.threadsPerspective.isPersistent(this.hash.b64);
     const validatedBy = this.threadsPerspective.getValidation(this.hash.b64);
     const canParticipate = this._dvm.threadsZvm.canParticipate(beadInfo.bead.ppAh, this.cell.address.agentId);
-    const isEncrypted = beadInfo.beadType == ThreadsEntryType.EncryptedBead;
     const typed = this.threadsPerspective.getBaseBead(this.hash)!;
     const isFlagged = this.threadsPerspective.hasFlag(beadInfo.bead.ppAh, this.hash);
     //console.debug("<chat-item>.render() validatedBy", validatedBy, canParticipate, isFlagged, this.nomenu);
@@ -536,7 +535,8 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
     //console.log("<chat-item> shortmenu", this.shortmenu)
     if (!this.shortmenu) {
       sideButtons = [starButton, reactionButton, replyButton, commentButton, menuButton];
-      if (!isEncrypted && baseBeadInfo.beadType == ThreadsEntryType.TextBead && isMine) {
+      /** My text message, in a channel or a DM (an encrypted bead whose inner is text) */
+      if (baseBeadInfo.beadType == ThreadsEntryType.TextBead && isMine) {
         sideButtons.unshift(html`
             <ui5-button id="star-btn" icon="edit" tooltip=${msg("Edit")} design="Transparent" style="border:none;"
                         @click=${(_e: any) => this.canEdit = true}></ui5-button>

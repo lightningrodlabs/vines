@@ -55,6 +55,7 @@ import {
 import {
   AnyBeadMat,
   base2typed,
+  bead2base,
   BaseBeadType,
   BeadInfo,
   BeadType,
@@ -703,8 +704,11 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
             appletId: THIS_APPLET_ID.b64,
             dnaHashB64: this.cell.address.dnaId.b64,
         };
-        let limitations = this._perspective.threads.get(beadInfo.bead.ppAh)!.pp.limitations;
-        limitations.allowedAgents = [beadInfo.author.hash];
+        /** A copy: the original thread's limitations must not change */
+        const limitations = {
+            ...this._perspective.threads.get(beadInfo.bead.ppAh)!.pp.limitations,
+            allowedAgents: [beadInfo.author.hash],
+        };
         const pp: ParticipationProtocol = {
             purpose: "EDIT",
             limitations,
@@ -718,29 +722,49 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
     }
 
 
-    /** */
+    /** The encrypted form of `content`, for a bead going to `otherAgent` (a DM). */
+    async encryptContent(bead: Bead, content: TypedContent, beadType: BaseBeadType, otherAgent: AgentId): Promise<EncryptedBeadContent> {
+        const typed = await this.content2Typed(bead, content, beadType);
+        const base = bead2base(typed, beadType);
+        const encBead = await this.zomeProxy.encryptBead({base, otherAgent: otherAgent.hash});
+        return {encBead, otherAgent};
+    }
+
+
+    /** Posts a new version of my text message to its EDIT thread, creating that thread first
+     *  when there is none. In a DM the message is an encrypted bead and each version is one
+     *  too, encrypted to the same peer. The EDIT thread itself is public, so the group can
+     *  see that the message was edited and how often, but not the text. */
     async editMyTextBead(beadAh: ActionId, value: string) {
-        //console.debug("threadsZvm.editMyTextBead()", beadAh, value);
         /** make sure it's my text bead */
         const beadInfo = this._perspective.getBeadInfo(beadAh);
-        if (!beadInfo || beadInfo.beadType != ThreadsEntryType.TextBead || !beadInfo.author.equals(this.cell.address.agentId)) {
+        const baseInfo = this._perspective.getBaseBeadInfo(beadAh);
+        if (!beadInfo || !baseInfo || baseInfo.beadType != ThreadsEntryType.TextBead || !baseInfo.author.equals(this.cell.address.agentId)) {
             throw Error("Invalid bead to edit");
         }
-        /** Grab bead's "edit" thread */
+        let otherAgent: AgentId | null = null;
+        if (beadInfo.beadType == ThreadsEntryType.EncryptedBead) {
+            otherAgent = this.isThreadDm(beadInfo.bead.ppAh);
+            if (!otherAgent) {
+                throw Error("Encrypted bead outside a DM thread");
+            }
+        }
+        /** Grab bead's "edit" thread; if none, create one and post the first version off it */
         const pair = this._perspective.getEditThread(beadAh);
-        /** if none, create one and manually publish the first bead */
+        let bead: Bead;
         if (!pair) {
             const [_ts, ppAh] = await this.publishEditThread(beadAh);
-            const bead: Bead = {
-                ppAh: ppAh.hash,
-                prevBeadAh: ppAh.hash,
-            }
-            /*const tuple =*/
-            await this.publishTypedBeadAt(ThreadsEntryType.TextBead, value, bead, Date.now() * 1000, this.cell.address.agentId);
-            return;
+            bead = {ppAh: ppAh.hash, prevBeadAh: ppAh.hash};
+        } else {
+            bead = await this.createNextBead(pair[0]);
         }
-        /** publish bead to edit thread */
-        await this.publishTypedBead(ThreadsEntryType.TextBead, value, pair[0]);
+        const me = this.cell.address.agentId;
+        if (otherAgent) {
+            const encContent = await this.encryptContent(bead, value, ThreadsEntryType.TextBead, otherAgent);
+            await this.publishTypedBeadAt(ThreadsEntryType.EncryptedBead, encContent, bead, Date.now() * 1000, me);
+        } else {
+            await this.publishTypedBeadAt(ThreadsEntryType.TextBead, value, bead, Date.now() * 1000, me);
+        }
     }
 
 

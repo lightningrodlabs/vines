@@ -25,7 +25,6 @@ import {
 } from "../bindings/threads.types";
 import {
   BaseBeadType,
-  bead2base,
   defaultLimitations,
   defaultModeration,
   ThreadsAppTip,
@@ -724,10 +723,8 @@ export class ThreadsDvm extends DnaViewModel {
     }
     /** Create Bead */
     const bead = await this.threadsZvm.createNextBead(ppAh, prevBead);
-    const typed = await this.threadsZvm.content2Typed(bead, content, beadType);
-    const base = bead2base(typed, beadType);
-    const encBead = await this.threadsZvm.zomeProxy.encryptBead({base, otherAgent: otherAgent.hash});
-    const res = await this.threadsZvm.publishTypedBead(ThreadsEntryType.EncryptedBead, {encBead, otherAgent}, ppAh);
+    const encContent = await this.threadsZvm.encryptContent(bead, content, beadType, otherAgent);
+    const res = await this.threadsZvm.publishTypedBead(ThreadsEntryType.EncryptedBead, encContent, ppAh);
     return res[0];
   }
 
