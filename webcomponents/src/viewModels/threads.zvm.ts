@@ -122,6 +122,29 @@ export function catchThrottled<T>(promise: Promise<T>): Promise<[undefined, T] |
 }
 
 
+/** Looks a bead up as each kind in turn (text, file, asset, encrypted DM bead) and returns the
+ *  kind that found it, or null. A throttled lookup counts as a miss. A lookup that finds the
+ *  record emits the pulse that stores it, which is what callers rely on. */
+export async function fetchBeadOfAnyKind(
+    proxy: Pick<ThreadsProxy, "fetchTextBead" | "fetchEntryBead" | "fetchAnyBead" | "fetchEncBead">,
+    input: GetAhInput,
+): Promise<"text" | "entry" | "any" | "enc" | null> {
+    const lookups: ["text" | "entry" | "any" | "enc", () => Promise<unknown>][] = [
+        ["text", () => proxy.fetchTextBead(input)],
+        ["entry", () => proxy.fetchEntryBead(input)],
+        ["any", () => proxy.fetchAnyBead(input)],
+        ["enc", () => proxy.fetchEncBead(input)],
+    ];
+    for (const [kind, lookup] of lookups) {
+        const [throttled, found] = await catchThrottled(lookup());
+        if (!throttled && found != null) {
+            return kind;
+        }
+    }
+    return null;
+}
+
+
 /**
  *
  */
@@ -1056,19 +1079,11 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
             ah:  beadAh.hash,
             strategy,
         };
-        /** */
-        const textTuple = await catchThrottled(this.zomeProxy.fetchTextBead(input));
-        if (textTuple == null) {
-            const entryTuple = await catchThrottled(this.zomeProxy.fetchEntryBead(input));
-            if (entryTuple == null) {
-                const anyTuple = await catchThrottled(this.zomeProxy.fetchAnyBead(input));
-                if (anyTuple == null) {
-                    const maybe = await catchThrottled(this.zomeProxy.fetchEncBead(input));
-                    if (!maybe) {
-                        console.warn(`Bead not found at hash ${beadAh.b64}`);
-                    }
-                }
-            }
+        /** catchThrottled always resolves to a tuple, so comparing its result to null stopped
+         *  after the text lookup: a DM message, a file or an asset was never fetched here. */
+        const kind = await fetchBeadOfAnyKind(this.zomeProxy, input);
+        if (!kind) {
+            console.warn(`Bead not found at hash ${beadAh.b64}`);
         }
     }
 
