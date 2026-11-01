@@ -612,9 +612,8 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
 
 
     /** Get all beads from "now" and back until `limit` is reached or `startTime` is reached */
-    async pullLatestBeads(ppAh: ActionId, begin_time?: Timestamp, end_time?: Timestamp, target_limit?: number): Promise<BeadLink[]> {
-        console.log("pullLatestBeads()", ppAh);
-        const strategy: GetStrategy = GetStrategy.Local; // TODO figure out GetStrategy
+    async pullLatestBeads(ppAh: ActionId, begin_time?: Timestamp, end_time?: Timestamp, target_limit?: number, strategy: GetStrategy = GetStrategy.Local): Promise<BeadLink[]> {
+        console.log("pullLatestBeads()", ppAh, strategy);
         let thread = this._perspective.threads.get(ppAh);
         if (!thread) {
             console.error("pullLatestBeads() Failed. ParticipationProtocol not found");
@@ -719,6 +718,23 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
         const [pp_ah, ts] = await this.zomeProxy.publishParticipationProtocol(pp);
         /** */
         return [ts, new ActionId(pp_ah)];
+    }
+
+
+    /** A peer's EDIT thread, seen for the first time. It always holds at least one bead, posted
+     *  right after the thread, and a local search misses it: this node is rarely an authority
+     *  for a thread it just learned of, and the periodic probe only looks past its last log
+     *  time, so a first edit that slipped through was never shown. Pull from the network, and
+     *  retry a few times since the bead may still be on its way. */
+    private async pullNewEditThreadBeads(ppAh: ActionId, origTs: Timestamp): Promise<void> {
+        for (let attempt = 0; attempt < 4; attempt += 1) {
+            const links = await this.pullLatestBeads(ppAh, origTs, undefined, undefined, GetStrategy.Network);
+            if (links.length > 0) {
+                return;
+            }
+            await delay(2000 * (attempt + 1));
+        }
+        console.warn("pullNewEditThreadBeads() no bead found for EDIT thread", ppAh.short);
     }
 
 
@@ -2123,7 +2139,11 @@ export class ThreadsZvm extends ZomeViewModelWithSignals {
                     }
                     /** grab latest text-bead edit if it's an EDIT thread */
                     if (pp.purpose == "EDIT") {
-                      /*await*/ this.pullLatestBeads(pulse.ah, origTs);
+                      if (!already && !isEntryFromSelf) {
+                        /*await*/ this.pullNewEditThreadBeads(pulse.ah, origTs);
+                      } else {
+                        /*await*/ this.pullLatestBeads(pulse.ah, origTs);
+                      }
                     }
                     /** */
                     if (pulse.isNew && this._canNotify) {
