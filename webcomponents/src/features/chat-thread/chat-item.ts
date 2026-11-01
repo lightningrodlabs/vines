@@ -835,6 +835,9 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
           font-style: italic;
         }
 
+        /** Both veils are decoration: positioned, they paint above the row and would
+         *  otherwise take the mouse, so the row's hover menu never opened on a message
+         *  still waiting for validation receipts. */
         .green-veil {
           position: absolute;
           top: 0;
@@ -842,6 +845,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
           width: 100%;
           height: 100%;
           background-color: color-mix(in srgb, var(--vines-surface-tint) 60%, transparent);
+          pointer-events: none;
           /*z-index: 50;*/
         }
 
@@ -852,6 +856,7 @@ export class ChatItem extends DnaElement<unknown, ThreadsDvm> {
           width: 100%;
           height: 100%;
           background-color: var(--vines-row-hover);
+          pointer-events: none;
           /*z-index: 50;*/
         }
 
