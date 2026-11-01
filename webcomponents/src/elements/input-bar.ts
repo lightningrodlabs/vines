@@ -33,6 +33,7 @@ import {formatTime} from "../features/timezone/utils";
 import {ThreadsDnaPerspective, ThreadsDvm} from "../viewModels/threads.dvm";
 import {FilesDvm, prettyFileSize} from "@ddd-qc/files";
 import {AudioPanel} from "../features/chat-thread/audio-panel";
+import {isTypingElsewhere} from "./focus";
 
 
 /**
@@ -224,8 +225,12 @@ export class InputBar extends DnaElement<ThreadsDnaPerspective, ThreadsDvm> {
     if (maybeEdit) {
       maybeEdit.focus();
     }
-    /** Make sure input stays focus after committing */
-    this.focusInput();
+    /** Make sure input stays focused after committing. Not while the user is typing somewhere
+     *  else (editing a message, a dialog): this runs on every re-render, and a presence or
+     *  typing signal must not pull the caret away. */
+    if (!isTypingElsewhere(this.inputElem)) {
+      this.focusInput();
+    }
   }
 
 
