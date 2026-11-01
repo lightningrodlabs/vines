@@ -12,7 +12,7 @@ import {
   ThreadsProperties
 } from "./bindings/threads.types";
 import {ProfilesAltZvm, Profile as ProfileMat} from "@ddd-qc/profiles-dvm";
-import {ActionId, AgentId, DhtId, DnaId, EntryId, intoAnyId, intoDhtId, isHashTypeB64} from "@ddd-qc/lit-happ";
+import {ActionId, AgentId, DhtId, DnaId, EntryId, intoAnyId, intoDhtId, isHashTypeB64, ValidatedBy} from "@ddd-qc/lit-happ";
 import {HoloHashB64, HoloHashType} from "@holochain/client";
 import {SpecialSubjectType} from "./events";
 import {toasty} from "./toast";
@@ -553,6 +553,20 @@ export function isFileValid(file: File, dnaProperties: DeliveryProperties): bool
 
 
 /** */
+/** What my own record's validation receipts say, by the zome's determine_validation rule:
+ *  complete StoreRecord receipts → Network, a valid one → Peer, otherwise only Me. */
+export function validationFromReceipts(receipts: MyValidationReceiptSet[]): ValidatedBy {
+  const recordSet = receipts.find((set) => set.opType == "StoreRecord");
+  if (!recordSet) {
+    return ValidatedBy.Me;
+  }
+  if (recordSet.receiptsComplete) {
+    return ValidatedBy.Network;
+  }
+  return recordSet.receipts.some((receipt) => receipt.validationStatus == 0) ? ValidatedBy.Peer : ValidatedBy.Me;
+}
+
+
 export function countValidReceipts(receipts: MyValidationReceiptSet[]): number {
   //console.log("countValidReceipts set", receipts.length);
   const recordReceipts = receipts.filter((set) => set.opType == "StoreRecord").map((set) => set.receipts);

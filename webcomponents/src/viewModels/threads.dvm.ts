@@ -40,7 +40,7 @@ import {WeServicesEx} from "@ddd-qc/we-utils";
 import {PathExplorerZvm} from "@ddd-qc/path-explorer/dist/viewModels/path-explorer.zvm.js";
 import {GetStrategy} from "@holochain-open-dev/core-types";
 import {THIS_APPLET_ID} from "../contexts";
-import {countValidReceipts, MAIN_SEMANTIC_TOPIC, MAIN_TOPIC_ID} from "../utils";
+import {MAIN_SEMANTIC_TOPIC, MAIN_TOPIC_ID, validationFromReceipts} from "../utils";
 import {prettyTimestamp} from "@ddd-qc/files";
 import {ImportConfirmed} from "../features/migration/import-summary";
 import {DiscordImportData} from "../features/migration/import-utils";
@@ -240,6 +240,10 @@ export class ThreadsDvm extends DnaViewModel {
   /** Check every 5 secs for peers online and request validations for unvalidated beads, if any. */
   private _processMyUnvalidatedInterval: any = undefined;
   private _unvalidatedRunning = false;
+  /** My beads a peer has validated but the network not yet. Nothing pushes the receipts
+   *  that complete them, and the bead is otherwise only re-read when its thread is opened
+   *  again, so without this the message kept its "validated by a peer" state on screen. */
+  private _awaitingNetwork: Set<ActionHashB64> = new Set();
   processMyUnvalidated() {
       if (this._processMyUnvalidatedInterval) {
           return;
@@ -248,13 +252,21 @@ export class ThreadsDvm extends DnaViewModel {
           if (this._unvalidatedRunning) {
             return;
           }
-          if (this._perspective.myUnvalidatedBeads.size == 0) {
+          if (this._perspective.myUnvalidatedBeads.size == 0 && this._awaitingNetwork.size == 0) {
             clearInterval(this._processMyUnvalidatedInterval);
             this._processMyUnvalidatedInterval = undefined;
             return;
           }
           this._unvalidatedRunning = true;
           try {
+            /** Peer-validated beads: only read their receipts, no need to ask anyone */
+            for (const beadAhB64 of [...this._awaitingNetwork].slice(0, 10)) {
+              const receipts = await this.threadsZvm.fetchMyReceipts(new ActionId(beadAhB64), true);
+              if (receipts && validationFromReceipts(receipts) == ValidatedBy.Network) {
+                this._awaitingNetwork.delete(beadAhB64);
+                this.threadsZvm.setValidation(beadAhB64, ValidatedBy.Network);
+              }
+            }
             const others = this.allCurrentOthers();
             //console.info("ThreadsDvm.processUnvalidated() myUnvalidatedBeads", this._perspective.myUnvalidatedBeads, others.length);
             if (others.length > 0) {
@@ -271,11 +283,14 @@ export class ThreadsDvm extends DnaViewModel {
                    *  the set and try again on the next tick. */
                   continue;
                 }
-                const validationCount = countValidReceipts(receipts);
-                if (validationCount > 0) {
+                const validation = validationFromReceipts(receipts);
+                if (validation != ValidatedBy.Me) {
                   this._perspective.myUnvalidatedBeads.delete(unvalidatedBeadAhB64);
-                  //console.debug("processMyUnvalidated Removed from myUnvalidatedBeads", unvalidatedBeadAhB64, this._perspective.myUnvalidatedBeads);
-                  this.threadsZvm.setValidation(unvalidatedBeadAhB64, ValidatedBy.Peer); // TODO: should trigger a Pulse instead
+                  this.threadsZvm.setValidation(unvalidatedBeadAhB64, validation);
+                  if (validation == ValidatedBy.Peer) {
+                    this._awaitingNetwork.add(unvalidatedBeadAhB64);
+                  }
+                  this.notifySubscribers();
                 } else {
                   /*await*/ this.requestValidation(new ActionId(unvalidatedBeadAhB64), others.slice(0, 5)); // ask 5 other peers
                 }
@@ -605,11 +620,15 @@ export class ThreadsDvm extends DnaViewModel {
             console.debug("ThreadsDvm.handleTip() received ack", appTip.data);
             /** Forced: an ack means the receipts just changed. */
             this.threadsZvm.fetchMyReceipts(new ActionId(appTip.data), true).then((receipts) =>  {
-              const validationCount = receipts? countValidReceipts(receipts) : 0;
-              if (validationCount > 0) {
+              const validation = receipts? validationFromReceipts(receipts) : ValidatedBy.Me;
+              if (validation != ValidatedBy.Me) {
                 this._perspective.myUnvalidatedBeads.delete(appTip.data);
-                // console.debug("ThreadsDvm.handleTip() Removed from myUnvalidatedBeads", appTip.data, this._perspective.myUnvalidatedBeads);
-                this.threadsZvm.setValidation(appTip.data, ValidatedBy.Peer); // TODO: should trigger a get_validation_receipts() instead
+                this.threadsZvm.setValidation(appTip.data, validation);
+                if (validation == ValidatedBy.Peer) {
+                  this._awaitingNetwork.add(appTip.data);
+                  this.processMyUnvalidated();
+                }
+                this.notifySubscribers();
               }
             });
             break;
