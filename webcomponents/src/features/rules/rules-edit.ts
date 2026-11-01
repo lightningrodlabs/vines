@@ -20,7 +20,8 @@ import ValueState from "@ui5/webcomponents-base/dist/types/ValueState.js";
 import Input from "@ui5/webcomponents/dist/Input";
 import Checkbox from "@ui5/webcomponents/dist/CheckBox";
 import MultiComboBox from "@ui5/webcomponents/dist/MultiComboBox";
-import MultiComboBoxItem from "@ui5/webcomponents/dist/MultiComboBoxItem";
+import "@ui5/webcomponents/dist/MultiComboBoxItemCustom.js";
+import {renderAvatar} from "../../render";
 
 
 /** */
@@ -206,11 +207,7 @@ export class RulesEdit extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
     await this.updateComplete;
     const mods = this.shadowRoot!.getElementById("modsCombo") as unknown as MultiComboBox;
     if (mods && mods.selectedValues.length == 0) {
-      const items = mods.querySelectorAll<MultiComboBoxItem>('ui5-mcb-item');
-      items.forEach((item: any) => {
-        item.selected = item.value == this.cell.address.agentId.b64;
-      });
-      mods.render();
+      mods.selectedValues = [this.cell.address.agentId.b64];
       const elem = this.shadowRoot!.getElementById("allow-channel-delete") as Checkbox;
       elem.checked = true;
       elem.disabled = false;
@@ -415,20 +412,30 @@ export class RulesEdit extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
   /** */
   override render() {
     //console.debug("<rules-edit>.render()", this.moderation, this.limitations, this._zvm.perspective.profiles.size);
-    let peerList = [];
-    for (const [agentId, actionId] of this._zvm.perspective.profileByAgent.entries()) {
-      const pair = this._zvm.perspective.profiles.get(actionId)!;
-      if (!pair) {
-        continue;
+    /** One item per known peer, avatar beside the name. The custom item keeps `text`
+     *  for filtering and the selected tokens. */
+    const peerItems = () => {
+      const items = [];
+      for (const [agentId, actionId] of this._zvm.perspective.profileByAgent.entries()) {
+        const pair = this._zvm.perspective.profiles.get(actionId)!;
+        if (!pair) {
+          continue;
+        }
+        items.push(html`
+            <ui5-mcb-item-custom data-id=${agentId.b64}
+                                 .value=${agentId.b64}
+                                 .text=${pair[0].nickname}>
+                <div class="peer-item">
+                    ${renderAvatar(this, this._zvm, agentId, "XS", "peer-item-avatar")}
+                    <span>${pair[0].nickname}</span>
+                </div>
+            </ui5-mcb-item-custom>
+        `);
       }
-      peerList.push(html`
-          <ui5-mcb-item data-id=${agentId.b64}
-                        .value=${agentId.b64}
-                        .text=${pair[0].nickname}
-                        ?selected=${this.moderation.moderators.some(a => a === agentId.hash)}>
-          </ui5-mcb-item>
-      `)
-    }
+      return items;
+    };
+    /** UI5 2.x ignores `selected` on items: a multi-combobox's selection is its selectedValues */
+    const b64s = (list: Uint8Array[]) => list.map((a) => new AgentId(a).b64);
     /** */
     return html`
         <div class="form-section" style="min-width: 300px; display: block;" @keydown=${this.blockMinusKey} @paste=${this.blockMinusPaste}>
@@ -441,8 +448,10 @@ export class RulesEdit extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
                 ${this.canLimit? html`
                     <div class="field-row">
                         <ui5-label>${msg('Participants')}:</ui5-label>
-                        <ui5-multi-combobox @selection-change=${this.handleAgentSelectionChange} placeholder="${msg('everyone')}">
-                            ${peerList}
+                        <ui5-multi-combobox style="flex-grow:1;"
+                                            @selection-change=${this.handleAgentSelectionChange} placeholder="${msg('everyone')}"
+                                            .selectedValues=${b64s(this.limitations.allowedAgents)}>
+                            ${peerItems()}
                         </ui5-multi-combobox>
                     </div>
 
@@ -493,13 +502,13 @@ export class RulesEdit extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
                                     <ui5-multi-combobox id="mimeCombobox"
                                                         placeholder=${msg("all")}
                                                         @selection-change=${this.handleSelectionChange}
+                                                        .selectedValues=${[...this.selectedTypes]}
                                                         style="width: 100%;"
                                     >
                                         ${Object.entries(handledMimeTypes).map(([k, v]) => html`
                                             <ui5-mcb-item
                                                     .text=${v}
                                                     .value=${k}
-                                                    ?selected=${this.selectedTypes.includes(k)}
                                             ></ui5-mcb-item>
                                         `)}
                                     </ui5-multi-combobox>
@@ -583,8 +592,9 @@ export class RulesEdit extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
                     <div class="field-row">
                         <ui5-label>${msg('Moderators')}:</ui5-label>
                         <ui5-multi-combobox id="modsCombo" style="flex-grow:1;"
+                                            .selectedValues=${b64s(this.moderation.moderators)}
                                             @selection-change=${this.handleModeratorSelectionChange}>
-                            ${peerList}
+                            ${peerItems()}
                             <div id="modsErrorMsg" slot="valueStateMessage"></div>
                         </ui5-multi-combobox>
                     </div>
@@ -649,6 +659,12 @@ export class RulesEdit extends ZomeElement<ProfilesAltPerspective, ProfilesAltZv
 
         .field-row ui5-label {
           min-width: 150px;
+        }
+
+        .peer-item {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
         }
 
         .sub-section {
